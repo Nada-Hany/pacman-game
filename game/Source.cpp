@@ -1,28 +1,29 @@
 #include <SFML/Graphics.hpp>
 #include<SFML/Audio.hpp>
 #include<sstream>
+#include "functions.h"
 
 using namespace std;
 using namespace sf;
 
 //map
 #define ll long long
-#define NUMBERCOLUMNS 17
-#define NUMBERROW 19
+#define NUMBERCOLUMNS 19
+#define NUMBERROW 22
 #define TILESIZE 40
 #define offset_x 620
 #define offset_y 160
-
 //pacman
 #define player_width 38
 #define player_height 38
 const int diff = ((TILESIZE - player_width) / 2);
-float baseSpeed = 0.9;
+#define baseSpeed 2
+//ghost 
+#define speedInPowerUp 1
 
 enum class direction {
 	up, right, left, down
 };
-
 //map
 enum class tile_type
 {
@@ -30,47 +31,52 @@ enum class tile_type
 };
 
 int changing_map[NUMBERROW][NUMBERCOLUMNS] = {
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 1, 1, 1, 1, 1, 1, 1, 6, 1, 1, 1, 1, 1, 1, 1, 0},
-	{0, 3, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 3, 0},
-	{0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0},
-	{0, 1, 0, 0, 0, 0, 0, 2, 0, 2, 0, 0, 0, 0, 0, 1, 0},
-	{0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 0},
-	{0, 0, 0, 1, 0, 1, 0, 0, 2, 0, 0, 1, 0, 1, 0, 0, 0},
-	{2, 2, 0, 1, 0, 1, 0, 2, 2, 2, 0, 1, 0, 1, 0, 2, 2},
-	{0, 0, 0, 1, 0, 1, 0, 2, 2, 2, 0, 1, 0, 1, 0, 0, 0},
-	{2, 2, 2, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 2, 2, 2},
-	{0, 1, 0, 1, 0, 1, 1, 2, 2, 2, 1, 1, 0, 1, 0, 1, 0},
-	{0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0},
-	{0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0},
-	{0, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 0},
-	{0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0},
-	{0, 3, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 3, 0},
-	{0, 1, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 1, 0},
-	{0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0},
+	{0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0},
+	{0, 1, 1, 0, 0, 1, 1, 1, 1, 6, 1, 1, 1, 1, 0, 0, 1, 1, 0},
+	{0, 3, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 3, 0},
+	{0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0},
+	{0, 1, 0, 0, 0, 0, 0, 0, 2, 0, 2, 0, 0, 0, 0, 0, 0, 1, 0},
+	{0, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 0},
+	{0, 1, 0, 0, 1, 0, 1, 0, 0, 2, 0, 0, 1, 0, 1, 0, 0, 1, 0},
+	{0, 1, 0, 1, 1, 0, 1, 0, 2, 2, 2, 0, 1, 0, 1, 1, 0, 1, 0},
+	{0, 1, 0, 0, 1, 0, 1, 0, 2, 2, 2, 0, 1, 0, 1, 0, 0, 1, 0},
+	{2, 2, 2, 2, 2, 2, 1, 0, 0, 0, 0, 0, 1, 2, 2, 2, 2, 2, 2},
+	{0, 1, 0, 0, 1, 0, 1, 1, 2, 2, 2, 1, 1, 0, 1, 0, 0, 1, 0},
+	{0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 0},
+	{0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0},
+	{0, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 0},
+	{0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0},
+	{0, 3, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 3, 0},
+	{0, 1, 0, 1, 0, 1, 0, 0, 1, 1, 1, 0, 0, 1, 0, 1, 0, 1, 0},
+	{0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0},
+	{0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 };
-
 int original_map[NUMBERROW][NUMBERCOLUMNS] = {
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 1, 1, 1, 1, 1, 1, 1, 6, 1, 1, 1, 1, 1, 1, 1, 0},
-	{0, 3, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 3, 0},
-	{0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0},
-	{0, 1, 0, 0, 0, 0, 0, 2, 0, 2, 0, 0, 0, 0, 0, 1, 0},
-	{0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 0},
-	{0, 0, 0, 1, 0, 1, 0, 0, 2, 0, 0, 1, 0, 1, 0, 0, 0},
-	{2, 2, 0, 1, 0, 1, 0, 2, 2, 2, 0, 1, 0, 1, 0, 2, 2},
-	{0, 0, 0, 1, 0, 1, 0, 2, 2, 2, 0, 1, 0, 1, 0, 0, 0},
-	{2, 2, 2, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 2, 2, 2},
-	{0, 1, 0, 1, 0, 1, 1, 2, 2, 2, 1, 1, 0, 1, 0, 1, 0},
-	{0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0},
-	{0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0},
-	{0, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 0},
-	{0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0},
-	{0, 3, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 3, 0},
-	{0, 1, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 1, 0},
-	{0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0},
+	{0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0},
+	{0, 1, 1, 0, 0, 1, 1, 1, 1, 6, 1, 1, 1, 1, 0, 0, 1, 1, 0},
+	{0, 3, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 3, 0},
+	{0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0},
+	{0, 1, 0, 0, 0, 0, 0, 0, 2, 0, 2, 0, 0, 0, 0, 0, 0, 1, 0},
+	{0, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 0},
+	{0, 1, 0, 0, 1, 0, 1, 0, 0, 2, 0, 0, 1, 0, 1, 0, 0, 1, 0},
+	{0, 1, 0, 1, 1, 0, 1, 0, 2, 2, 2, 0, 1, 0, 1, 1, 0, 1, 0},
+	{0, 1, 0, 0, 1, 0, 1, 0, 2, 2, 2, 0, 1, 0, 1, 0, 0, 1, 0},
+	{2, 2, 2, 2, 2, 2, 1, 0, 0, 0, 0, 0, 1, 2, 2, 2, 2, 2, 2},
+	{0, 1, 0, 0, 1, 0, 1, 1, 2, 2, 2, 1, 1, 0, 1, 0, 0, 1, 0},
+	{0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 0},
+	{0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0},
+	{0, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 0},
+	{0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0},
+	{0, 3, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 3, 0},
+	{0, 1, 0, 1, 0, 1, 0, 0, 1, 1, 1, 0, 0, 1, 0, 1, 0, 1, 0},
+	{0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0},
+	{0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 };
 
 struct tile
@@ -88,9 +94,12 @@ struct tile
 tile map_[NUMBERROW][NUMBERCOLUMNS];
 
 //pacman
-struct PACMAN {
+struct PACMAN	 {
 
 	Sprite sprite;
+	Texture deadPac_texture;
+	Texture alivePac_texture;
+	direction direction;
 	int moving_direction;
 	int keyPressed = 0;
 	int animation_alive = 0;
@@ -106,6 +115,38 @@ struct PACMAN {
 	bool powerBallBool = false;
 
 }pacman;
+void enumDirectionPACMAN(PACMAN pacman) {
+	switch (pacman.moving_direction)
+	{
+	case 0:
+		pacman.direction == direction::right;
+	case 1:
+		pacman.direction == direction::up;
+	case 2:
+		pacman.direction == direction::left;
+	case 3:
+		pacman.direction == direction::down;
+	default:
+		break;
+	}
+}
+
+//ghost
+//void enumDirectionGHOST(GHOST ghost) {
+//	switch (pacman.moving_direction)
+//	{
+//	case 0:
+//		ghost.direction == direction::right;
+//	case 1:
+//		ghost.direction == direction::up;
+//	case 2:
+//		ghost.direction == direction::left;
+//	case 3:
+//		ghost.direction == direction::down;
+//	default:
+//		break;
+//	}
+//}
 
 int selected(Text mainmenu[3], RenderWindow& window);
 void selected2(Text mainmenu[3], RenderWindow& window);
@@ -117,18 +158,35 @@ void Easy(RenderWindow& window);
 void originalwindow(RenderWindow& window);
 void pause(RenderWindow& window);
 
-int num = 0;
-int score = 0;
-int num2 = 0;
-
-//small ghosts of mainmenu
-Texture redghost[4];
-
 //funcs
 void get_tile_cor(float x, float y, int& row, int& col) {
 	x -= offset_x, y -= offset_y;
 	col = (int)x / TILESIZE;
 	row = (int)y / TILESIZE;
+}
+
+bool same_tile_horz(Sprite& sprite) {
+	bool condition_1 = false;
+	float y = sprite.getPosition().y, x = sprite.getPosition().x;
+	int row_1, row_2, col_1, col_2;
+	get_tile_cor(x + (player_width / 2), y - (player_height / 2), row_1, col_1);
+	get_tile_cor(x + (player_width / 2), y + (player_height / 2), row_2, col_2);
+
+	if (row_1 == row_2 && col_1 == col_2)
+		condition_1 = true;
+
+	return condition_1;
+}
+bool same_tile_vert(Sprite& sprite) {
+	float y = sprite.getPosition().y, x = sprite.getPosition().x;
+	bool condition_1 = false;
+	int row_1, row_2, col_1, col_2;
+	get_tile_cor(x - (player_width / 2), y - (player_height / 2), row_1, col_1);
+	get_tile_cor(x + (player_width / 2), y - (player_height / 2), row_2, col_2);
+	if (row_1 == row_2 && col_1 == col_2)
+		condition_1 = true;
+
+	return condition_1;
 }
 
 void move_right(Sprite& sprite, int& moving_direction) {
@@ -273,9 +331,55 @@ void move_down (Sprite& sprite, int& moving_direction) {
 	}
 }
 
+void change_direction (Sprite& sprite, int& keyPressed, int& moving_direction, int row, int col) {
+
+	//right
+	if (keyPressed == 0) {
+		if (same_tile_horz(sprite))
+		{
+			if (map_[row][col + 1].type != tile_type::wall) 
+				moving_direction = keyPressed;
+		}
+	}
+	//left
+	if (keyPressed == 2) {
+		if (same_tile_horz(sprite))
+		{
+			if (map_[row][col - 1].type != tile_type::wall) 
+				moving_direction = keyPressed;
+		}
+	}
+	//up
+	if (keyPressed == 1) {
+		if (same_tile_vert(sprite))
+		{
+			if (map_[row - 1][col].type != tile_type::wall) 
+				moving_direction = keyPressed;
+		}
+	}
+	//down
+	if (keyPressed == 3) {
+		if (same_tile_vert(sprite))
+		{
+			if (map_[row + 1][col].type != tile_type::wall)
+				moving_direction = keyPressed;
+		}
+	}
+}
+
+int num = 0;
+int score = 0;
+int num2 = 0;
+
+//small ghosts of mainmenu
+Texture redghost[4];
+
 int main() {
 
 	RenderWindow window(VideoMode(1920, 1080), "Main Menu", Style::Fullscreen);
+	pacman.alivePac_texture.loadFromFile("C:/Users/HP/source/repos/test sfml project/test sfml project/paclostcount.png");
+	pacman.alivePac_texture.loadFromFile("C:/Users/HP/source/repos/test sfml project/test sfml project/paclostcount.png");
+
 	window.setFramerateLimit(60);
 	while (window.isOpen()) {
 		if (num == 0) {
@@ -825,6 +929,7 @@ void originalwindow(RenderWindow& window) {
 
 		Sprite cherrySprite;
 		bool cherry = false;
+
 		bool hundredshow = false;
 		Text hundred;
 		hundred.setFont(font);
@@ -836,16 +941,10 @@ void originalwindow(RenderWindow& window) {
 
 		float elapsedTime = 0;
 
-		Texture pacmanTexture;
-		pacmanTexture.loadFromFile("C:/Users/HP/source/repos/test sfml project/test sfml project/paclostcount.png");
-		pacman.sprite.setTexture(pacmanTexture);
+		pacman.sprite.setTexture(pacman.alivePac_texture);
 		pacman.sprite.setPosition(TILESIZE + TILESIZE / 2, TILESIZE + TILESIZE / 2);
 		pacman.sprite.setOrigin((player_width / 2), (player_height / 2));
 		pacman.sprite.setTextureRect(IntRect(1, 0, player_width, player_height)); //x y w h
-
-		Texture pacmanDeathTexture;
-		pacmanDeathTexture.loadFromFile("C:/Users/HP/source/repos/error/test sfml project/dead pacman-18.png");
-
 
 		SoundBuffer eat;
 		eat.loadFromFile("C:/Users/HP/source/repos/error/test sfml project/eatDots.wav");
@@ -933,6 +1032,7 @@ void originalwindow(RenderWindow& window) {
 				//eatsound.play();
 			}
 		}
+
 		//update score text
 		std::stringstream ss;
 		ss << "score:";
@@ -946,13 +1046,16 @@ void originalwindow(RenderWindow& window) {
 			}
 		}
 		//eat cherry
+
 		if (pacman.sprite.getGlobalBounds().intersects(cherrySprite.getGlobalBounds()) && cherry == true) {
 			cherry = false;
 			eatcherrysound.play();
 			pacman.score += 100;
 			hundredshow = true;
 		}
+
 		Clock clock;
+
 		//cherry
 		elapsedTime += clock.restart().asSeconds();
 		if (elapsedTime > 10 && hundredshow == false && pacman.isAlive) {
