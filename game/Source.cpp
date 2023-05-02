@@ -2,9 +2,20 @@
 #include<SFML/Audio.hpp>
 #include<sstream>
 #include "functions.h"
+#include <map>
+#include <algorithm>
+#include <fstream>
 
 using namespace std;
 using namespace sf;
+
+// our small data base
+string username;
+map<string, int> Users;
+void SaveHighScores();
+void SaveNewScore(int score);
+void LoadHighScores();
+void UsernameWindow(RenderWindow& window);
 
 //map
 #define ll long long
@@ -120,13 +131,13 @@ void enumDirectionPACMAN(PACMAN pacman) {
 	switch (pacman.moving_direction)
 	{
 	case 0:
-		pacman.direction == direction::right;
+		pacman.direction = direction::right;
 	case 1:
-		pacman.direction == direction::up;
+		pacman.direction = direction::up;
 	case 2:
-		pacman.direction == direction::left;
+		pacman.direction = direction::left;
 	case 3:
-		pacman.direction == direction::down;
+		pacman.direction = direction::down;
 	default:
 		break;
 	}
@@ -1072,6 +1083,7 @@ void originalwindow(RenderWindow& window) {
 			pacman.score += 100;
 			hundredshow = true;
 		}
+
 		//collision with the ghost.
 		/*if (pacman.sprite.getGlobalBounds().intersects(ghostSprite.getGlobalBounds()) || pacman.sprite.getGlobalBounds().intersects(fireBallSprite.getGlobalBounds())) {
 
@@ -1367,6 +1379,7 @@ void selected2(Text arr2[3], RenderWindow& window) {
 	}
 }
 
+// The transition in the beginning
 void introduction_window(RenderWindow& window)
 {
 	Texture texturePAC_MAN;
@@ -1397,6 +1410,7 @@ void introduction_window(RenderWindow& window)
 	buffer.loadFromFile("sound/pacman.wav");
 	Sound Soundpacman;
 	Soundpacman.setBuffer(buffer);
+	Soundpacman.setLoop(true);
 	Soundpacman.play();
 
 	Clock clock;
@@ -1414,8 +1428,8 @@ void introduction_window(RenderWindow& window)
 			}
 		}
 
-		if (C_x > 731.0f - 132.0f and scaleClock.getElapsedTime().asSeconds() >= 4.6 * 2) {
-			mainmenu(window);
+		if (C_x > 731.0f - 132.0f and scaleClock.getElapsedTime().asSeconds() >= 6) {
+			UsernameWindow(window);
 		}
 
 		if (clock.getElapsedTime().asSeconds() >= 1) {
@@ -1443,4 +1457,103 @@ void introduction_window(RenderWindow& window)
 		window.display();
 	}
 
+}
+
+// to Know who is playing our game and honoring him
+void UsernameWindow(RenderWindow& window) {
+	Texture usernameTexture;
+	usernameTexture.loadFromFile("graphics/username.png");
+	Sprite usernameSprite;
+	usernameSprite.setTexture(usernameTexture);
+
+	Font font;
+	font.loadFromFile("fonts/CrackMan.ttf");
+
+	Text text;
+	text.setCharacterSize(50);
+	text.setFont(font);
+	text.setFillColor(Color(255, 255, 0));
+	FloatRect textRect = text.getLocalBounds();
+	text.setOrigin(textRect.left, textRect.top + textRect.height / 2.0f);
+	text.setPosition(960.0f, 450.0f);
+
+	while (window.isOpen())
+	{
+		Event event;
+		while (window.pollEvent(event)) {
+			//please don't escape )':
+			if (event.type == Event::Closed || event.key.code == Keyboard::Escape) {
+				// suppose to make ******************AreYouSure()**************
+				window.close();
+			}
+
+			// save username
+			if (Keyboard::isKeyPressed(Keyboard::Enter)) {
+				mainmenu(window);
+			}
+
+			// enter your username
+			if (event.type == Event::TextEntered) {
+				if (event.text.unicode < 128) {
+					if (event.text.unicode == 8 and username.size() > 0) {
+						username.erase(username.size() - 1);
+					}
+					else if (!(event.text.unicode == 8 || event.text.unicode == Keyboard::Escape)) {
+						username += static_cast<char>(event.text.unicode);
+					}
+					text.setString(username);
+					FloatRect textRect = text.getLocalBounds();
+					text.setOrigin(textRect.left + textRect.width / 2.0f, textRect.top + textRect.height / 2.0f);
+					text.setPosition(960.0f, 580.0f);
+				}
+			}
+
+		}
+
+		window.clear(sf::Color::White);
+
+		window.draw(usernameSprite);
+		window.draw(text);
+
+		window.display();
+	}
+}
+
+// Shut The Freak Up and don't play here it's not the game
+void SaveNewScore(int score) {
+	// Saving the new high score if you got it
+	Users[username] = max(Users[username], score);
+}
+
+// Also here 
+void LoadHighScores() {
+	// Loading data
+	ifstream takeInput("data/Your_Save_File.txt");
+	ifstream takeScore("data/Your_Save_File2.txt");
+	string user;
+	int HighScore;
+
+	while (takeInput >> user) {
+		if (takeScore >> HighScore) {
+			Users.insert({ user, HighScore });
+		}
+	}
+
+	takeInput.close();
+	takeScore.close();
+}
+
+// Yeah and here
+void SaveHighScores() {
+	// saving data
+	ofstream saveUsernames("data/Your_Save_File.txt");
+	ofstream saveScores("data/Your_Save_File2.txt");
+
+	for (auto& pair : Users) {
+		saveUsernames << pair.first;
+		saveScores << pair.second;
+	}
+
+	saveUsernames.close();
+	saveScores.close();
 }

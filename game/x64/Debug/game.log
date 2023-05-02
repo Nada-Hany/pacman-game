@@ -1,13 +1,9 @@
 ﻿  Source.cpp
-C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(123,20): warning C4553: '==': result of expression not used; did you intend '='?
-C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(125,20): warning C4553: '==': result of expression not used; did you intend '='?
-C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(127,20): warning C4553: '==': result of expression not used; did you intend '='?
-C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(129,20): warning C4553: '==': result of expression not used; did you intend '='?
-C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(208,50): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(240,52): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(275,54): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(310,54): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(550,100): warning C4244: 'argument': conversion from 'T' to 'T', possible loss of data
+C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(219,50): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(251,52): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(286,54): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(321,54): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(561,100): warning C4244: 'argument': conversion from 'T' to 'T', possible loss of data
           with
           [
               T=int
@@ -16,7 +12,7 @@ C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(550,100): warning C4244: 'a
           [
               T=float
           ]
-C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(550,71): warning C4244: 'argument': conversion from 'T' to 'T', possible loss of data
+C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(561,71): warning C4244: 'argument': conversion from 'T' to 'T', possible loss of data
           with
           [
               T=int
@@ -25,7 +21,7 @@ C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(550,71): warning C4244: 'ar
           [
               T=float
           ]
-C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(577,95): warning C4244: 'argument': conversion from 'T' to 'T', possible loss of data
+C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(588,95): warning C4244: 'argument': conversion from 'T' to 'T', possible loss of data
           with
           [
               T=int
@@ -34,7 +30,7 @@ C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(577,95): warning C4244: 'ar
           [
               T=float
           ]
-C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(577,66): warning C4244: 'argument': conversion from 'T' to 'T', possible loss of data
+C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(588,66): warning C4244: 'argument': conversion from 'T' to 'T', possible loss of data
           with
           [
               T=int
@@ -43,7 +39,7 @@ C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(577,66): warning C4244: 'ar
           [
               T=float
           ]
-C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(754,101): warning C4244: 'argument': conversion from 'T' to 'T', possible loss of data
+C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(765,101): warning C4244: 'argument': conversion from 'T' to 'T', possible loss of data
           with
           [
               T=int
@@ -52,7 +48,7 @@ C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(754,101): warning C4244: 'a
           [
               T=float
           ]
-C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(754,72): warning C4244: 'argument': conversion from 'T' to 'T', possible loss of data
+C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(765,72): warning C4244: 'argument': conversion from 'T' to 'T', possible loss of data
           with
           [
               T=int
@@ -61,7 +57,7 @@ C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(754,72): warning C4244: 'ar
           [
               T=float
           ]
-C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(769,101): warning C4244: 'argument': conversion from 'T' to 'T', possible loss of data
+C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(780,101): warning C4244: 'argument': conversion from 'T' to 'T', possible loss of data
           with
           [
               T=int
@@ -70,7 +66,7 @@ C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(769,101): warning C4244: 'a
           [
               T=float
           ]
-C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(769,72): warning C4244: 'argument': conversion from 'T' to 'T', possible loss of data
+C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(780,72): warning C4244: 'argument': conversion from 'T' to 'T', possible loss of data
           with
           [
               T=int
@@ -79,7 +75,7 @@ C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(769,72): warning C4244: 'ar
           [
               T=float
           ]
-C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(782,103): warning C4244: 'argument': conversion from 'T' to 'T', possible loss of data
+C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(793,103): warning C4244: 'argument': conversion from 'T' to 'T', possible loss of data
           with
           [
               T=int
@@ -88,7 +84,7 @@ C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(782,103): warning C4244: 'a
           [
               T=float
           ]
-C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(782,74): warning C4244: 'argument': conversion from 'T' to 'T', possible loss of data
+C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(793,74): warning C4244: 'argument': conversion from 'T' to 'T', possible loss of data
           with
           [
               T=int
@@ -97,19 +93,19 @@ C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(782,74): warning C4244: 'ar
           [
               T=float
           ]
-C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(892,75): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(892,50): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(899,75): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(899,50): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(904,109): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(904,67): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(911,75): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(911,50): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(918,75): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(918,50): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(923,110): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(923,68): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(1170,95): warning C4244: 'argument': conversion from 'T' to 'T', possible loss of data
+C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(903,75): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(903,50): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(910,75): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(910,50): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(915,109): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(915,67): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(922,75): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(922,50): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(929,75): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(929,50): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(934,110): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(934,68): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(1181,95): warning C4244: 'argument': conversion from 'T' to 'T', possible loss of data
           with
           [
               T=int
@@ -118,7 +114,7 @@ C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(1170,95): warning C4244: 'a
           [
               T=float
           ]
-C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(1170,66): warning C4244: 'argument': conversion from 'T' to 'T', possible loss of data
+C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(1181,66): warning C4244: 'argument': conversion from 'T' to 'T', possible loss of data
           with
           [
               T=int
@@ -127,7 +123,7 @@ C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(1170,66): warning C4244: 'a
           [
               T=float
           ]
-C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(1297,101): warning C4244: 'argument': conversion from 'T' to 'T', possible loss of data
+C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(1308,101): warning C4244: 'argument': conversion from 'T' to 'T', possible loss of data
           with
           [
               T=int
@@ -136,7 +132,7 @@ C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(1297,101): warning C4244: '
           [
               T=float
           ]
-C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(1297,72): warning C4244: 'argument': conversion from 'T' to 'T', possible loss of data
+C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(1308,72): warning C4244: 'argument': conversion from 'T' to 'T', possible loss of data
           with
           [
               T=int
@@ -145,7 +141,7 @@ C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(1297,72): warning C4244: 'a
           [
               T=float
           ]
-C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(1310,101): warning C4244: 'argument': conversion from 'T' to 'T', possible loss of data
+C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(1321,101): warning C4244: 'argument': conversion from 'T' to 'T', possible loss of data
           with
           [
               T=int
@@ -154,7 +150,7 @@ C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(1310,101): warning C4244: '
           [
               T=float
           ]
-C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(1310,72): warning C4244: 'argument': conversion from 'T' to 'T', possible loss of data
+C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(1321,72): warning C4244: 'argument': conversion from 'T' to 'T', possible loss of data
           with
           [
               T=int
@@ -163,7 +159,7 @@ C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(1310,72): warning C4244: 'a
           [
               T=float
           ]
-C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(1350,96): warning C4244: 'argument': conversion from 'T' to 'T', possible loss of data
+C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(1361,96): warning C4244: 'argument': conversion from 'T' to 'T', possible loss of data
           with
           [
               T=int
@@ -172,7 +168,7 @@ C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(1350,96): warning C4244: 'a
           [
               T=float
           ]
-C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(1350,67): warning C4244: 'argument': conversion from 'T' to 'T', possible loss of data
+C:\VS Projects\My-GitHub\pacman-game\game\Source.cpp(1361,67): warning C4244: 'argument': conversion from 'T' to 'T', possible loss of data
           with
           [
               T=int
