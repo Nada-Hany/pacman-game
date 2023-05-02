@@ -20,6 +20,8 @@ const int diff = ((TILESIZE - player_width) / 2);
 #define baseSpeed 2
 //ghost 
 #define speedInPowerUp 1
+#define ghostSpeed 4
+
 
 enum class direction {
 	up, right, left, down
@@ -91,7 +93,6 @@ struct tile
 	int rows;
 
 };
-
 tile map_[NUMBERROW][NUMBERCOLUMNS];
 
 //pacman
@@ -133,22 +134,43 @@ void enumDirectionPACMAN(PACMAN &pacman) {
 }
 
 //ghost
+struct Ghosts
+{
+	int moving_direction = -1;
+	direction direction;
+	// 0 right , 1 up , 2 left , 3 down
+	int frames;
+	int animation;
+	// 0 normal , 1 power up , 2 face , 3 end time
+	Sprite sprite;
+}ghosts[4];
+// 0 red , 1 pink , 2 orange , 3 blue 
 
-//void enumDirectionGHOST(GHOST &ghost) {
-//	switch (pacman.moving_direction)
-//	{
-//	case 0:
-//		ghost.direction = direction::right;
-//	case 1:
-//		ghost.direction = direction::up;
-//	case 2:
-//		ghost.direction = direction::left;
-//	case 3:
-//		ghost.direction = direction::down;
-//	default:
-//		break;
-//	}
-//}
+Texture red_ghost_texture;
+Texture pink_ghost_texture;
+Texture orange_ghost_texture;
+Texture blue_ghost_texture;
+Texture powerup_ghost_texture;
+Texture face_ghost_texture;
+Texture endtime_ghost_texture;
+//cherry
+Texture cherryTexture;
+
+void enumDirectionGHOST(Ghosts &ghost) {
+	switch (ghost.moving_direction)
+	{
+	case 0:
+		ghost.direction = direction::right;
+	case 1:
+		ghost.direction = direction::up;
+	case 2:
+		ghost.direction = direction::left;
+	case 3:
+		ghost.direction = direction::down;
+	default:
+		break;
+	}
+}
 
 int selected(Text mainmenu[3], RenderWindow& window);
 void selected2(Text mainmenu[3], RenderWindow& window);
@@ -222,7 +244,7 @@ void move_right(Sprite& sprite, int& lastKeyPressed) {
 		}
 	}
 }
-void move_left(Sprite& sprite, int& moving_direction) {
+void move_left (Sprite& sprite, int& moving_direction) {
 	float y = sprite.getPosition().y, x = sprite.getPosition().x;
 	bool condition_1 = false, condition_2 = true;
 
@@ -253,7 +275,7 @@ void move_left(Sprite& sprite, int& moving_direction) {
 		}
 	}
 }
-void move_up(Sprite& sprite, int& moving_direction) {
+void move_up   (Sprite& sprite, int& moving_direction) {
 	float y = sprite.getPosition().y, x = sprite.getPosition().x;
 	bool condition_1 = false, condition_2 = true;
 
@@ -275,7 +297,7 @@ void move_up(Sprite& sprite, int& moving_direction) {
 		if (condition_1 && condition_2)
 			sprite.move(0, -baseSpeed), moving_direction = 1;
 }
-void move_down(Sprite& sprite, int& moving_direction) {
+void move_down (Sprite& sprite, int& moving_direction) {
 	float y = sprite.getPosition().y, x = sprite.getPosition().x;
 	bool condition_1 = false, condition_2 = true;
 
@@ -334,9 +356,8 @@ void change_direction(Sprite& sprite, int& keyPressed, int& moving_direction, in
 	}
 }
 
-int num = 0;
-int score = 0;
-int num2 = 0;
+int num = 0, num2 = 0;
+bool isPaused = false;
 
 //small ghosts of mainmenu
 Texture redghost[4];
@@ -344,21 +365,37 @@ Texture redghost[4];
 int main() {
 
 	RenderWindow window(VideoMode(1920, 1080), "Main Menu", Style::Fullscreen);
+	//pacman
 	pacman.alivePac_texture.loadFromFile("pngs/alive pacman2-20.png");
 	pacman.deadPac_texture.loadFromFile("pngs/dead pacman.png");
+	pacman.sprite.setTexture(pacman.alivePac_texture);
+	pacman.sprite.setOrigin((player_width / 2), (player_height / 2));
+	pacman.sprite.setPosition(9 * TILESIZE + TILESIZE / 2 + offset_x, 15 * TILESIZE + TILESIZE / 2 + offset_y);
+	pacman.sprite.setTextureRect(IntRect(0, 0, player_width, player_height)); //x y w h
+
+	//ghosts
+	red_ghost_texture.loadFromFile("pngs/red ghost sprite.png");
+	pink_ghost_texture.loadFromFile("pngs/pink ghost sprite.png");
+	orange_ghost_texture.loadFromFile("pngs/orange ghost sprite.png");
+	blue_ghost_texture.loadFromFile("pngs/cyan ghost sprite.png");
+	powerup_ghost_texture.loadFromFile("pngs/ghosts in power up mode.png");
+	face_ghost_texture.loadFromFile("pngs/Ghost eyes.png");
+	endtime_ghost_texture.loadFromFile("sounds/blue and grey ghosts.png");
+	//cherry 
+	cherryTexture.loadFromFile("pngs/cherry.png");
 
 	Image icon;
 	icon.loadFromFile("pngs/cherry.png");
 	window.setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr());
 
-	window.setFramerateLimit(40 );
+	window.setFramerateLimit(50);
 	while (window.isOpen()) {
 		if (num == 0) {
 			introduction_window(window);
 		}
-	/*	if (num == 1) {
+		if (num == 1) {
 			play(window);
-		}*/
+		}
 	}
 	return 0;
 }
@@ -815,6 +852,7 @@ void originalwindow(RenderWindow& window) {
 	Font font;
 	font.loadFromFile("fonts/CrackMan.ttf");
 	Text s;
+	Text timer;
 
 	//circle of pause
 	CircleShape circle(50, 50);
@@ -835,12 +873,34 @@ void originalwindow(RenderWindow& window) {
 	line2.setPosition(Vector2f(1835, 95));
 	line2.setFillColor(Color::White);
 
+	//score text
 	s.setFont(font);
-	s.setString("score:");
 	s.setOrigin(Vector2f(50, 50));
 	s.setCharacterSize(90);
 	s.setFillColor(Color::White);
 	s.setPosition(55, 70);
+
+	//time 
+	timer.setFont(font);
+	timer.setCharacterSize(70);
+	timer.setFillColor(Color::White);
+	timer.setPosition(50, 120);
+
+	//cherry
+	Sprite cherrySprite;
+	cherrySprite.setTexture(cherryTexture);
+	cherrySprite.setOrigin(player_width / 2, player_height / 2);
+	cherrySprite.setPosition(9 * TILESIZE + TILESIZE / 2 + offset_x, 3 * TILESIZE + TILESIZE / 2 + offset_y);
+	bool cherry = false;
+
+	bool hundredshow = false;
+	Text hundred;
+	hundred.setFont(font);
+	hundred.setString("100");
+	hundred.setCharacterSize(8);
+	hundred.setFillColor(Color::Yellow);
+	hundred.setPosition(130, 130);
+	hundred.setOrigin((player_width / 2), (player_height / 2));
 
 	//hole
 	RectangleShape rect_right;
@@ -853,15 +913,9 @@ void originalwindow(RenderWindow& window) {
 	rect_left.setPosition(offset_x - rect_left.getSize().x, offset_y + 11 * TILESIZE);
 
 	//pacman
-	pacman.sprite.setTexture(pacman.alivePac_texture);
-	pacman.sprite.setOrigin((player_width / 2), (player_height / 2));
-	pacman.sprite.setPosition(9 * TILESIZE + TILESIZE / 2 + offset_x, 15 * TILESIZE + TILESIZE / 2 + offset_y);
-	pacman.sprite.setTextureRect(IntRect(0, 0, player_width , player_height)); //x y w h
-
 	bool sound = 0, sound2 = 0;
 	bool gamess = 1;
-	bool move_right_hole = false;
-
+	int timer_sec = 0, timer_min = 0;
 
 	gameS.play();
 	Time resettime = seconds(4.0f);
@@ -897,7 +951,7 @@ void originalwindow(RenderWindow& window) {
 					map_[i][j].type = tile_type::wall;
 					map_[i][j].recwall.setSize(Vector2f(TILESIZE, TILESIZE));
 					map_[i][j].recwall.setPosition(j * TILESIZE + offset_x, i * TILESIZE + offset_y);
-					map_[i][j].recwall.setFillColor(Color{ 32, 37, 203 });
+					map_[i][j].recwall.setFillColor(Color{ 36, 31, 201 });
 				}
 				if (changing_map[i][j] == 3)
 				{
@@ -918,30 +972,18 @@ void originalwindow(RenderWindow& window) {
 
 		}
 
-		Sprite cherrySprite;
-		bool cherry = false;
-
-		bool hundredshow = false;
-		Text hundred;
-		hundred.setFont(font);
-		hundred.setString("100");
-		hundred.setCharacterSize(8);
-		hundred.setFillColor(Color::Yellow);
-		hundred.setPosition(130, 130);
-		hundred.setOrigin((player_width / 2), (player_height / 2));
-
-		float elapsedTime = 0;
+		float elapsedTime_cherry = 0;
 
 		SoundBuffer eat;
-		eat.loadFromFile("C:/Users/HP/source/repos/error/test sfml project/eatDots.wav");
+		eat.loadFromFile("sounds/eatDots.wav");
 		Sound eatsound(eat);
 
 		SoundBuffer eatCherry;
-		eatCherry.loadFromFile("C:/Users/HP/source/repos/error/test sfml project/pacman_eatfruit.wav");
+		eatCherry.loadFromFile("sounds/pacman_eatfruit.wav");
 		Sound eatcherrysound(eatCherry);
 
 		SoundBuffer death;
-		death.loadFromFile("C:/Users/HP/source/repos/error/test sfml project/pacman death.wav");
+		death.loadFromFile("sounds/pacman death.wav");
 		Sound deathSound(death);
 
 		Event event;
@@ -966,6 +1008,7 @@ void originalwindow(RenderWindow& window) {
 
 				if (event.key.code == Keyboard::Escape) {
 					soundclick.play();
+					isPaused = true;
 					gameS.stop();
 					pause(window);
 					return;
@@ -1006,126 +1049,139 @@ void originalwindow(RenderWindow& window) {
 			}
 
 		}
-		//eat dots
-		float x = pacman.sprite.getPosition().x, y = pacman.sprite.getPosition().y;
-		int row, col;
-		get_tile_cor(x, y, row, col);
 
-		if (map_[row][col].type == tile_type::score) {
-			if (map_[row][col].cipoint.getGlobalBounds().contains(pacman.sprite.getPosition().x, pacman.sprite.getPosition().y)) {
-				changing_map[row][col] = 2;
-				pacman.score++;
-				//eatsound.play();
-			}
-		}
+		if(!isPaused)
+		{
+			//moving
+			float x_pac = pacman.sprite.getPosition().x, y_pac = pacman.sprite.getPosition().y;
+			int row_pac, col_pac;
+			get_tile_cor(x_pac, y_pac, row_pac, col_pac);
+			change_direction(pacman.sprite, pacman.keyPressed, pacman.moving_direction, row_pac, col_pac);
 
-		//update score text
-		std::stringstream ss;
-		ss << "score:";
-		s.setString(ss.str());
+			if (pacman.moving_direction == 0 && pacman.isAlive) {
 
-		//eat powerBall
-		if (map_[row][col].type == tile_type::powerup) {
-			if (map_[row][col].cpowerup.getGlobalBounds().contains(pacman.sprite.getPosition().x, pacman.sprite.getPosition().y)) {
-				changing_map[row][col] = 2;
-				pacman.powerBallBool = true; // for mai ghost
-			}
-		}
-		//eat cherry
-
-		if (pacman.sprite.getGlobalBounds().intersects(cherrySprite.getGlobalBounds()) && cherry == true) {
-			cherry = false;
-			eatcherrysound.play();
-			pacman.score += 100;
-			hundredshow = true;
-		}
-
-		Clock clock;
-
-		//cherry
-		elapsedTime += clock.restart().asSeconds();
-		if (elapsedTime > 10 && hundredshow == false && pacman.isAlive) {
-			cherry = true;
-		}
-		if (elapsedTime > 20) {
-			cherry = false;
-			hundredshow = false;
-		}
-		//eat cherry
-		if (pacman.sprite.getGlobalBounds().intersects(cherrySprite.getGlobalBounds()) && cherry) {
-			cherry = false;
-			eatcherrysound.play();
-			pacman.score += 100;
-			hundredshow = true;
-		}
-		//collision with the ghost.
-		/*if (pacman.sprite.getGlobalBounds().intersects(ghostSprite.getGlobalBounds()) || pacman.sprite.getGlobalBounds().intersects(fireBallSprite.getGlobalBounds())) {
-
-			pacman.isAlive = false;
-			pacman.sprite.setTexture(pacmanDeathTexture);
-			if (pacman.animetion_dead != 11) {
-				pacman.animetion_dead++;
+				move_right(pacman.sprite, pacman.moving_direction);
+				pacman.animation_alive++;
 				pacman.sprite.setScale(1, 1);
-
-				pacman.sprite.setTextureRect(IntRect(18.83 * pacman.animetion_dead, 0, 18.83, player_height));
-				pacman.animetion_dead %= 12;
+				pacman.sprite.setTextureRect(IntRect(player_width * pacman.animation_alive, 0, player_width, player_height));
+				pacman.animation_alive %= 9;
 			}
-		}*/
+			else if (pacman.moving_direction == 2 && pacman.isAlive) {
+				move_left(pacman.sprite, pacman.moving_direction);
+				pacman.animation_alive++;
+				pacman.sprite.setScale(-1, 1);
+				pacman.sprite.setTextureRect(IntRect(player_width * pacman.animation_alive, 0, player_width, player_height));
+				pacman.animation_alive %= 9;
 
-		if (pacman.isAlive == false && pacman.deathSound == false) {
-			deathSound.play();
-			pacman.deathSound = true;
+
+			}
+			else if (pacman.moving_direction == 1 && pacman.isAlive) {
+				move_up(pacman.sprite, pacman.moving_direction);
+				pacman.animation_alive++;
+				pacman.sprite.setScale(1, 1);
+				pacman.sprite.setTextureRect(IntRect(player_width * pacman.animation_alive, player_height, player_width, player_height));
+				pacman.animation_alive %= 9;
+
+			}
+			else if (pacman.moving_direction == 3 && pacman.isAlive) {
+				move_down(pacman.sprite, pacman.moving_direction);
+				pacman.animation_alive++;
+				pacman.sprite.setScale(1, -1);
+				pacman.sprite.setTextureRect(IntRect(player_width * pacman.animation_alive, player_height, player_width, player_height));
+				pacman.animation_alive %= 9;
+
+			}
+
+			//eat dots
+			if (map_[row_pac][col_pac].type == tile_type::score) {
+				if (map_[row_pac][col_pac].cipoint.getGlobalBounds().contains(pacman.sprite.getPosition().x, pacman.sprite.getPosition().y)) {
+					changing_map[row_pac][col_pac] = 2;
+					pacman.score++;
+					//eatsound.play();
+				}
+			}
+
+			//eat powerBall
+			if (map_[row_pac][col_pac].type == tile_type::powerup) {
+				if (map_[row_pac][col_pac].cpowerup.getGlobalBounds().contains(pacman.sprite.getPosition().x, pacman.sprite.getPosition().y)) {
+					changing_map[row_pac][col_pac] = 2;
+					pacman.powerBallBool = true; // for mai ghost
+				}
+			}
+
+			Clock cherry_clock;
+			Clock powerUp_clock;
+
+			if (pacman.powerBallBool = true && powerUp_clock.getElapsedTime().asSeconds() >= 6)
+				pacman.powerBallBool = false;
+
+			//cherry
+			elapsedTime_cherry += cherry_clock.restart().asSeconds();
+			if (elapsedTime_cherry >= 10 && hundredshow == false && pacman.isAlive) {
+				cherry = true;
+			}
+			if (elapsedTime_cherry >= 20) {
+				cherry = false;
+				hundredshow = false;
+			}
+			//eat cherry
+			if (pacman.sprite.getGlobalBounds().intersects(cherrySprite.getGlobalBounds()) && cherry) {
+				cherry = false;
+				eatcherrysound.play();
+				pacman.score += 100;
+				hundredshow = true;
+			}
+
+			//collision with the ghost.
+			/*if (pacman.sprite.getGlobalBounds().intersects(ghostSprite.getGlobalBounds())) {
+
+				pacman.isAlive = false;
+				pacman.sprite.setTexture(pacmanDeathTexture);
+				if (pacman.animetion_dead != 11) {
+					pacman.animetion_dead++;
+					pacman.sprite.setScale(1, 1);
+
+					pacman.sprite.setTextureRect(IntRect(18.83 * pacman.animetion_dead, 0, 18.83, player_height));
+					pacman.animetion_dead %= 12;
+				}
+			}*/
+
+			//update score text
+			stringstream score_manip;
+			score_manip << "score:" << pacman.score;
+			s.setString(score_manip.str());
+
+			Clock play_clock;
+			char x = ':';
+
+			if (play_clock.getElapsedTime().asSeconds() >= 1) {
+				timer_sec++;
+				play_clock.restart();
+				if (timer_sec % 60 == 0) {
+					timer_sec = 0;
+					timer_min++;
+				}
+			}
+			stringstream time_manip;
+			time_manip << "time " << timer_min << x << timer_sec;
+			timer.setString(time_manip.str());
+
+			if (pacman.isAlive == false && pacman.deathSound == false) {
+				deathSound.play();
+				pacman.deathSound = true;
+			}
+
+			//hole 
+			int left_hole = offset_x, right_hole = offset_x + (NUMBERCOLUMNS * TILESIZE) - TILESIZE;
+
+			if (x_pac + TILESIZE / 2 <= left_hole - 1 && pacman.moving_direction == 2) {
+				pacman.sprite.setPosition(right_hole + TILESIZE / 2, y_pac);
+			}
+			if (x_pac - player_width / 2 >= right_hole && pacman.moving_direction == 0) {
+				pacman.sprite.setPosition(left_hole - TILESIZE / 2, y_pac);
+			}
+
 		}
-		//moving
-		float x_pac = pacman.sprite.getPosition().x, y_pac = pacman.sprite.getPosition().y;
-		int row_pac, col_pac;
-		get_tile_cor(x_pac, y_pac, row_pac, col_pac);
-		change_direction(pacman.sprite, pacman.keyPressed, pacman.moving_direction, row, col);
-
-		if (pacman.moving_direction == 0 && pacman.isAlive) {
-
-			move_right(pacman.sprite, pacman.moving_direction);
-			pacman.animation_alive++;
-			pacman.sprite.setScale(1, 1);
-			pacman.sprite.setTextureRect(IntRect(player_width * pacman.animation_alive , 0, player_width, player_height));
-			pacman.animation_alive %= 9;
-		}
-		else if (pacman.moving_direction == 2 && pacman.isAlive) {
-			move_left(pacman.sprite, pacman.moving_direction);
-			pacman.animation_alive++;
-			pacman.sprite.setScale(-1, 1);
-			pacman.sprite.setTextureRect(IntRect(player_width * pacman.animation_alive , 0, player_width, player_height));
-			pacman.animation_alive %= 9;
-
-
-		}
-		else if (pacman.moving_direction == 1 && pacman.isAlive) {
-			move_up(pacman.sprite, pacman.moving_direction);
-			pacman.animation_alive++;
-			pacman.sprite.setScale(1, 1);
-			pacman.sprite.setTextureRect(IntRect(player_width * pacman.animation_alive , player_height , player_width, player_height));
-			pacman.animation_alive %= 9;
-
-		}
-		else if (pacman.moving_direction == 3 && pacman.isAlive) {
-			move_down(pacman.sprite, pacman.moving_direction);
-			pacman.animation_alive++;
-			pacman.sprite.setScale(1, -1);
-			pacman.sprite.setTextureRect(IntRect(player_width * pacman.animation_alive , player_height , player_width, player_height));
-			pacman.animation_alive %= 9;
-
-		}
-
-		//hole
-		int left_hole = offset_x , right_hole = offset_x + (NUMBERCOLUMNS*TILESIZE) - TILESIZE;
-
-		if (x_pac + TILESIZE / 2 <= left_hole - 1 && pacman.moving_direction == 2) {
-			pacman.sprite.setPosition(right_hole + TILESIZE / 2, y_pac);
-		}
-		if (x_pac - player_width / 2 >= right_hole && pacman.moving_direction == 0) {
-			pacman.sprite.setPosition(left_hole - TILESIZE / 2, y_pac);
-		}
-		
 		window.clear();
 
 		for (int i = 0; i < NUMBERROW; i++)
@@ -1142,6 +1198,7 @@ void originalwindow(RenderWindow& window) {
 		}
 
 		window.draw(s);
+		window.draw(timer);
 		window.draw(circle);
 		window.draw(line1);
 		window.draw(line2);
@@ -1166,11 +1223,13 @@ void originalwindow(RenderWindow& window) {
 			line1.setFillColor(Color::White);
 			line2.setFillColor(Color::White);
 		}
+
 		//pacman 
-		window.draw(pacman.sprite);
 		if (cherry)
 			window.draw(cherrySprite);
 
+		window.draw(pacman.sprite);
+		
 		if (hundredshow)
 			window.draw(hundred);
 
@@ -1230,13 +1289,16 @@ void pause(RenderWindow& window) {
 	while (window.isOpen()) {
 		Event event;
 		while (window.pollEvent(event)) {
+
 			if (event.type == Event::Closed) {
 				window.close();
 				break;
 			}
+			//exit
 			else if (event.type == Event::KeyReleased) {
 				if (event.key.code == Keyboard::Escape) {
 					soundclick.play();
+					bool isPaused = false;
 					//NOT HERE BUT WE PUT HERE PAUSE WINDOW.
 					mainmenu(window);
 					return;
@@ -1258,10 +1320,11 @@ void pause(RenderWindow& window) {
 				{
 					sound = false;
 				}
-
+				
 				if (menupause[1].getGlobalBounds().contains(mousePos)) {
 					if (!sound2) {
 						// Play the sound if the mouse just entered the button
+						bool isPaused = false;
 						soundselect.play();
 					}
 					sound2 = true;
@@ -1397,10 +1460,11 @@ void introduction_window(RenderWindow& window)
 			}
 		}
 
-		if (C_x > 731.0f - 132.0f and scaleClock.getElapsedTime().asSeconds() >= 4.6 * 2) {
+		if (C_x > 731.0f - 132.0f and scaleClock.getElapsedTime().asSeconds() >= 1) {
+			Soundpacman.pause();
 			mainmenu(window);
 		}
-
+		
 		if (clock.getElapsedTime().asSeconds() >= 1) {
 
 			clock.restart();
