@@ -21,6 +21,8 @@ const int diff = ((TILESIZE - player_width) / 2);
 //ghost 
 #define speedInPowerUp 1
 #define ghostSpeed 4
+#define ghost_width 38
+#define ghost_height 38
 
 
 enum class direction {
@@ -37,7 +39,7 @@ int changing_map[NUMBERROW][NUMBERCOLUMNS] = {
 	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2},
 	{0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 2},
 	{0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 2},
-	{0, 1, 1, 0, 0, 1, 1, 1, 1, 6, 1, 1, 1, 1, 0, 0, 1, 1, 0, 2},
+	{0, 1, 1, 0, 0, 1, 1, 1, 1, 2, 1, 1, 1, 1, 0, 0, 1, 1, 0, 2},
 	{0, 3, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 3, 0, 2},
 	{0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 2},
 	{0, 1, 0, 0, 0, 0, 0, 0, 2, 0, 2, 0, 0, 0, 0, 0, 0, 1, 0, 2},
@@ -61,7 +63,7 @@ int original_map[NUMBERROW][NUMBERCOLUMNS] = {
 	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2},
 	{0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 2},
 	{0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 2},
-	{0, 1, 1, 0, 0, 1, 1, 1, 1, 6, 1, 1, 1, 1, 0, 0, 1, 1, 0, 2},
+	{0, 1, 1, 0, 0, 1, 1, 1, 1, 2, 1, 1, 1, 1, 0, 0, 1, 1, 0, 2},
 	{0, 3, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 3, 0, 2},
 	{0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 2},
 	{0, 1, 0, 0, 0, 0, 0, 0, 2, 0, 2, 0, 0, 0, 0, 0, 0, 1, 0, 2},
@@ -84,7 +86,6 @@ int original_map[NUMBERROW][NUMBERCOLUMNS] = {
 
 struct tile
 {
-	Sprite cherry;
 	CircleShape cipoint;
 	CircleShape cpowerup;
 	RectangleShape recwall;
@@ -140,9 +141,10 @@ struct Ghosts
 	direction direction;
 	// 0 right , 1 up , 2 left , 3 down
 	int frames;
+	// 0 normal , 1 power up , 2 eyes , 3 end time
 	int animation;
-	// 0 normal , 1 power up , 2 face , 3 end time
 	Sprite sprite;
+
 }ghosts[4];
 // 0 red , 1 pink , 2 orange , 3 blue 
 
@@ -154,7 +156,7 @@ Texture powerup_ghost_texture;
 Texture face_ghost_texture;
 Texture endtime_ghost_texture;
 //cherry
-Texture cherryTexture;
+
 
 void enumDirectionGHOST(Ghosts &ghost) {
 	switch (ghost.moving_direction)
@@ -169,6 +171,81 @@ void enumDirectionGHOST(Ghosts &ghost) {
 		ghost.direction = direction::down;
 	default:
 		break;
+	}
+}
+
+void ghosts_animation(struct Ghosts ghosts[])
+{
+	for (int i = 0; i < 4; i++)
+	{
+
+		if (ghosts[i].animation == 0)
+		{
+			switch (i)
+			{
+			case 0:
+				ghosts[i].sprite.setTexture(red_ghost_texture);
+				break;
+			case 1:
+				ghosts[i].sprite.setTexture(pink_ghost_texture);
+				break;
+			case 2:
+				ghosts[i].sprite.setTexture(orange_ghost_texture);
+				break;
+			case 3:
+				ghosts[i].sprite.setTexture(blue_ghost_texture);
+			}
+			ghosts[i].frames++;
+			ghosts[i].frames %= 2;
+			switch (ghosts[i].moving_direction)
+			{
+			case 0:
+				ghosts[i].sprite.setTextureRect(IntRect(ghost_width * ghosts[i].frames, 0, ghost_width, ghost_height));
+				break;
+			case 1:
+				ghosts[i].sprite.setTextureRect(IntRect(ghost_width * (ghosts[i].frames + 4), 0, ghost_width, ghost_height));
+				break;
+			case 2:
+				ghosts[i].sprite.setTextureRect(IntRect(ghost_width * (ghosts[i].frames + 2), 0, ghost_width, ghost_height));
+				break;
+			case 3:
+				ghosts[i].sprite.setTextureRect(IntRect(ghost_width * (ghosts[i].frames + 6), 0, ghost_width, ghost_height));
+				break;
+			}
+		}
+		else if (ghosts[i].animation == 1)
+		{
+			ghosts[i].sprite.setTexture(powerup_ghost_texture);
+			ghosts[i].frames++;
+			ghosts[i].frames %= 2;
+			ghosts[i].sprite.setTextureRect(IntRect(ghost_width * ghosts[i].frames, 0, ghost_width, ghost_height));
+		}
+		else if (ghosts[i].animation == 2)
+		{
+			ghosts[i].sprite.setTexture(face_ghost_texture);
+			switch (ghosts[i].moving_direction)
+			{
+			case 0:
+				ghosts[i].sprite.setTextureRect(IntRect(0, 0, 40, 30));
+				break;
+			case 1:
+				ghosts[i].sprite.setTextureRect(IntRect(40, 0, 40, 30));
+				break;
+			case 2:
+				ghosts[i].sprite.setTextureRect(IntRect(40 * 2, 0, 40, 30));
+				break;
+			case 3:
+				ghosts[i].sprite.setTextureRect(IntRect(40 * 3, 0, 40, 30));
+				break;
+			}
+		}
+		else if (ghosts[i].animation == 3)
+		{
+			ghosts[i].sprite.setTexture(endtime_ghost_texture);
+			ghosts[i].frames++;
+			ghosts[i].frames %= 4;
+			ghosts[i].sprite.setTextureRect(IntRect(ghost_width * ghosts[i].frames, 0, ghost_width, ghost_height));
+		}
 	}
 }
 
@@ -213,7 +290,7 @@ bool same_tile_vert(Sprite& sprite) {
 
 	return condition_1;
 }
-
+//pacman + ghost
 void move_right(Sprite& sprite, int& lastKeyPressed) {
 	float y = sprite.getPosition().y, x = sprite.getPosition().x;
 	bool condition_1 = false, condition_2 = true;
@@ -319,7 +396,7 @@ void move_down (Sprite& sprite, int& moving_direction) {
 	else
 		if (condition_1 && condition_2) sprite.move(0, baseSpeed), moving_direction = 3;
 }
-
+//pacman
 void change_direction(Sprite& sprite, int& keyPressed, int& moving_direction, int row, int col) {
 
 	//right
@@ -355,6 +432,98 @@ void change_direction(Sprite& sprite, int& keyPressed, int& moving_direction, in
 		}
 	}
 }
+//ghost
+bool check_wall(int& direction, Sprite& ghost)
+{
+	bool can_move = true, condition_1 = false;
+	float x = ghost.getPosition().x, y = ghost.getPosition().y;
+	int row_1, row_2, col_1, col_2;
+	int row, col;
+
+	if (direction == 0)
+	{
+		condition_1 = same_tile_horz(ghost);
+
+		get_tile_cor(x + (ghost_width / 2) + ghostSpeed + 0.0001, y, row, col);
+		if (map_[row][col].type == tile_type::wall || !condition_1)
+			can_move = false;
+	}
+	else if (direction == 1)
+	{
+		
+		condition_1 = same_tile_vert(ghost);
+
+		get_tile_cor(x, y - ghostSpeed - (ghost_height / 2) - 0.001, row, col);
+		if (map_[row][col].type == tile_type::wall || !condition_1)
+			can_move = false;
+	}
+	else if (direction == 2)
+	{
+		condition_1 = same_tile_horz(ghost);
+
+		get_tile_cor(x - ((ghost_width / 2) - 0.001) - ghostSpeed, y, row, col);
+		if (map_[row][col].type == tile_type::wall || !condition_1)
+			can_move = false;
+
+	}
+	else if (direction == 3)
+	{
+		condition_1 = same_tile_vert(ghost);
+
+		get_tile_cor(x, y + ghostSpeed + (ghost_height / 2) + 0.001, row, col);
+		if (map_[row][col].type == tile_type::wall || !condition_1)
+			can_move = false;
+	}
+	return can_move;
+}
+
+void move_random(struct Ghosts ghosts[])
+{
+	srand((int)time(0));
+
+	for (int i = 0; i < 4; i++)
+	{
+		int avaialble_ways = 0;
+		for (int moves = 0; moves < 4; moves++)
+		{
+			if (moves != (2 + ghosts[i].moving_direction) % 4)
+			{
+				if (check_wall(moves, ghosts[i].sprite))
+
+					avaialble_ways++;
+			}
+		}
+
+		int random_direction = rand() % 4;
+		if (avaialble_ways > 0)
+		{
+			while (check_wall(random_direction, ghosts[i].sprite) == 0 || random_direction == (2 + ghosts[i].moving_direction) % 4)
+			{
+				random_direction = rand() % 4;
+			}
+
+			ghosts[i].moving_direction = random_direction;
+		}
+		else
+		{
+			ghosts[i].moving_direction = (2 + ghosts[i].moving_direction) % 4;
+		}
+		if (ghosts[i].moving_direction == 0)
+			ghosts[i].sprite.move(ghostSpeed, 0);
+
+		else  if (ghosts[i].moving_direction == 1)
+			ghosts[i].sprite.move(0, -ghostSpeed);
+
+		else if (ghosts[i].moving_direction == 2)
+			ghosts[i].sprite.move(-ghostSpeed, 0);
+
+		else if (ghosts[i].moving_direction == 3)
+			ghosts[i].sprite.move(0, ghostSpeed);
+	}
+
+
+}
+
 
 int num = 0, num2 = 0;
 bool isPaused = false;
@@ -381,8 +550,10 @@ int main() {
 	powerup_ghost_texture.loadFromFile("pngs/ghosts in power up mode.png");
 	face_ghost_texture.loadFromFile("pngs/Ghost eyes.png");
 	endtime_ghost_texture.loadFromFile("sounds/blue and grey ghosts.png");
-	//cherry 
-	cherryTexture.loadFromFile("pngs/cherry.png");
+	for (int i = 0; i < 4; i++)
+	{
+		ghosts[i].sprite.setOrigin(ghost_width / 2, ghost_height / 2);
+	}
 
 	Image icon;
 	icon.loadFromFile("pngs/cherry.png");
@@ -887,6 +1058,8 @@ void originalwindow(RenderWindow& window) {
 	timer.setPosition(50, 120);
 
 	//cherry
+	Texture cherryTexture;
+	cherryTexture.loadFromFile("pngs/cherry.png");
 	Sprite cherrySprite;
 	cherrySprite.setTexture(cherryTexture);
 	cherrySprite.setOrigin(player_width / 2, player_height / 2);
@@ -916,6 +1089,7 @@ void originalwindow(RenderWindow& window) {
 	bool sound = 0, sound2 = 0;
 	bool gamess = 1;
 	int timer_sec = 0, timer_min = 0;
+	float elapsedTime_cherry = 0;
 
 	gameS.play();
 	Time resettime = seconds(4.0f);
@@ -972,7 +1146,7 @@ void originalwindow(RenderWindow& window) {
 
 		}
 
-		float elapsedTime_cherry = 0;
+		
 
 		SoundBuffer eat;
 		eat.loadFromFile("sounds/eatDots.wav");
@@ -1092,6 +1266,10 @@ void originalwindow(RenderWindow& window) {
 
 			}
 
+			move_random(ghosts);
+
+			ghosts_animation(ghosts);
+
 			//eat dots
 			if (map_[row_pac][col_pac].type == tile_type::score) {
 				if (map_[row_pac][col_pac].cipoint.getGlobalBounds().contains(pacman.sprite.getPosition().x, pacman.sprite.getPosition().y)) {
@@ -1106,6 +1284,24 @@ void originalwindow(RenderWindow& window) {
 				if (map_[row_pac][col_pac].cpowerup.getGlobalBounds().contains(pacman.sprite.getPosition().x, pacman.sprite.getPosition().y)) {
 					changing_map[row_pac][col_pac] = 2;
 					pacman.powerBallBool = true; // for mai ghost
+					for (int i = 0; i < 4; i++)
+					{
+						ghosts[i].animation = 1;
+					}
+				}
+			}
+
+			if (pacman.powerBallBool)
+			{
+				// check if pacman ate a ghost    // check timer ??
+
+				for (int i = 0; i < 4; i++)
+				{
+					if (ghosts[i].animation == 1)
+					{
+						if (pacman.sprite.getGlobalBounds().intersects(ghosts[i].sprite.getGlobalBounds()))
+							ghosts[i].animation = 2;
+					}
 				}
 			}
 
@@ -1116,13 +1312,14 @@ void originalwindow(RenderWindow& window) {
 				pacman.powerBallBool = false;
 
 			//cherry
-			elapsedTime_cherry += cherry_clock.restart().asSeconds();
+			elapsedTime_cherry += cherry_clock.getElapsedTime().asSeconds();
 			if (elapsedTime_cherry >= 10 && hundredshow == false && pacman.isAlive) {
 				cherry = true;
 			}
 			if (elapsedTime_cherry >= 20) {
 				cherry = false;
 				hundredshow = false;
+				cherry_clock.restart();
 			}
 			//eat cherry
 			if (pacman.sprite.getGlobalBounds().intersects(cherrySprite.getGlobalBounds()) && cherry) {
@@ -1162,6 +1359,7 @@ void originalwindow(RenderWindow& window) {
 					timer_min++;
 				}
 			}
+
 			stringstream time_manip;
 			time_manip << "time " << timer_min << x << timer_sec;
 			timer.setString(time_manip.str());
@@ -1227,6 +1425,11 @@ void originalwindow(RenderWindow& window) {
 		//pacman 
 		if (cherry)
 			window.draw(cherrySprite);
+
+		/*for (int i = 0; i < 4; i++)
+		{
+			window.draw(ghosts[i].sprite);
+		}*/
 
 		window.draw(pacman.sprite);
 		
