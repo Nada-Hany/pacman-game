@@ -1,1 +1,1 @@
-#pragma once
+void get_tile_cor(float x, float y, int& row, int& col);
