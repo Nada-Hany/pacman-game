@@ -11,8 +11,8 @@ using namespace sf;
 #define NUMBERCOLUMNS 19
 #define NUMBERROW 22
 #define TILESIZE 40
-#define offset_x 620
-#define offset_y 160
+#define offset_x 580
+#define offset_y 100
 //pacman
 #define player_width 38
 #define player_height 38
@@ -27,7 +27,8 @@ enum class direction {
 //map
 enum class tile_type
 {
-	wall, score, powerup, pacman, ghosts, none, cherry  //Wall=0 ,Point=1 ,Space=2 ,powerup=3 ,Ghosts=4 ,Pacmam=5 ,cherry=6
+	wall, score, powerup, pacman, ghosts, none, cherry
+	//Wall=0 ,Point=1 ,Space=2 ,powerup=3 ,Ghosts=4 ,Pacmam=5 ,cherry=6
 };
 
 int changing_map[NUMBERROW][NUMBERCOLUMNS] = {
@@ -94,14 +95,14 @@ struct tile
 tile map_[NUMBERROW][NUMBERCOLUMNS];
 
 //pacman
-struct PACMAN	 {
+struct PACMAN {
 
 	Sprite sprite;
 	Texture deadPac_texture;
 	Texture alivePac_texture;
 	direction direction;
-	int moving_direction;
-	int keyPressed = 0;
+	int moving_direction = -1;
+	int keyPressed = -1;
 	int animation_alive = 0;
 	int animetion_dead = 0;
 	int score = 0;
@@ -132,6 +133,7 @@ void enumDirectionPACMAN(PACMAN pacman) {
 }
 
 //ghost
+
 //void enumDirectionGHOST(GHOST ghost) {
 //	switch (pacman.moving_direction)
 //	{
@@ -160,7 +162,7 @@ void pause(RenderWindow& window);
 
 //funcs
 void get_tile_cor(float x, float y, int& row, int& col) {
-	x -= offset_x, y -= offset_y;
+	x = x - offset_x, y = y - offset_y;
 	col = (int)x / TILESIZE;
 	row = (int)y / TILESIZE;
 }
@@ -206,27 +208,23 @@ void move_right(Sprite& sprite, int& moving_direction) {
 		if ((col * TILESIZE) - (x + (player_width / 2) + diff) > 0) {
 
 			if (condition_1 && condition_2) {
-				//	sprite.move((col * TILESIZE) - (x - (player_width / 2)), 0);
 				sprite.move(baseSpeed, 0);
-				moving_direction = 1;
+				moving_direction = 0;
 
 			}
 		}
 		else {
 			condition_2 = false;
-
-
 		}
 	}
 	else {
 		if (condition_1 && condition_2) {
 			sprite.move(baseSpeed, 0);
-			moving_direction = 1;
-
+			moving_direction = 0;
 		}
 	}
 }
-void move_left (Sprite& sprite, int& moving_direction) {
+void move_left(Sprite& sprite, int& moving_direction) {
 	float y = sprite.getPosition().y, x = sprite.getPosition().x;
 	bool condition_1 = false, condition_2 = true;
 
@@ -260,7 +258,7 @@ void move_left (Sprite& sprite, int& moving_direction) {
 		}
 	}
 }
-void move_up   (Sprite& sprite, int& moving_direction) {
+void move_up(Sprite& sprite, int& moving_direction) {
 	float y = sprite.getPosition().y, x = sprite.getPosition().x;
 	bool condition_1 = false, condition_2 = true;
 
@@ -279,7 +277,7 @@ void move_up   (Sprite& sprite, int& moving_direction) {
 		if (x, (y - (player_height / 2) - diff) - (row * TILESIZE + TILESIZE) > 0) {
 			//sprite.move(0, -((y - (player_height / 2) - diff) - (row * TILESIZE + TILESIZE)));
 			sprite.move(0, -baseSpeed);
-			moving_direction = 3;
+			moving_direction = 1;
 
 
 		}
@@ -289,13 +287,13 @@ void move_up   (Sprite& sprite, int& moving_direction) {
 	else {
 		if (condition_1 && condition_2) {
 			sprite.move(0, -baseSpeed);
-			moving_direction = 3;
+			moving_direction = 1;
 
 
 		}
 	}
 }
-void move_down (Sprite& sprite, int& moving_direction) {
+void move_down(Sprite& sprite, int& moving_direction) {
 	float y = sprite.getPosition().y, x = sprite.getPosition().x;
 	bool condition_1 = false, condition_2 = true;
 
@@ -313,7 +311,7 @@ void move_down (Sprite& sprite, int& moving_direction) {
 		if ((row * TILESIZE) - (y + (player_height / 2) + diff) > 0) {
 			//	sprite.move(0, (row * TILESIZE) - (y + (player_height / 2) + diff));
 			sprite.move(0, baseSpeed);
-			moving_direction = 4;
+			moving_direction = 3;
 
 
 		}
@@ -324,20 +322,20 @@ void move_down (Sprite& sprite, int& moving_direction) {
 	{
 		if (condition_1 && condition_2) {
 			sprite.move(0, baseSpeed);
-			moving_direction = 4;
+			moving_direction = 3;
 
 
 		}
 	}
 }
 
-void change_direction (Sprite& sprite, int& keyPressed, int& moving_direction, int row, int col) {
+void change_direction(Sprite& sprite, int& keyPressed, int& moving_direction, int row, int col) {
 
 	//right
 	if (keyPressed == 0) {
 		if (same_tile_horz(sprite))
 		{
-			if (map_[row][col + 1].type != tile_type::wall) 
+			if (map_[row][col + 1].type != tile_type::wall)
 				moving_direction = keyPressed;
 		}
 	}
@@ -345,7 +343,7 @@ void change_direction (Sprite& sprite, int& keyPressed, int& moving_direction, i
 	if (keyPressed == 2) {
 		if (same_tile_horz(sprite))
 		{
-			if (map_[row][col - 1].type != tile_type::wall) 
+			if (map_[row][col - 1].type != tile_type::wall)
 				moving_direction = keyPressed;
 		}
 	}
@@ -353,7 +351,7 @@ void change_direction (Sprite& sprite, int& keyPressed, int& moving_direction, i
 	if (keyPressed == 1) {
 		if (same_tile_vert(sprite))
 		{
-			if (map_[row - 1][col].type != tile_type::wall) 
+			if (map_[row - 1][col].type != tile_type::wall)
 				moving_direction = keyPressed;
 		}
 	}
@@ -377,8 +375,8 @@ Texture redghost[4];
 int main() {
 
 	RenderWindow window(VideoMode(1920, 1080), "Main Menu", Style::Fullscreen);
-	pacman.alivePac_texture.loadFromFile("C:/Users/HP/source/repos/test sfml project/test sfml project/paclostcount.png");
-	pacman.alivePac_texture.loadFromFile("C:/Users/HP/source/repos/test sfml project/test sfml project/paclostcount.png");
+	pacman.alivePac_texture.loadFromFile("pngs/alive pacman.png");
+	pacman.deadPac_texture.loadFromFile("pngs/dead pacman.png");
 
 	window.setFramerateLimit(60);
 	while (window.isOpen()) {
@@ -426,7 +424,7 @@ void mainmenu(RenderWindow& window) {
 	spriteredghost3.setPosition(Vector2f(830, 840));
 
 	Font font;
-	font.loadFromFile("fonts/font-crackman.ttf");
+	font.loadFromFile("fonts/CrackMan.ttf");
 
 	//creating an array to put (play,settings,exit)
 	Text mainmenu[3];
@@ -615,19 +613,19 @@ void mainmenu2(RenderWindow& window) {
 
 	//select sound
 	SoundBuffer select;
-	select.loadFromFile("select sound.wav");
+	select.loadFromFile("sounds/select sound.wav");
 	Sound soundselect;
 	soundselect.setBuffer(select);
 
 	//click sound
 	SoundBuffer click;
-	click.loadFromFile("enter sound.wav");
+	click.loadFromFile("sounds/enter sound.wav");
 	Sound soundclick;
 	soundclick.setBuffer(click);
 
 	//background
 	Texture backtextmain;
-	backtextmain.loadFromFile("Ghosts of Pacman(1).jpg");
+	backtextmain.loadFromFile("pngs/background.jpg");
 	Sprite spriteback;
 	spriteback.setTexture(backtextmain);
 	FloatRect backrect = spriteback.getLocalBounds();
@@ -643,7 +641,7 @@ void mainmenu2(RenderWindow& window) {
 	rectangle.setOutlineColor(Color::White);
 
 	Font font;
-	font.loadFromFile("CrackMan.ttf");
+	font.loadFromFile("fonts/CrackMan.ttf");
 
 	Text mainmenu2[3];
 
@@ -825,24 +823,24 @@ void originalwindow(RenderWindow& window) {
 	//prepare the sound
 	//select sound
 	SoundBuffer select;
-	select.loadFromFile("select sound.wav");
+	select.loadFromFile("sounds/select sound.wav");
 	Sound soundselect;
 	soundselect.setBuffer(select);
 
 	//click sound
 	SoundBuffer click;
-	click.loadFromFile("enter sound.wav");
+	click.loadFromFile("sounds/enter sound.wav");
 	Sound soundclick;
 	soundclick.setBuffer(click);
 
 	//game sound
 	SoundBuffer gamesound;
-	gamesound.loadFromFile("Pacman_Introduction_Music-KP-826387403(1).wav");
+	gamesound.loadFromFile("sounds/Pacman_Introduction_Music-KP-826387403(1).wav");
 	Sound gameS;
 	gameS.setBuffer(gamesound);
 
 	Font font;
-	font.loadFromFile("CrackMan.ttf");
+	font.loadFromFile("fonts/CrackMan.ttf");
 	Text s;
 
 	//circle of pause
@@ -942,7 +940,7 @@ void originalwindow(RenderWindow& window) {
 		float elapsedTime = 0;
 
 		pacman.sprite.setTexture(pacman.alivePac_texture);
-		pacman.sprite.setPosition(TILESIZE + TILESIZE / 2, TILESIZE + TILESIZE / 2);
+		pacman.sprite.setPosition(9 * TILESIZE + TILESIZE / 2 + offset_x , 15 * TILESIZE + TILESIZE / 2 + offset_y);
 		pacman.sprite.setOrigin((player_width / 2), (player_height / 2));
 		pacman.sprite.setTextureRect(IntRect(1, 0, player_width, player_height)); //x y w h
 
@@ -965,16 +963,16 @@ void originalwindow(RenderWindow& window) {
 				break;
 			}
 			if (Keyboard::isKeyPressed(Keyboard::Right)) {
-				pacman.keyPressed = 1;
+				pacman.keyPressed = 0;
 			}
 			else if (Keyboard::isKeyPressed(Keyboard::Left)) {
 				pacman.keyPressed = 2;
 			}
 			else if (Keyboard::isKeyPressed(Keyboard::Up)) {
-				pacman.keyPressed = 3;
+				pacman.keyPressed = 1;
 			}
 			else if (Keyboard::isKeyPressed(Keyboard::Down)) {
-				pacman.keyPressed = 4;
+				pacman.keyPressed = 3;
 			}
 			if (event.type == Event::KeyReleased) {
 
@@ -1027,8 +1025,8 @@ void originalwindow(RenderWindow& window) {
 
 		if (map_[row][col].type == tile_type::score) {
 			if (map_[row][col].cipoint.getGlobalBounds().contains(pacman.sprite.getPosition().x, pacman.sprite.getPosition().y)) {
-				changing_map[row][col] = 3;
-				pacman.score += 1;
+				changing_map[row][col] = 2;
+				pacman.score++;
 				//eatsound.play();
 			}
 		}
@@ -1041,7 +1039,7 @@ void originalwindow(RenderWindow& window) {
 		//eat powerBall
 		if (map_[row][col].type == tile_type::powerup) {
 			if (map_[row][col].cpowerup.getGlobalBounds().contains(pacman.sprite.getPosition().x, pacman.sprite.getPosition().y)) {
-				changing_map[row][col] = 3;
+				changing_map[row][col] = 2;
 				pacman.powerBallBool = true; // for mai ghost
 			}
 		}
@@ -1091,7 +1089,12 @@ void originalwindow(RenderWindow& window) {
 			pacman.deathSound = true;
 		}
 		//moving
-		if (pacman.moving_direction == 1 && pacman.isAlive) {
+		float x_pac = pacman.sprite.getPosition().x, y_pac = pacman.sprite.getPosition().y;
+		int row_pac, col_pac;
+		get_tile_cor(x_pac, y_pac, row_pac, col_pac);
+		change_direction(pacman.sprite, pacman.keyPressed, pacman.moving_direction, row, col);
+
+		if (pacman.moving_direction == 0 && pacman.isAlive) {
 
 			move_right(pacman.sprite, pacman.moving_direction);
 			pacman.animation_alive++;
@@ -1108,16 +1111,15 @@ void originalwindow(RenderWindow& window) {
 
 
 		}
-		if (pacman.moving_direction == 3 && pacman.isAlive) {
+		if (pacman.moving_direction == 1 && pacman.isAlive) {
 			move_up(pacman.sprite, pacman.moving_direction);
 			pacman.animation_alive++;
 			pacman.sprite.setScale(1, 1);
 			pacman.sprite.setTextureRect(IntRect(player_width * pacman.animation_alive + 1, player_height + 1, player_width, player_height));
 			pacman.animation_alive %= 6;
 
-
 		}
-		if (pacman.moving_direction == 4 && pacman.isAlive) {
+		if (pacman.moving_direction == 3 && pacman.isAlive) {
 			move_down(pacman.sprite, pacman.moving_direction);
 			pacman.animation_alive++;
 			pacman.sprite.setScale(1, -1);
@@ -1125,101 +1127,11 @@ void originalwindow(RenderWindow& window) {
 			pacman.animation_alive %= 6;
 
 		}
-		if (pacman.keyPressed == 1) {
-			float x = pacman.sprite.getPosition().x, y = pacman.sprite.getPosition().y;
-			int row, col;
-			get_tile_cor(x, y, row, col);
-			if (map_[row][col + 1].type != tile_type::wall) {
-				float y = pacman.sprite.getPosition().y, x = pacman.sprite.getPosition().x;
-				bool condition_1 = false, condition_2 = true;
-
-				int row_1, row_2, col_1, col_2;
-				get_tile_cor(x + (player_width / 2), y - (player_height / 2), row_1, col_1);
-				get_tile_cor(x + (player_width / 2), y + (player_height / 2), row_2, col_2);
-
-				if (row_1 == row_2 && col_1 == col_2)
-				{
-					condition_1 = true;
-
-					pacman.moving_direction = pacman.keyPressed;
-				}
-			}
-		}
-		if (pacman.keyPressed == 2) {
-
-			float x = pacman.sprite.getPosition().x, y = pacman.sprite.getPosition().y;
-			int row, col;
-			get_tile_cor(x, y, row, col);
-
-			if (map_[row][col - 1].type != tile_type::wall) {
-				float y = pacman.sprite.getPosition().y, x = pacman.sprite.getPosition().x;
-				bool condition_1 = false, condition_2 = true;
-
-				int row_1, row_2, col_1, col_2;
-				get_tile_cor(x - (player_width / 2), y - (player_height / 2), row_1, col_1);
-				get_tile_cor(x - (player_width / 2), y + (player_height / 2), row_2, col_2);
-
-				if (row_1 == row_2 && col_1 == col_2) {
-					condition_1 = true;
-					pacman.moving_direction = pacman.keyPressed;
-
-				}
-			}
-		}
-		if (pacman.keyPressed == 3) {
-			float x = pacman.sprite.getPosition().x, y = pacman.sprite.getPosition().y;
-			int row, col;
-			get_tile_cor(x, y, row, col);
-			if (map_[row - 1][col].type != tile_type::wall) {
-				float y = pacman.sprite.getPosition().y, x = pacman.sprite.getPosition().x;
-				bool condition_1 = false, condition_2 = true;
-
-				int row_1, row_2, col_1, col_2;
-				get_tile_cor(x - (player_width / 2), y - (player_height / 2), row_1, col_1);
-				get_tile_cor(x + (player_width / 2), y - (player_height / 2), row_2, col_2);
-
-				if (row_1 == row_2 && col_1 == col_2)
-				{
-					condition_1 = true;
-
-					pacman.moving_direction = pacman.keyPressed;
-				}
-
-
-			}
-		}
-		if (pacman.keyPressed == 4) {
-
-			float x = pacman.sprite.getPosition().x, y = pacman.sprite.getPosition().y;
-			int row, col;
-			get_tile_cor(x, y, row, col);
-
-			if (map_[row + 1][col].type != tile_type::wall) {
-				float y = pacman.sprite.getPosition().y, x = pacman.sprite.getPosition().x;
-				bool condition_1 = false, condition_2 = true;
-
-				int row_1, row_2, col_1, col_2;
-				get_tile_cor(x - (player_width / 2), y + (player_height / 2), row_1, col_1);
-				get_tile_cor(x + (player_width / 2), y + (player_height / 2), row_2, col_2);
-
-				if (row_1 == row_2 && col_1 == col_2) {
-					condition_1 = true;
-
-					pacman.moving_direction = pacman.keyPressed;
-				}
-
-
-
-			}
-		}
-
-
-
-
 		//hole
 		float x_hole = pacman.sprite.getPosition().x, y_hole = pacman.sprite.getPosition().y;
 		int row_hole, col_hole;
 		get_tile_cor(x_hole, y_hole, row_hole, col_hole);
+
 		/*	if ((x_hole + (TILESIZE / 2)) < 0) {
 				pacman.sprite.setPosition(WIDTH, y_hole);
 			}
@@ -1231,8 +1143,8 @@ void originalwindow(RenderWindow& window) {
 
 			}*/
 
-
 		window.clear();
+
 		for (int i = 0; i < NUMBERROW; i++)
 		{
 			for (int j = 0; j < NUMBERCOLUMNS; j++)
@@ -1245,6 +1157,7 @@ void originalwindow(RenderWindow& window) {
 					window.draw(map_[i][j].cpowerup);
 			}
 		}
+
 		window.draw(s);
 		window.draw(circle);
 		window.draw(line1);
@@ -1252,7 +1165,7 @@ void originalwindow(RenderWindow& window) {
 
 		Mouse mouse;
 
-		if (line1.getGlobalBounds().contains(mouse.getPosition(window).x, mouse.getPosition(window).y) || line2.getGlobalBounds().contains(mouse.getPosition(window).x, mouse.getPosition(window).y)) {
+		if (circle.getGlobalBounds().contains(mouse.getPosition(window).x, mouse.getPosition(window).y)) {
 
 			line1.setFillColor(Color::Red);
 			line2.setFillColor(Color::Red);
@@ -1302,7 +1215,7 @@ void pause(RenderWindow& window) {
 	soundclick.setBuffer(click);
 
 	Font font;
-	font.loadFromFile("CrackMan.ttf");
+	font.loadFromFile("fonts/CrackMan.ttf");
 
 	Text menupause[2];
 
@@ -1354,14 +1267,12 @@ void pause(RenderWindow& window) {
 						// Play the sound if the mouse just entered the button
 						soundselect.play();
 					}
-
 					sound = true;
 				}
 				else
 				{
 					sound = false;
 				}
-
 
 				if (menupause[1].getGlobalBounds().contains(mousePos)) {
 					if (!sound2) {
@@ -1417,14 +1328,14 @@ void pause(RenderWindow& window) {
 void selected2(Text arr2[3], RenderWindow& window) {
 
 	//small ghosts
-	redghost[0].loadFromFile("yellow ghost.png");
+	redghost[0].loadFromFile("pngs/yellow ghost.png");
 	Sprite spriteredghost;
 	spriteredghost.setTexture(redghost[0]);
 	FloatRect redghostrect = spriteredghost.getLocalBounds();
 	spriteredghost.setOrigin(redghostrect.left + redghostrect.width / 2.0f, redghostrect.top + redghostrect.height / 2.0f);
 	spriteredghost.setPosition(Vector2f(830, 680));
 
-	redghost[2].loadFromFile("blue ghost.png");
+	redghost[2].loadFromFile("pngs/blue ghost.png");
 	Sprite spriteredghost2;
 	spriteredghost2.setTexture(redghost[2]);
 	FloatRect redghostrect2 = spriteredghost2.getLocalBounds();
