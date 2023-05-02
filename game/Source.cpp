@@ -138,13 +138,13 @@ void enumDirectionPACMAN(PACMAN &pacman) {
 //	switch (pacman.moving_direction)
 //	{
 //	case 0:
-//		ghost.direction == direction::right;
+//		ghost.direction = direction::right;
 //	case 1:
-//		ghost.direction == direction::up;
+//		ghost.direction = direction::up;
 //	case 2:
-//		ghost.direction == direction::left;
+//		ghost.direction = direction::left;
 //	case 3:
-//		ghost.direction == direction::down;
+//		ghost.direction = direction::down;
 //	default:
 //		break;
 //	}
@@ -159,6 +159,7 @@ void mainmenu2(RenderWindow& window);
 void Easy(RenderWindow& window);
 void originalwindow(RenderWindow& window);
 void pause(RenderWindow& window);
+void introduction_window(RenderWindow& window);
 
 //funcs
 void get_tile_cor(float x, float y, int& row, int& col) {
@@ -346,14 +347,18 @@ int main() {
 	pacman.alivePac_texture.loadFromFile("pngs/alive pacman2-20.png");
 	pacman.deadPac_texture.loadFromFile("pngs/dead pacman.png");
 
+	Image icon;
+	icon.loadFromFile("pngs/cherry.png");
+	window.setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr());
+
 	window.setFramerateLimit(40 );
 	while (window.isOpen()) {
 		if (num == 0) {
-			mainmenu(window);
+			introduction_window(window);
 		}
-		if (num == 1) {
+	/*	if (num == 1) {
 			play(window);
-		}
+		}*/
 	}
 	return 0;
 }
@@ -1343,4 +1348,82 @@ void selected2(Text arr2[3], RenderWindow& window) {
 			}
 		}
 	}
+}
+
+void introduction_window(RenderWindow& window)
+{
+	Texture texturePAC_MAN;
+	texturePAC_MAN.loadFromFile("graphics/PAC-MAN.png");
+	Sprite spritePAC_MAN;
+	spritePAC_MAN.setTexture(texturePAC_MAN);
+
+	Texture texturePA_MAN;
+	texturePA_MAN.loadFromFile("graphics/PA_-MAN.png");
+	Sprite spritePA_MAN;
+	spritePA_MAN.setTexture(texturePA_MAN);
+
+	Texture textureC;
+	textureC.loadFromFile("graphics/__C-___.png");
+	Sprite spriteC;
+	spriteC.setTexture(textureC);
+	float C_x = (-132.0f - 57.0f) * 2;
+	spriteC.setPosition(C_x, 0.0f);
+
+	Texture textureCclosed;
+	textureCclosed.loadFromFile("graphics/__C-___closed.png");
+	Sprite spriteCclosed;
+	spriteCclosed.setTexture(textureCclosed);
+	float Cclosed_x = (-132.0f) * 2;
+	spriteCclosed.setPosition(Cclosed_x, 0.0f);
+
+	SoundBuffer buffer;
+	buffer.loadFromFile("sound/pacman.wav");
+	Sound Soundpacman;
+	Soundpacman.setBuffer(buffer);
+	Soundpacman.play();
+
+	Clock clock;
+	Clock scaleClock;
+
+	while (window.isOpen())
+	{
+
+		Event event;
+		while (window.pollEvent(event))
+		{
+			if (event.type == Event::Closed || Keyboard::isKeyPressed(Keyboard::Key::Escape))
+			{
+				window.close();
+			}
+		}
+
+		if (C_x > 731.0f - 132.0f and scaleClock.getElapsedTime().asSeconds() >= 4.6 * 2) {
+			mainmenu(window);
+		}
+
+		if (clock.getElapsedTime().asSeconds() >= 1) {
+
+			clock.restart();
+			if (C_x < 731.0f - 132.0f) {
+				C_x += 132.0f * 2;
+			}
+			if (Cclosed_x < 731.0f - 132.0f * 2) {
+				Cclosed_x += 132.0f * 2;
+			}
+			spriteC.setPosition(C_x, 0.0f);
+			spriteCclosed.setPosition(Cclosed_x, 0.0f);
+		}
+
+		window.clear();
+
+		// draw the scene
+		if (clock.getElapsedTime().asSeconds() <= 0.5 && C_x < 731.0f - 132.0f)
+			window.draw(spriteC);
+		else if (clock.getElapsedTime().asSeconds() >= 0.5 && C_x < 731.0f - 132.0f)
+			window.draw(spriteCclosed);
+		else window.draw(spritePAC_MAN);
+
+		window.display();
+	}
+
 }
