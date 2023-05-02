@@ -159,6 +159,8 @@ void mainmenu2(RenderWindow& window);
 void Easy(RenderWindow& window);
 void originalwindow(RenderWindow& window);
 void pause(RenderWindow& window);
+void introduction_window(RenderWindow& window);
+
 
 //funcs
 void get_tile_cor(float x, float y, int& row, int& col) {
@@ -381,7 +383,7 @@ int main() {
 	window.setFramerateLimit(60);
 	while (window.isOpen()) {
 		if (num == 0) {
-			mainmenu(window);
+			introduction_window(window);
 		}
 		if (num == 1) {
 			play(window);
@@ -1363,4 +1365,82 @@ void selected2(Text arr2[3], RenderWindow& window) {
 			}
 		}
 	}
+}
+
+void introduction_window(RenderWindow& window)
+{
+	Texture texturePAC_MAN;
+	texturePAC_MAN.loadFromFile("graphics/PAC-MAN.png");
+	Sprite spritePAC_MAN;
+	spritePAC_MAN.setTexture(texturePAC_MAN);
+
+	Texture texturePA_MAN;
+	texturePA_MAN.loadFromFile("graphics/PA_-MAN.png");
+	Sprite spritePA_MAN;
+	spritePA_MAN.setTexture(texturePA_MAN);
+
+	Texture textureC;
+	textureC.loadFromFile("graphics/__C-___.png");
+	Sprite spriteC;
+	spriteC.setTexture(textureC);
+	float C_x = (-132.0f - 57.0f) * 2;
+	spriteC.setPosition(C_x, 0.0f);
+
+	Texture textureCclosed;
+	textureCclosed.loadFromFile("graphics/__C-___closed.png");
+	Sprite spriteCclosed;
+	spriteCclosed.setTexture(textureCclosed);
+	float Cclosed_x = (-132.0f) * 2;
+	spriteCclosed.setPosition(Cclosed_x, 0.0f);
+
+	SoundBuffer buffer;
+	buffer.loadFromFile("sound/pacman.wav");
+	Sound Soundpacman;
+	Soundpacman.setBuffer(buffer);
+	Soundpacman.play();
+
+	Clock clock;
+	Clock scaleClock;
+
+	while (window.isOpen())
+	{
+
+		Event event;
+		while (window.pollEvent(event))
+		{
+			if (event.type == Event::Closed || Keyboard::isKeyPressed(Keyboard::Key::Escape))
+			{
+				window.close();
+			}
+		}
+
+		if (C_x > 731.0f - 132.0f and scaleClock.getElapsedTime().asSeconds() >= 4.6 * 2) {
+			mainmenu(window);
+		}
+
+		if (clock.getElapsedTime().asSeconds() >= 1) {
+
+			clock.restart();
+			if (C_x < 731.0f - 132.0f) {
+				C_x += 132.0f * 2;
+			}
+			if (Cclosed_x < 731.0f - 132.0f * 2) {
+				Cclosed_x += 132.0f * 2;
+			}
+			spriteC.setPosition(C_x, 0.0f);
+			spriteCclosed.setPosition(Cclosed_x, 0.0f);
+		}
+
+		window.clear();
+
+		// draw the scene
+		if (clock.getElapsedTime().asSeconds() <= 0.5 && C_x < 731.0f - 132.0f)
+			window.draw(spriteC);
+		else if (clock.getElapsedTime().asSeconds() >= 0.5 && C_x < 731.0f - 132.0f)
+			window.draw(spriteCclosed);
+		else window.draw(spritePAC_MAN);
+
+		window.display();
+	}
+
 }
