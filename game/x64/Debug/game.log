@@ -1,25 +1,9 @@
-<<<<<<< HEAD
-﻿  LINK : C:\VS Projects\My-GitHub\pacman-game\x64\Debug\game.exe not found or not built by the last incremental link; performing full link
-  game.vcxproj -> C:\VS Projects\My-GitHub\pacman-game\x64\Debug\game.exe
-=======
 ﻿  Source.cpp
-C:\programming\cpp\pacman\game\Source.cpp(125,20): warning C4553: '==': result of expression not used; did you intend '='?
-C:\programming\cpp\pacman\game\Source.cpp(127,20): warning C4553: '==': result of expression not used; did you intend '='?
-C:\programming\cpp\pacman\game\Source.cpp(129,20): warning C4553: '==': result of expression not used; did you intend '='?
-C:\programming\cpp\pacman\game\Source.cpp(131,20): warning C4553: '==': result of expression not used; did you intend '='?
-C:\programming\cpp\pacman\game\Source.cpp(302,50): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-C:\programming\cpp\pacman\game\Source.cpp(333,52): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-C:\programming\cpp\pacman\game\Source.cpp(363,54): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-C:\programming\cpp\pacman\game\Source.cpp(385,54): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-C:\programming\cpp\pacman\game\Source.cpp(447,51): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-C:\programming\cpp\pacman\game\Source.cpp(456,55): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-C:\programming\cpp\pacman\game\Source.cpp(464,48): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-C:\programming\cpp\pacman\game\Source.cpp(473,55): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-C:\programming\cpp\pacman\game\Source.cpp(440,27): warning C4101: 'col_2': unreferenced local variable
-C:\programming\cpp\pacman\game\Source.cpp(440,20): warning C4101: 'col_1': unreferenced local variable
-C:\programming\cpp\pacman\game\Source.cpp(440,6): warning C4101: 'row_1': unreferenced local variable
-C:\programming\cpp\pacman\game\Source.cpp(440,13): warning C4101: 'row_2': unreferenced local variable
-C:\programming\cpp\pacman\game\Source.cpp(729,100): warning C4244: 'argument': conversion from 'T' to 'T', possible loss of data
+C:\programming\cpp\pacman\game\Source.cpp(236,50): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\programming\cpp\pacman\game\Source.cpp(267,52): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\programming\cpp\pacman\game\Source.cpp(297,54): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\programming\cpp\pacman\game\Source.cpp(319,54): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\programming\cpp\pacman\game\Source.cpp(568,100): warning C4244: 'argument': conversion from 'T' to 'T', possible loss of data
           with
           [
               T=int
@@ -28,7 +12,7 @@ C:\programming\cpp\pacman\game\Source.cpp(729,100): warning C4244: 'argument': c
           [
               T=float
           ]
-C:\programming\cpp\pacman\game\Source.cpp(729,71): warning C4244: 'argument': conversion from 'T' to 'T', possible loss of data
+C:\programming\cpp\pacman\game\Source.cpp(568,71): warning C4244: 'argument': conversion from 'T' to 'T', possible loss of data
           with
           [
               T=int
@@ -37,7 +21,7 @@ C:\programming\cpp\pacman\game\Source.cpp(729,71): warning C4244: 'argument': co
           [
               T=float
           ]
-C:\programming\cpp\pacman\game\Source.cpp(756,95): warning C4244: 'argument': conversion from 'T' to 'T', possible loss of data
+C:\programming\cpp\pacman\game\Source.cpp(595,95): warning C4244: 'argument': conversion from 'T' to 'T', possible loss of data
           with
           [
               T=int
@@ -46,7 +30,7 @@ C:\programming\cpp\pacman\game\Source.cpp(756,95): warning C4244: 'argument': co
           [
               T=float
           ]
-C:\programming\cpp\pacman\game\Source.cpp(756,66): warning C4244: 'argument': conversion from 'T' to 'T', possible loss of data
+C:\programming\cpp\pacman\game\Source.cpp(595,66): warning C4244: 'argument': conversion from 'T' to 'T', possible loss of data
           with
           [
               T=int
@@ -55,7 +39,7 @@ C:\programming\cpp\pacman\game\Source.cpp(756,66): warning C4244: 'argument': co
           [
               T=float
           ]
-C:\programming\cpp\pacman\game\Source.cpp(933,101): warning C4244: 'argument': conversion from 'T' to 'T', possible loss of data
+C:\programming\cpp\pacman\game\Source.cpp(772,101): warning C4244: 'argument': conversion from 'T' to 'T', possible loss of data
           with
           [
               T=int
@@ -64,7 +48,7 @@ C:\programming\cpp\pacman\game\Source.cpp(933,101): warning C4244: 'argument': c
           [
               T=float
           ]
-C:\programming\cpp\pacman\game\Source.cpp(933,72): warning C4244: 'argument': conversion from 'T' to 'T', possible loss of data
+C:\programming\cpp\pacman\game\Source.cpp(772,72): warning C4244: 'argument': conversion from 'T' to 'T', possible loss of data
           with
           [
               T=int
@@ -73,7 +57,7 @@ C:\programming\cpp\pacman\game\Source.cpp(933,72): warning C4244: 'argument': co
           [
               T=float
           ]
-C:\programming\cpp\pacman\game\Source.cpp(948,101): warning C4244: 'argument': conversion from 'T' to 'T', possible loss of data
+C:\programming\cpp\pacman\game\Source.cpp(787,101): warning C4244: 'argument': conversion from 'T' to 'T', possible loss of data
           with
           [
               T=int
@@ -82,7 +66,7 @@ C:\programming\cpp\pacman\game\Source.cpp(948,101): warning C4244: 'argument': c
           [
               T=float
           ]
-C:\programming\cpp\pacman\game\Source.cpp(948,72): warning C4244: 'argument': conversion from 'T' to 'T', possible loss of data
+C:\programming\cpp\pacman\game\Source.cpp(787,72): warning C4244: 'argument': conversion from 'T' to 'T', possible loss of data
           with
           [
               T=int
@@ -91,7 +75,7 @@ C:\programming\cpp\pacman\game\Source.cpp(948,72): warning C4244: 'argument': co
           [
               T=float
           ]
-C:\programming\cpp\pacman\game\Source.cpp(961,103): warning C4244: 'argument': conversion from 'T' to 'T', possible loss of data
+C:\programming\cpp\pacman\game\Source.cpp(800,103): warning C4244: 'argument': conversion from 'T' to 'T', possible loss of data
           with
           [
               T=int
@@ -100,7 +84,7 @@ C:\programming\cpp\pacman\game\Source.cpp(961,103): warning C4244: 'argument': c
           [
               T=float
           ]
-C:\programming\cpp\pacman\game\Source.cpp(961,74): warning C4244: 'argument': conversion from 'T' to 'T', possible loss of data
+C:\programming\cpp\pacman\game\Source.cpp(800,74): warning C4244: 'argument': conversion from 'T' to 'T', possible loss of data
           with
           [
               T=int
@@ -109,21 +93,21 @@ C:\programming\cpp\pacman\game\Source.cpp(961,74): warning C4244: 'argument': co
           [
               T=float
           ]
-C:\programming\cpp\pacman\game\Source.cpp(1108,75): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-C:\programming\cpp\pacman\game\Source.cpp(1108,50): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-C:\programming\cpp\pacman\game\Source.cpp(1115,75): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-C:\programming\cpp\pacman\game\Source.cpp(1115,50): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-C:\programming\cpp\pacman\game\Source.cpp(1120,109): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-C:\programming\cpp\pacman\game\Source.cpp(1120,67): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-C:\programming\cpp\pacman\game\Source.cpp(1127,75): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-C:\programming\cpp\pacman\game\Source.cpp(1127,50): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-C:\programming\cpp\pacman\game\Source.cpp(1134,75): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-C:\programming\cpp\pacman\game\Source.cpp(1134,50): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-C:\programming\cpp\pacman\game\Source.cpp(1139,110): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-C:\programming\cpp\pacman\game\Source.cpp(1139,68): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-C:\programming\cpp\pacman\game\Source.cpp(1376,42): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-C:\programming\cpp\pacman\game\Source.cpp(1379,41): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-C:\programming\cpp\pacman\game\Source.cpp(1406,95): warning C4244: 'argument': conversion from 'T' to 'T', possible loss of data
+C:\programming\cpp\pacman\game\Source.cpp(944,75): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\programming\cpp\pacman\game\Source.cpp(944,50): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\programming\cpp\pacman\game\Source.cpp(951,75): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\programming\cpp\pacman\game\Source.cpp(951,50): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\programming\cpp\pacman\game\Source.cpp(956,109): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\programming\cpp\pacman\game\Source.cpp(956,67): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\programming\cpp\pacman\game\Source.cpp(963,75): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\programming\cpp\pacman\game\Source.cpp(963,50): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\programming\cpp\pacman\game\Source.cpp(970,75): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\programming\cpp\pacman\game\Source.cpp(970,50): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\programming\cpp\pacman\game\Source.cpp(975,110): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\programming\cpp\pacman\game\Source.cpp(975,68): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\programming\cpp\pacman\game\Source.cpp(1194,42): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\programming\cpp\pacman\game\Source.cpp(1197,41): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\programming\cpp\pacman\game\Source.cpp(1224,96): warning C4244: 'argument': conversion from 'T' to 'T', possible loss of data
           with
           [
               T=int
@@ -132,7 +116,7 @@ C:\programming\cpp\pacman\game\Source.cpp(1406,95): warning C4244: 'argument': c
           [
               T=float
           ]
-C:\programming\cpp\pacman\game\Source.cpp(1406,66): warning C4244: 'argument': conversion from 'T' to 'T', possible loss of data
+C:\programming\cpp\pacman\game\Source.cpp(1224,67): warning C4244: 'argument': conversion from 'T' to 'T', possible loss of data
           with
           [
               T=int
@@ -141,7 +125,7 @@ C:\programming\cpp\pacman\game\Source.cpp(1406,66): warning C4244: 'argument': c
           [
               T=float
           ]
-C:\programming\cpp\pacman\game\Source.cpp(1541,101): warning C4244: 'argument': conversion from 'T' to 'T', possible loss of data
+C:\programming\cpp\pacman\game\Source.cpp(1360,101): warning C4244: 'argument': conversion from 'T' to 'T', possible loss of data
           with
           [
               T=int
@@ -150,7 +134,7 @@ C:\programming\cpp\pacman\game\Source.cpp(1541,101): warning C4244: 'argument': 
           [
               T=float
           ]
-C:\programming\cpp\pacman\game\Source.cpp(1541,72): warning C4244: 'argument': conversion from 'T' to 'T', possible loss of data
+C:\programming\cpp\pacman\game\Source.cpp(1360,72): warning C4244: 'argument': conversion from 'T' to 'T', possible loss of data
           with
           [
               T=int
@@ -159,7 +143,7 @@ C:\programming\cpp\pacman\game\Source.cpp(1541,72): warning C4244: 'argument': c
           [
               T=float
           ]
-C:\programming\cpp\pacman\game\Source.cpp(1554,101): warning C4244: 'argument': conversion from 'T' to 'T', possible loss of data
+C:\programming\cpp\pacman\game\Source.cpp(1373,101): warning C4244: 'argument': conversion from 'T' to 'T', possible loss of data
           with
           [
               T=int
@@ -168,7 +152,7 @@ C:\programming\cpp\pacman\game\Source.cpp(1554,101): warning C4244: 'argument': 
           [
               T=float
           ]
-C:\programming\cpp\pacman\game\Source.cpp(1554,72): warning C4244: 'argument': conversion from 'T' to 'T', possible loss of data
+C:\programming\cpp\pacman\game\Source.cpp(1373,72): warning C4244: 'argument': conversion from 'T' to 'T', possible loss of data
           with
           [
               T=int
@@ -177,7 +161,7 @@ C:\programming\cpp\pacman\game\Source.cpp(1554,72): warning C4244: 'argument': c
           [
               T=float
           ]
-C:\programming\cpp\pacman\game\Source.cpp(1594,96): warning C4244: 'argument': conversion from 'T' to 'T', possible loss of data
+C:\programming\cpp\pacman\game\Source.cpp(1413,96): warning C4244: 'argument': conversion from 'T' to 'T', possible loss of data
           with
           [
               T=int
@@ -186,7 +170,7 @@ C:\programming\cpp\pacman\game\Source.cpp(1594,96): warning C4244: 'argument': c
           [
               T=float
           ]
-C:\programming\cpp\pacman\game\Source.cpp(1594,67): warning C4244: 'argument': conversion from 'T' to 'T', possible loss of data
+C:\programming\cpp\pacman\game\Source.cpp(1413,67): warning C4244: 'argument': conversion from 'T' to 'T', possible loss of data
           with
           [
               T=int
@@ -196,4 +180,3 @@ C:\programming\cpp\pacman\game\Source.cpp(1594,67): warning C4244: 'argument': c
               T=float
           ]
   game.vcxproj -> C:\programming\cpp\pacman\x64\Debug\game.exe
->>>>>>> 92d34d26527203f5f413ae6c1da27f871ad58674

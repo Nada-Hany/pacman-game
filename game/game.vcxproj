@@ -109,7 +109,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\programming\cpp\pacman\game\include;C:\programming\cpp\pacman\game\include\SFML</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\programming\cpp\pacman\game\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
