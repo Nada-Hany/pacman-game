@@ -1,3 +1,7 @@
+<<<<<<< HEAD
+﻿  LINK : C:\VS Projects\My-GitHub\pacman-game\x64\Debug\game.exe not found or not built by the last incremental link; performing full link
+  game.vcxproj -> C:\VS Projects\My-GitHub\pacman-game\x64\Debug\game.exe
+=======
 ﻿  Source.cpp
 C:\programming\cpp\pacman\game\Source.cpp(125,20): warning C4553: '==': result of expression not used; did you intend '='?
 C:\programming\cpp\pacman\game\Source.cpp(127,20): warning C4553: '==': result of expression not used; did you intend '='?
@@ -192,3 +196,4 @@ C:\programming\cpp\pacman\game\Source.cpp(1594,67): warning C4244: 'argument': c
               T=float
           ]
   game.vcxproj -> C:\programming\cpp\pacman\x64\Debug\game.exe
+>>>>>>> 92d34d26527203f5f413ae6c1da27f871ad58674

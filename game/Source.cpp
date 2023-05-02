@@ -118,7 +118,7 @@ struct PACMAN {
 	bool powerBallBool = false;
 
 }pacman;
-void enumDirectionPACMAN(PACMAN &pacman) {
+void enumDirectionPACMAN(PACMAN& pacman) {
 	switch (pacman.moving_direction)
 	{
 	case 0:
@@ -158,7 +158,7 @@ Texture endtime_ghost_texture;
 //cherry
 
 
-void enumDirectionGHOST(Ghosts &ghost) {
+void enumDirectionGHOST(Ghosts& ghost) {
 	switch (ghost.moving_direction)
 	{
 	case 0:
@@ -321,7 +321,7 @@ void move_right(Sprite& sprite, int& lastKeyPressed) {
 		}
 	}
 }
-void move_left (Sprite& sprite, int& moving_direction) {
+void move_left(Sprite& sprite, int& moving_direction) {
 	float y = sprite.getPosition().y, x = sprite.getPosition().x;
 	bool condition_1 = false, condition_2 = true;
 
@@ -352,7 +352,7 @@ void move_left (Sprite& sprite, int& moving_direction) {
 		}
 	}
 }
-void move_up   (Sprite& sprite, int& moving_direction) {
+void move_up(Sprite& sprite, int& moving_direction) {
 	float y = sprite.getPosition().y, x = sprite.getPosition().x;
 	bool condition_1 = false, condition_2 = true;
 
@@ -374,7 +374,7 @@ void move_up   (Sprite& sprite, int& moving_direction) {
 		if (condition_1 && condition_2)
 			sprite.move(0, -baseSpeed), moving_direction = 1;
 }
-void move_down (Sprite& sprite, int& moving_direction) {
+void move_down(Sprite& sprite, int& moving_direction) {
 	float y = sprite.getPosition().y, x = sprite.getPosition().x;
 	bool condition_1 = false, condition_2 = true;
 
@@ -450,7 +450,7 @@ bool check_wall(int& direction, Sprite& ghost)
 	}
 	else if (direction == 1)
 	{
-		
+
 		condition_1 = same_tile_vert(ghost);
 
 		get_tile_cor(x, y - ghostSpeed - (ghost_height / 2) - 0.001, row, col);
@@ -1146,7 +1146,7 @@ void originalwindow(RenderWindow& window) {
 
 		}
 
-		
+
 
 		SoundBuffer eat;
 		eat.loadFromFile("sounds/eatDots.wav");
@@ -1224,7 +1224,7 @@ void originalwindow(RenderWindow& window) {
 
 		}
 
-		if(!isPaused)
+		if (!isPaused)
 		{
 			//moving
 			float x_pac = pacman.sprite.getPosition().x, y_pac = pacman.sprite.getPosition().y;
@@ -1432,11 +1432,11 @@ void originalwindow(RenderWindow& window) {
 		}*/
 
 		window.draw(pacman.sprite);
-		
+
 		if (hundredshow)
 			window.draw(hundred);
 
-		if (!pacman.isAlive) 
+		if (!pacman.isAlive)
 			sf::sleep(sf::seconds(pacman.delay));
 
 		window.draw(rect_right);
@@ -1523,7 +1523,7 @@ void pause(RenderWindow& window) {
 				{
 					sound = false;
 				}
-				
+
 				if (menupause[1].getGlobalBounds().contains(mousePos)) {
 					if (!sound2) {
 						// Play the sound if the mouse just entered the button
@@ -1667,7 +1667,7 @@ void introduction_window(RenderWindow& window)
 			Soundpacman.pause();
 			mainmenu(window);
 		}
-		
+
 		if (clock.getElapsedTime().asSeconds() >= 1) {
 
 			clock.restart();
