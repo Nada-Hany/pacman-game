@@ -2,7 +2,7 @@
 <Project>
   <ProjectOutputs>
     <ProjectOutput>
-      <FullPath>C:\programming\cpp\pacman\x64\Debug\game.exe</FullPath>
+      <FullPath>C:\VS Projects\My-GitHub\pacman-game\x64\Debug\game.exe</FullPath>
     </ProjectOutput>
   </ProjectOutputs>
   <ContentFiles />
