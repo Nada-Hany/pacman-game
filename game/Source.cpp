@@ -1,7 +1,7 @@
 #include <SFML/Graphics.hpp>
 #include<SFML/Audio.hpp>
 #include<sstream>
-#include "functions.h"
+// #include "functions.h"
 #include <map>
 #include <algorithm>
 #include <fstream>
@@ -20,10 +20,12 @@ using namespace sf;
 #define player_width 38
 #define player_height 38
 const int diff = ((TILESIZE - player_width) / 2);
-#define baseSpeed 2
+#define baseSpeed 4
 //ghost 
 #define speedInPowerUp 1
 #define ghostSpeed 4
+#define ghost_width 38
+#define ghost_height 38
 
 
 enum class direction {
@@ -119,8 +121,6 @@ Texture blue_ghost_texture;
 Texture powerup_ghost_texture;
 Texture face_ghost_texture;
 Texture endtime_ghost_texture;
-//cherry
-Texture cherryTexture;
 
 void enumDirectionGHOST(Ghosts& ghost) {
 	switch (ghost.moving_direction)
@@ -321,7 +321,11 @@ void change_direction(Sprite& sprite, int& keyPressed, int& moving_direction, in
 	}
 }
 
-int num = 0, num2 = 0;
+void ghosts_animation(struct Ghosts ghosts[]);
+bool check_wall(int& direction, Sprite& ghost);
+
+
+int num = 3, num2 = 0;
 bool isPaused = false;
 
 //small ghosts of mainmenu
@@ -339,24 +343,13 @@ int main() {
 	pacman.sprite.setPosition(9 * TILESIZE + TILESIZE / 2 + offset_x, 15 * TILESIZE + TILESIZE / 2 + offset_y);
 	pacman.sprite.setTextureRect(IntRect(0, 0, player_width, player_height)); //x y w h
 
-	//ghosts
-	red_ghost_texture.loadFromFile("pngs/red ghost sprite.png");
-	pink_ghost_texture.loadFromFile("pngs/pink ghost sprite.png");
-	orange_ghost_texture.loadFromFile("pngs/orange ghost sprite.png");
-	blue_ghost_texture.loadFromFile("pngs/cyan ghost sprite.png");
-	powerup_ghost_texture.loadFromFile("pngs/ghosts in power up mode.png");
-	face_ghost_texture.loadFromFile("pngs/Ghost eyes.png");
-	endtime_ghost_texture.loadFromFile("sounds/blue and grey ghosts.png");
-	//cherry 
-	cherryTexture.loadFromFile("pngs/cherry.png");
-
 	Image icon;
 	icon.loadFromFile("pngs/cherry.png");
 	window.setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr());
 
-	window.setFramerateLimit(50);
+	window.setFramerateLimit(60);
 	while (window.isOpen()) {
-		if (num == 0) {
+		if (num == 3) {
 			introduction_window(window);
 		}
 		if (num == 1) {
@@ -425,9 +418,9 @@ void mainmenu(RenderWindow& window) {
 	FloatRect textrect1 = mainmenu[1].getLocalBounds();
 	FloatRect textrect2 = mainmenu[2].getLocalBounds();
 
-	mainmenu[0].setOrigin(textrect.left + textrect.width / 2.0f, textrect.top + textrect.height / 2.0f);
-	mainmenu[1].setOrigin(textrect1.left + textrect1.width / 2.0f, textrect1.top + textrect1.height / 2.0f);
-	mainmenu[2].setOrigin(textrect2.left + textrect2.width / 2.0f, textrect2.top + textrect2.height / 2.0f);
+	mainmenu[0].setOrigin(textrect.left  + textrect.width  / 2.0f, textrect.top  + textrect.height / 2.0f);
+	mainmenu[1].setOrigin(textrect1.left + textrect1.width / 2.0f, textrect1.top + textrect1.height/ 2.0f);
+	mainmenu[2].setOrigin(textrect2.left + textrect2.width / 2.0f, textrect2.top + textrect2.height/ 2.0f);
 
 	mainmenu[0].setPosition(Vector2f(1920 / 2, 680));
 	mainmenu[1].setPosition(Vector2f(1920 / 2, 760));
@@ -486,6 +479,7 @@ void mainmenu(RenderWindow& window) {
 					sound2 = false;
 				}
 			}
+			// 0 -> play ,, 1 -> highscore ,, 2 -> exit
 			else if (event.type == Event::MouseButtonPressed) {
 				Vector2f mousePos = window.mapPixelToCoords(Mouse::getPosition(window));
 				if (mainmenu[0].getGlobalBounds().contains(mousePos)) {
@@ -816,6 +810,18 @@ void originalwindow(RenderWindow& window) {
 	Sound gameS;
 	gameS.setBuffer(gamesound);
 
+	SoundBuffer eat;
+	eat.loadFromFile("sounds/eatDots.wav");
+	Sound eatsound(eat);
+
+	SoundBuffer eatCherry;
+	eatCherry.loadFromFile("sounds/pacman_eatfruit.wav");
+	Sound eatcherrysound(eatCherry);
+
+	SoundBuffer death;
+	death.loadFromFile("sounds/pacman death.wav");
+	Sound deathSound(death);
+
 	Font font;
 	font.loadFromFile("fonts/CrackMan.ttf");
 	Text s;
@@ -854,19 +860,26 @@ void originalwindow(RenderWindow& window) {
 	timer.setPosition(50, 120);
 
 	//cherry
+	Texture cherryTexture;
+	cherryTexture.loadFromFile("pngs/cherry.png");
 	Sprite cherrySprite;
 	cherrySprite.setTexture(cherryTexture);
 	cherrySprite.setOrigin(player_width / 2, player_height / 2);
-	cherrySprite.setPosition(9 * TILESIZE + TILESIZE / 2 + offset_x, 3 * TILESIZE + TILESIZE / 2 + offset_y);
+	float cherry_x = 9 * TILESIZE + TILESIZE / 2 + offset_x;
+	float cherry_y = 3 * TILESIZE + TILESIZE / 2 + offset_y;
+	cherrySprite.setPosition(cherry_x, cherry_y);
 	bool cherry = false;
 
+	//afterEdit
+	Font numberFont;
+	numberFont.loadFromFile("fonts/Joystix.ttf");
 	bool hundredshow = false;
 	Text hundred;
-	hundred.setFont(font);
+	hundred.setFont(numberFont);
 	hundred.setString("100");
-	hundred.setCharacterSize(8);
+	hundred.setCharacterSize(16);
 	hundred.setFillColor(Color::Yellow);
-	hundred.setPosition(130, 130);
+	hundred.setPosition(cherry_x, cherry_y);
 	hundred.setOrigin((player_width / 2), (player_height / 2));
 
 	//hole
@@ -879,13 +892,26 @@ void originalwindow(RenderWindow& window) {
 	rect_left.setFillColor(Color::Black);
 	rect_left.setPosition(offset_x - rect_left.getSize().x, offset_y + 11 * TILESIZE);
 
-	//pacman
+	//GHOSTS	
+	// 0 red , 1 pink , 2 orange , 3 blue 
+	
+	red_ghost_texture.loadFromFile("pngs/red ghost sprite.png");
+	pink_ghost_texture.loadFromFile("pngs/pink ghost sprite.png");
+	orange_ghost_texture.loadFromFile("pngs/orange ghost sprite.png");
+	blue_ghost_texture.loadFromFile("pngs/blue ghost sprite.png");
+	powerup_ghost_texture.loadFromFile("pngs/ghosts in power up mode.png");
+	face_ghost_texture.loadFromFile("pngs/Ghost eyes.png");
+	endtime_ghost_texture.loadFromFile("pngs/blue and grey ghosts.png");
+	
 	bool sound = 0, sound2 = 0;
 	bool gamess = 1;
 	int timer_sec = 0, timer_min = 0;
+	float elapsedTime_cherry = 0;
 
 	gameS.play();
 	Time resettime = seconds(4.0f);
+	Clock clock;
+	Clock play_clock;
 
 	while (window.isOpen()) {
 
@@ -939,19 +965,6 @@ void originalwindow(RenderWindow& window) {
 
 		}
 
-		float elapsedTime_cherry = 0;
-
-		SoundBuffer eat;
-		eat.loadFromFile("sounds/eatDots.wav");
-		Sound eatsound(eat);
-
-		SoundBuffer eatCherry;
-		eatCherry.loadFromFile("sounds/pacman_eatfruit.wav");
-		Sound eatcherrysound(eatCherry);
-
-		SoundBuffer death;
-		death.loadFromFile("sounds/pacman death.wav");
-		Sound deathSound(death);
 
 		Event event;
 		while (window.pollEvent(event)) {
@@ -1222,13 +1235,13 @@ void pause(RenderWindow& window) {
 	//prepare the sound
 	//select sound
 	SoundBuffer select;
-	select.loadFromFile("select sound.wav");
+	select.loadFromFile("sounds/select sound.wav");
 	Sound soundselect;
 	soundselect.setBuffer(select);
 
 	//click sound
 	SoundBuffer click;
-	click.loadFromFile("enter sound.wav");
+	click.loadFromFile("sounds/enter sound.wav");
 	Sound soundclick;
 	soundclick.setBuffer(click);
 
@@ -1391,24 +1404,24 @@ void selected2(Text arr2[3], RenderWindow& window) {
 void introduction_window(RenderWindow& window)
 {
 	Texture texturePAC_MAN;
-	texturePAC_MAN.loadFromFile("graphics/PAC-MAN.png");
+	texturePAC_MAN.loadFromFile("pngs/PAC-MAN.png");
 	Sprite spritePAC_MAN;
 	spritePAC_MAN.setTexture(texturePAC_MAN);
 
 	Texture texturePA_MAN;
-	texturePA_MAN.loadFromFile("graphics/PA_-MAN.png");
+	texturePA_MAN.loadFromFile("pngs/PA_-MAN.png");
 	Sprite spritePA_MAN;
 	spritePA_MAN.setTexture(texturePA_MAN);
 
 	Texture textureC;
-	textureC.loadFromFile("graphics/__C-___.png");
+	textureC.loadFromFile("pngs/__C-___.png");
 	Sprite spriteC;
 	spriteC.setTexture(textureC);
 	float C_x = (-132.0f - 57.0f) * 2;
 	spriteC.setPosition(C_x, 0.0f);
 
 	Texture textureCclosed;
-	textureCclosed.loadFromFile("graphics/__C-___closed.png");
+	textureCclosed.loadFromFile("pngs/__C-___closed.png");
 	Sprite spriteCclosed;
 	spriteCclosed.setTexture(textureCclosed);
 	float Cclosed_x = (-132.0f) * 2;
@@ -1475,7 +1488,7 @@ void introduction_window(RenderWindow& window)
 // to Know who is playing our game and honoring him
 void UsernameWindow(RenderWindow& window) {
 	Texture usernameTexture;
-	usernameTexture.loadFromFile("graphics/username.png");
+	usernameTexture.loadFromFile("pngs/username.png");
 	Sprite usernameSprite;
 	usernameSprite.setTexture(usernameTexture);
 
@@ -1504,6 +1517,7 @@ void UsernameWindow(RenderWindow& window) {
 			if (Keyboard::isKeyPressed(Keyboard::Enter)) {
 				mainmenu(window);
 			}
+
 
 			// enter your username
 			if (event.type == Event::TextEntered) {
