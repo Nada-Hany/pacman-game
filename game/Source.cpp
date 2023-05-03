@@ -9,14 +9,6 @@
 using namespace std;
 using namespace sf;
 
-// our small data base
-string username;
-map<string, int> Users;
-void SaveHighScores();
-void SaveNewScore(int score);
-void LoadHighScores();
-void UsernameWindow(RenderWindow& window);
-
 //map
 #define ll long long
 #define NUMBERCOLUMNS 20
@@ -44,54 +36,17 @@ enum class tile_type
 	//Wall=0 ,Point=1 ,Space=2 ,powerup=3 ,Ghosts=4 ,Pacmam=5 ,cherry=6
 };
 
-int changing_map[NUMBERROW][NUMBERCOLUMNS] = {
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2},
-	{0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 2},
-	{0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 2},
-	{0, 1, 1, 0, 0, 1, 1, 1, 1, 6, 1, 1, 1, 1, 0, 0, 1, 1, 0, 2},
-	{0, 3, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 3, 0, 2},
-	{0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 2},
-	{0, 1, 0, 0, 0, 0, 0, 0, 2, 0, 2, 0, 0, 0, 0, 0, 0, 1, 0, 2},
-	{0, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 0, 2},
-	{0, 1, 0, 0, 1, 0, 1, 0, 0, 2, 0, 0, 1, 0, 1, 0, 0, 1, 0, 2},
-	{0, 1, 0, 1, 1, 0, 1, 0, 2, 2, 2, 0, 1, 0, 1, 1, 0, 1, 0, 2},
-	{0, 1, 0, 0, 1, 0, 1, 0, 2, 2, 2, 0, 1, 0, 1, 0, 0, 1, 0, 2},
-	{2, 2, 2, 2, 2, 2, 1, 0, 0, 0, 0, 0, 1, 2, 2, 2, 2, 2, 2, 2},
-	{0, 1, 0, 0, 1, 0, 1, 1, 2, 2, 2, 1, 1, 0, 1, 0, 0, 1, 0, 2},
-	{0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 0, 2},
-	{0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 2},
-	{0, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 0, 2},
-	{0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 2},
-	{0, 3, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 3, 0, 2},
-	{0, 1, 0, 1, 0, 1, 0, 0, 1, 1, 1, 0, 0, 1, 0, 1, 0, 1, 0, 2},
-	{0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 2},
-	{0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 2},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2},
-};
-int original_map[NUMBERROW][NUMBERCOLUMNS] = {
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2},
-	{0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 2},
-	{0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 2},
-	{0, 1, 1, 0, 0, 1, 1, 1, 1, 6, 1, 1, 1, 1, 0, 0, 1, 1, 0, 2},
-	{0, 3, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 3, 0, 2},
-	{0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 2},
-	{0, 1, 0, 0, 0, 0, 0, 0, 2, 0, 2, 0, 0, 0, 0, 0, 0, 1, 0, 2},
-	{0, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 0, 2},
-	{0, 1, 0, 0, 1, 0, 1, 0, 0, 2, 0, 0, 1, 0, 1, 0, 0, 1, 0, 2},
-	{0, 1, 0, 1, 1, 0, 1, 0, 2, 2, 2, 0, 1, 0, 1, 1, 0, 1, 0, 2},
-	{0, 1, 0, 0, 1, 0, 1, 0, 2, 2, 2, 0, 1, 0, 1, 0, 0, 1, 0, 2},
-	{2, 2, 2, 2, 2, 2, 1, 0, 0, 0, 0, 0, 1, 2, 2, 2, 2, 2, 2, 2},
-	{0, 1, 0, 0, 1, 0, 1, 1, 2, 2, 2, 1, 1, 0, 1, 0, 0, 1, 0, 2},
-	{0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 0, 2},
-	{0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 2},
-	{0, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 0, 2},
-	{0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 2},
-	{0, 3, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 3, 0, 2},
-	{0, 1, 0, 1, 0, 1, 0, 0, 1, 1, 1, 0, 0, 1, 0, 1, 0, 1, 0, 2},
-	{0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 2},
-	{0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 2},
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2},
-};
+// our small data base
+string username;
+map<string, int> Users;
+void SaveHighScores();
+void SaveNewScore(int score);
+void LoadHighScores();
+void UsernameWindow(RenderWindow& window);
+template <size_t ROW, size_t COL>
+void LoadEasyMap(int (&map)[ROW][COL]);
+
+int changing_map[NUMBERROW][NUMBERCOLUMNS];
 
 struct tile
 {
@@ -128,7 +83,7 @@ struct PACMAN {
 	bool powerBallBool = false;
 
 }pacman;
-void enumDirectionPACMAN(PACMAN &pacman) {
+void enumDirectionPACMAN(PACMAN& pacman) {
 	switch (pacman.moving_direction)
 	{
 	case 0:
@@ -167,7 +122,7 @@ Texture endtime_ghost_texture;
 //cherry
 Texture cherryTexture;
 
-void enumDirectionGHOST(Ghosts &ghost) {
+void enumDirectionGHOST(Ghosts& ghost) {
 	switch (ghost.moving_direction)
 	{
 	case 0:
@@ -255,7 +210,7 @@ void move_right(Sprite& sprite, int& lastKeyPressed) {
 		}
 	}
 }
-void move_left (Sprite& sprite, int& moving_direction) {
+void move_left(Sprite& sprite, int& moving_direction) {
 	float y = sprite.getPosition().y, x = sprite.getPosition().x;
 	bool condition_1 = false, condition_2 = true;
 
@@ -286,7 +241,7 @@ void move_left (Sprite& sprite, int& moving_direction) {
 		}
 	}
 }
-void move_up   (Sprite& sprite, int& moving_direction) {
+void move_up(Sprite& sprite, int& moving_direction) {
 	float y = sprite.getPosition().y, x = sprite.getPosition().x;
 	bool condition_1 = false, condition_2 = true;
 
@@ -308,7 +263,7 @@ void move_up   (Sprite& sprite, int& moving_direction) {
 		if (condition_1 && condition_2)
 			sprite.move(0, -baseSpeed), moving_direction = 1;
 }
-void move_down (Sprite& sprite, int& moving_direction) {
+void move_down(Sprite& sprite, int& moving_direction) {
 	float y = sprite.getPosition().y, x = sprite.getPosition().x;
 	bool condition_1 = false, condition_2 = true;
 
@@ -330,7 +285,6 @@ void move_down (Sprite& sprite, int& moving_direction) {
 	else
 		if (condition_1 && condition_2) sprite.move(0, baseSpeed), moving_direction = 3;
 }
-
 void change_direction(Sprite& sprite, int& keyPressed, int& moving_direction, int row, int col) {
 
 	//right
@@ -376,6 +330,7 @@ Texture redghost[4];
 int main() {
 
 	RenderWindow window(VideoMode(1920, 1080), "Main Menu", Style::Fullscreen);
+
 	//pacman
 	pacman.alivePac_texture.loadFromFile("pngs/alive pacman2-20.png");
 	pacman.deadPac_texture.loadFromFile("pngs/dead pacman.png");
@@ -588,47 +543,6 @@ void mainmenu(RenderWindow& window) {
 	}
 }
 
-//change color of button when selected
-int selected(Text arr[3], RenderWindow& window) {
-
-	Mouse mouse;
-	for (int i = 0; i < 3; i++) {
-		if (arr[i].getGlobalBounds().contains(mouse.getPosition(window).x, mouse.getPosition(window).y)) {
-
-			arr[i].setFillColor(Color::Red);
-
-			if (Mouse::isButtonPressed(Mouse::Left)) {
-				arr[i].setFillColor(Color::White);
-				return i + 1;
-			}
-		}
-
-		else {
-			arr[i].setFillColor(Color::White);
-		}
-	}
-	return 0;
-
-}
-
-//window of (play) then EASY MEDIUM HARD
-void play(RenderWindow& window) {
-
-	while (window.isOpen()) {
-		Event event;
-		while (window.pollEvent(event)) {
-			if (event.type == Event::Closed) {
-				window.close();
-				break;
-			}
-		}
-		window.clear();
-		mainmenu2(window);
-		window.display();
-	}
-
-}
-
 //2nd mainmenu includes -->>> easy medium hard
 void mainmenu2(RenderWindow& window) {
 
@@ -715,6 +629,7 @@ void mainmenu2(RenderWindow& window) {
 				Vector2f mousePos = window.mapPixelToCoords(Mouse::getPosition(window));
 				if (mainmenu2[0].getGlobalBounds().contains(mousePos)) {
 					soundclick.play();
+					LoadEasyMap(changing_map);
 					originalwindow(window);
 				}
 			}
@@ -813,6 +728,47 @@ void mainmenu2(RenderWindow& window) {
 		}
 		window.display();
 	}
+}
+
+//change color of button when selected
+int selected(Text arr[3], RenderWindow& window) {
+
+	Mouse mouse;
+	for (int i = 0; i < 3; i++) {
+		if (arr[i].getGlobalBounds().contains(mouse.getPosition(window).x, mouse.getPosition(window).y)) {
+
+			arr[i].setFillColor(Color::Red);
+
+			if (Mouse::isButtonPressed(Mouse::Left)) {
+				arr[i].setFillColor(Color::White);
+				return i + 1;
+			}
+		}
+
+		else {
+			arr[i].setFillColor(Color::White);
+		}
+	}
+	return 0;
+
+}
+
+//window of (play) then EASY MEDIUM HARD
+void play(RenderWindow& window) {
+
+	while (window.isOpen()) {
+		Event event;
+		while (window.pollEvent(event)) {
+			if (event.type == Event::Closed) {
+				window.close();
+				break;
+			}
+		}
+		window.clear();
+		mainmenu2(window);
+		window.display();
+	}
+
 }
 
 //easy button then original window of the game
@@ -1071,78 +1027,134 @@ void originalwindow(RenderWindow& window) {
 
 			if (pacman.moving_direction == 0 && pacman.isAlive) {
 
-				//eat powerBall
-				if (map_[row_pac][col_pac].type == tile_type::powerup) {
-					if (map_[row_pac][col_pac].cpowerup.getGlobalBounds().contains(pacman.sprite.getPosition().x, pacman.sprite.getPosition().y)) {
-						changing_map[row_pac][col_pac] = 2;
-						pacman.powerBallBool = true; // for mai ghost
-					}
-				}
-				//eat cherry
+				move_right(pacman.sprite, pacman.moving_direction);
+				pacman.animation_alive++;
+				pacman.sprite.setScale(1, 1);
+				pacman.sprite.setTextureRect(IntRect(player_width * pacman.animation_alive, 0, player_width, player_height));
+				pacman.animation_alive %= 9;
+			}
+			else if (pacman.moving_direction == 2 && pacman.isAlive) {
+				move_left(pacman.sprite, pacman.moving_direction);
+				pacman.animation_alive++;
+				pacman.sprite.setScale(-1, 1);
+				pacman.sprite.setTextureRect(IntRect(player_width * pacman.animation_alive, 0, player_width, player_height));
+				pacman.animation_alive %= 9;
 
-				if (pacman.sprite.getGlobalBounds().intersects(cherrySprite.getGlobalBounds()) && cherry == true) {
-					cherry = false;
-					eatcherrysound.play();
-					pacman.score += 100;
-					hundredshow = true;
-				}
-
-				Clock clock;
-
-				//cherry
-				elapsedTime_cherry += clock.restart().asSeconds();
-				if (elapsedTime_cherry > 10 && hundredshow == false && pacman.isAlive) {
-					cherry = true;
-				}
-				if (elapsedTime_cherry > 20) {
-					cherry = false;
-					hundredshow = false;
-				}
-				//eat cherry
-				if (pacman.sprite.getGlobalBounds().intersects(cherrySprite.getGlobalBounds()) && cherry) {
-					cherry = false;
-					eatcherrysound.play();
-					pacman.score += 100;
-					hundredshow = true;
-				}
-
-
-				//update score text
-				stringstream score_manip;
-				score_manip << "score:" << pacman.score;
-				s.setString(score_manip.str());
-
-				Clock play_clock;
-				char x = ':';
-
-				if (play_clock.getElapsedTime().asSeconds() >= 1) {
-					timer_sec++;
-					play_clock.restart();
-					if (timer_sec % 60 == 0) {
-						timer_sec = 0;
-						timer_min++;
-					}
-				}
-				stringstream time_manip;
-				time_manip << "time " << timer_min << x << timer_sec;
-				timer.setString(time_manip.str());
-
-				if (pacman.isAlive == false && pacman.deathSound == false) {
-					deathSound.play();
-					pacman.deathSound = true;
-				}
-
-				//hole 
-				int left_hole = offset_x, right_hole = offset_x + (NUMBERCOLUMNS * TILESIZE) - TILESIZE;
-
-				if (x_pac + TILESIZE / 2 <= left_hole - 1 && pacman.moving_direction == 2) {
-					pacman.sprite.setPosition(right_hole + TILESIZE / 2, y_pac);
-				}
-				if (x_pac - player_width / 2 >= right_hole && pacman.moving_direction == 0) {
-					pacman.sprite.setPosition(left_hole - TILESIZE / 2, y_pac);
-				}
 
 			}
+			else if (pacman.moving_direction == 1 && pacman.isAlive) {
+				move_up(pacman.sprite, pacman.moving_direction);
+				pacman.animation_alive++;
+				pacman.sprite.setScale(1, 1);
+				pacman.sprite.setTextureRect(IntRect(player_width * pacman.animation_alive, player_height, player_width, player_height));
+				pacman.animation_alive %= 9;
+
+			}
+			else if (pacman.moving_direction == 3 && pacman.isAlive) {
+				move_down(pacman.sprite, pacman.moving_direction);
+				pacman.animation_alive++;
+				pacman.sprite.setScale(1, -1);
+				pacman.sprite.setTextureRect(IntRect(player_width * pacman.animation_alive, player_height, player_width, player_height));
+				pacman.animation_alive %= 9;
+
+			}
+
+			//eat dots
+			if (map_[row_pac][col_pac].type == tile_type::score) {
+				if (map_[row_pac][col_pac].cipoint.getGlobalBounds().contains(pacman.sprite.getPosition().x, pacman.sprite.getPosition().y))
+				{
+					changing_map[row_pac][col_pac] = 2;
+					pacman.score++;
+					//eatsound.play();
+				}
+			}
+			//eat powerBall
+			if (map_[row_pac][col_pac].type == tile_type::powerup) {
+				if (map_[row_pac][col_pac].cpowerup.getGlobalBounds().contains(pacman.sprite.getPosition().x, pacman.sprite.getPosition().y)) {
+					changing_map[row_pac][col_pac] = 2;
+					pacman.powerBallBool = true; // for mai ghost
+					for (int i = 0; i < 4; i++)
+						ghosts[i].animation = 1;
+				}
+			}
+
+			if (pacman.powerBallBool)
+			{
+				// check if pacman ate a ghost    // check timer ??
+
+				for (int i = 0; i < 4; i++)
+				{
+					if (ghosts[i].animation == 1)
+					{
+						if (pacman.sprite.getGlobalBounds().intersects(ghosts[i].sprite.getGlobalBounds()))
+							ghosts[i].animation = 2;
+					}
+				}
+			}
+			//eat cherry
+
+			if (pacman.sprite.getGlobalBounds().intersects(cherrySprite.getGlobalBounds()) && cherry == true) {
+				cherry = false;
+				eatcherrysound.play();
+				pacman.score += 100;
+				hundredshow = true;
+			}
+
+			Clock clock;
+
+			//cherry
+			elapsedTime_cherry += clock.restart().asSeconds();
+			if (elapsedTime_cherry > 10 && hundredshow == false && pacman.isAlive) {
+				cherry = true;
+			}
+			if (elapsedTime_cherry > 20) {
+				cherry = false;
+				hundredshow = false;
+			}
+			//eat cherry
+			if (pacman.sprite.getGlobalBounds().intersects(cherrySprite.getGlobalBounds()) && cherry) {
+				cherry = false;
+				eatcherrysound.play();
+				pacman.score += 100;
+				hundredshow = true;
+			}
+
+			//update score text
+			stringstream score_manip;
+			score_manip << "score:" << pacman.score;
+			s.setString(score_manip.str());
+
+			Clock play_clock;
+			char x = ':';
+
+			if (play_clock.getElapsedTime().asSeconds() >= 1) {
+				timer_sec++;
+				play_clock.restart();
+				if (timer_sec % 60 == 0) {
+					timer_sec = 0;
+					timer_min++;
+				}
+			}
+			stringstream time_manip;
+			time_manip << "time " << timer_min << x << timer_sec;
+			timer.setString(time_manip.str());
+
+			if (pacman.isAlive == false && pacman.deathSound == false) {
+				deathSound.play();
+				pacman.deathSound = true;
+			}
+
+			//hole 
+			int left_hole = offset_x, right_hole = offset_x + (NUMBERCOLUMNS * TILESIZE) - TILESIZE;
+
+			if (x_pac + TILESIZE / 2 <= left_hole - 1 && pacman.moving_direction == 2) {
+				pacman.sprite.setPosition(right_hole + TILESIZE / 2, y_pac);
+			}
+			if (x_pac - player_width / 2 >= right_hole && pacman.moving_direction == 0) {
+				pacman.sprite.setPosition(left_hole - TILESIZE / 2, y_pac);
+			}
+
+
 			window.clear();
 
 			for (int i = 0; i < NUMBERROW; i++)
@@ -1282,7 +1294,7 @@ void pause(RenderWindow& window) {
 				{
 					sound = false;
 				}
-				
+
 				if (menupause[1].getGlobalBounds().contains(mousePos)) {
 					if (!sound2) {
 						// Play the sound if the mouse just entered the button
@@ -1403,7 +1415,7 @@ void introduction_window(RenderWindow& window)
 	spriteCclosed.setPosition(Cclosed_x, 0.0f);
 
 	SoundBuffer buffer;
-	buffer.loadFromFile("sound/pacman.wav");
+	buffer.loadFromFile("sounds/Pacman_Introduction_Music-KP-826387403(1).wav");
 	Sound Soundpacman;
 	Soundpacman.setBuffer(buffer);
 	Soundpacman.setLoop(true);
@@ -1422,39 +1434,40 @@ void introduction_window(RenderWindow& window)
 			{
 				window.close();
 			}
+			else if (Keyboard::isKeyPressed(Keyboard::Key::Space)) {
+				Soundpacman.pause();
+				UsernameWindow(window);
+			}
 		}
 
 		if (C_x > 731.0f - 132.0f and scaleClock.getElapsedTime().asSeconds() >= 6) {
+			Soundpacman.pause();
 			UsernameWindow(window);
-			if (C_x > 731.0f - 132.0f and scaleClock.getElapsedTime().asSeconds() >= 1) {
-				Soundpacman.pause();
-				mainmenu(window);
-			}
-
-			if (clock.getElapsedTime().asSeconds() >= 1) {
-
-				clock.restart();
-				if (C_x < 731.0f - 132.0f) {
-					C_x += 132.0f * 2;
-				}
-				if (Cclosed_x < 731.0f - 132.0f * 2) {
-					Cclosed_x += 132.0f * 2;
-				}
-				spriteC.setPosition(C_x, 0.0f);
-				spriteCclosed.setPosition(Cclosed_x, 0.0f);
-			}
-
-			window.clear();
-
-			// draw the scene
-			if (clock.getElapsedTime().asSeconds() <= 0.5 && C_x < 731.0f - 132.0f)
-				window.draw(spriteC);
-			else if (clock.getElapsedTime().asSeconds() >= 0.5 && C_x < 731.0f - 132.0f)
-				window.draw(spriteCclosed);
-			else window.draw(spritePAC_MAN);
-
-			window.display();
 		}
+
+		if (clock.getElapsedTime().asSeconds() >= 1) {
+
+			clock.restart();
+			if (C_x < 731.0f - 132.0f) {
+				C_x += 132.0f * 2;
+			}
+			if (Cclosed_x < (731.0f - 132.0f) * 2) {
+				Cclosed_x += 132.0f * 2;
+			}
+			spriteC.setPosition(C_x, 0.0f);
+			spriteCclosed.setPosition(Cclosed_x, 0.0f);
+		}
+
+		window.clear();
+
+		// draw the scene
+		if (clock.getElapsedTime().asSeconds() <= 0.5 && C_x < 731.0f - 132.0f)
+			window.draw(spriteC);
+		else if (clock.getElapsedTime().asSeconds() >= 0.5 && C_x < 731.0f - 132.0f)
+			window.draw(spriteCclosed);
+		else window.draw(spritePAC_MAN);
+
+		window.display();
 
 	}
 }
@@ -1482,7 +1495,7 @@ void UsernameWindow(RenderWindow& window) {
 		Event event;
 		while (window.pollEvent(event)) {
 			//please don't escape )':
-			if (event.type == Event::Closed || event.key.code == Keyboard::Escape) {
+			if (event.type == Event::Closed || event.key.code == Keyboard::Key::Escape) {
 				// suppose to make ******************AreYouSure()***************
 				window.close();
 			}
@@ -1498,7 +1511,7 @@ void UsernameWindow(RenderWindow& window) {
 					if (event.text.unicode == 8 and username.size() > 0) {
 						username.erase(username.size() - 1);
 					}
-					else if (!(event.text.unicode == 8 || event.text.unicode == Keyboard::Escape)) {
+					else if (!(event.text.unicode == 8 || event.text.unicode == Keyboard::Key::Escape)) {
 						username += static_cast<char>(event.text.unicode);
 					}
 					text.setString(username);
@@ -1507,7 +1520,6 @@ void UsernameWindow(RenderWindow& window) {
 					text.setPosition(960.0f, 580.0f);
 				}
 			}
-
 		}
 
 		window.clear(sf::Color::White);
@@ -1556,4 +1568,21 @@ void SaveHighScores() {
 
 	saveUsernames.close();
 	saveScores.close();
+}
+
+// Loading easy map
+template <size_t ROW, size_t COL>
+void LoadEasyMap(int (&map)[ROW][COL]) {
+	// open the data file to load the map
+	ifstream LoadMap("data/Easy_Map.txt");
+
+	// adding the map to our game
+	for (int i = 0; i < NUMBERROW; i++) {
+		for (int j = 0; j < NUMBERCOLUMNS; j++) {
+			LoadMap >> map[i][j];
+		}
+	}
+	
+	// closing the file
+	LoadMap.close();
 }
