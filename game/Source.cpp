@@ -20,7 +20,7 @@ using namespace sf;
 #define player_width 38
 #define player_height 38
 const int diff = ((TILESIZE - player_width) / 2);
-#define baseSpeed 2
+#define baseSpeed 2.5
 //ghost 
 #define speedInPowerUp 1
 #define ghostSpeed 4
@@ -326,6 +326,7 @@ bool check_wall(int& direction, Sprite& ghost);
 
 int num = 3, num2 = 0;
 bool isPaused = false, sec3_timer = false;
+int timer_sec = 0, timer_min = 0;
 
 //small ghosts of mainmenu
 Texture redghost[4];
@@ -825,7 +826,12 @@ void originalwindow(RenderWindow& window) {
 	Font font;
 	font.loadFromFile("fonts/CrackMan.ttf");
 	Text s;
-	Text timer;
+	Text timer, sec3_text;
+	sec3_text.setCharacterSize(30);
+	sec3_text.setFont(font);
+	FloatRect sec3_floatrect = sec3_text.getGlobalBounds();
+	sec3_text.setOrigin(sec3_floatrect.left + sec3_floatrect.width / 2.0f, sec3_floatrect.top + sec3_floatrect.height / 2.0f);
+	sec3_text.setPosition(1920 / 2, 1080 / 2);
 
 	//circle of pause
 	CircleShape circle(50, 50);
@@ -905,13 +911,12 @@ void originalwindow(RenderWindow& window) {
 
 	bool sound = 0, sound2 = 0;
 	bool gamess = 1;
-	int timer_sec = 0, timer_min = 0;
+	int timer_3seconds = 1;
 	float elapsedTime_cherry = 0;
 
 	gameS.play();
 	Time resettime = seconds(4.0f);
-	Clock clock;
-	Clock play_clock;
+	Clock clock_cherry, play_clock, sec3_clock;
 
 
 	while (window.isOpen()) {
@@ -925,14 +930,12 @@ void originalwindow(RenderWindow& window) {
 				{
 					map_[i][j].type = tile_type::none;
 					map_[i][j].recwall.setSize(Vector2f(TILESIZE, TILESIZE));
-					map_[i][j].recwall.setPosition(j * TILESIZE + offset_x, i * TILESIZE + offset_y);
 					map_[i][j].recwall.setFillColor(Color::Black);
 				}
-				if (changing_map[i][j] == 1)
+				else if (changing_map[i][j] == 1)
 				{
 					map_[i][j].type = tile_type::score; ;
 					map_[i][j].recwall.setSize(Vector2f(TILESIZE, TILESIZE));
-					map_[i][j].recwall.setPosition(j * TILESIZE + offset_x, i * TILESIZE + offset_y);
 					map_[i][j].recwall.setFillColor(Color::Black);
 
 					map_[i][j].cipoint.setRadius(3.0f);
@@ -940,18 +943,16 @@ void originalwindow(RenderWindow& window) {
 					map_[i][j].cipoint.setPosition((j * TILESIZE + TILESIZE / 2) + offset_x, (i * TILESIZE + TILESIZE / 2) + offset_y);
 					map_[i][j].cipoint.setFillColor(Color{ 255, 250, 165 });
 				}
-				if (changing_map[i][j] == 0)
+				else if (changing_map[i][j] == 0)
 				{
 					map_[i][j].type = tile_type::wall;
 					map_[i][j].recwall.setSize(Vector2f(TILESIZE, TILESIZE));
-					map_[i][j].recwall.setPosition(j * TILESIZE + offset_x, i * TILESIZE + offset_y);
 					map_[i][j].recwall.setFillColor(Color{ 36, 31, 201 });
 				}
-				if (changing_map[i][j] == 3)
+				else if (changing_map[i][j] == 3)
 				{
 					map_[i][j].type = tile_type::powerup;
 					map_[i][j].recwall.setSize(Vector2f(TILESIZE, TILESIZE));
-					map_[i][j].recwall.setPosition(j * TILESIZE + offset_x, i * TILESIZE + offset_y);
 					map_[i][j].recwall.setFillColor(Color::Black);
 
 					map_[i][j].cpowerup.setRadius(10.0f);
@@ -960,6 +961,12 @@ void originalwindow(RenderWindow& window) {
 					map_[i][j].cpowerup.setFillColor(Color{ 223, 217, 130 });
 
 				}
+				else if (changing_map[i][j] == 8) {
+					map_[i][j].type = tile_type::wall;
+					map_[i][j].recwall.setSize(Vector2f(TILESIZE, TILESIZE));
+					map_[i][j].recwall.setFillColor(Color::Black);
+				}
+				map_[i][j].recwall.setPosition(j * TILESIZE + offset_x, i * TILESIZE + offset_y);
 				map_[i][j].rows = i;
 				map_[i][j].columns = j;
 			}
@@ -1031,7 +1038,7 @@ void originalwindow(RenderWindow& window) {
 
 		}
 
-		if (!isPaused)
+		if (!isPaused && !sec3_timer)
 		{
 			//moving
 			float x_pac = pacman.sprite.getPosition().x, y_pac = pacman.sprite.getPosition().y;
@@ -1119,13 +1126,14 @@ void originalwindow(RenderWindow& window) {
 
 
 			//cherry
-			elapsedTime_cherry = clock.getElapsedTime().asSeconds();
-			if (elapsedTime_cherry > 10 && hundredshow == false && pacman.isAlive) {
+			elapsedTime_cherry = clock_cherry.getElapsedTime().asSeconds();
+			if (elapsedTime_cherry > 5 && hundredshow == false && pacman.isAlive) {
 				cherry = true;
 			}
-			if (elapsedTime_cherry > 20) {
+			if (elapsedTime_cherry > 10) {
 				cherry = false;
 				hundredshow = false;
+				clock_cherry.restart();
 			}
 			//eat cherry
 			if (pacman.sprite.getGlobalBounds().intersects(cherrySprite.getGlobalBounds()) && cherry) {
@@ -1163,73 +1171,83 @@ void originalwindow(RenderWindow& window) {
 			//hole 
 			int left_hole = offset_x, right_hole = offset_x + (NUMBERCOLUMNS * TILESIZE) - TILESIZE;
 
-			if (x_pac + TILESIZE / 2 <= left_hole - 1 && pacman.moving_direction == 2) {
+			if (x_pac + TILESIZE / 2 <= left_hole && pacman.moving_direction == 2) {
 				pacman.sprite.setPosition(right_hole + TILESIZE / 2, y_pac);
 			}
 			if (x_pac - player_width / 2 >= right_hole && pacman.moving_direction == 0) {
 				pacman.sprite.setPosition(left_hole - TILESIZE / 2, y_pac);
 			}
 
+		}
 
-			window.clear();
+		window.clear();
 
-			for (int i = 0; i < NUMBERROW; i++)
+		for (int i = 0; i < NUMBERROW; i++)
+		{
+			for (int j = 0; j < NUMBERCOLUMNS; j++)
 			{
-				for (int j = 0; j < NUMBERCOLUMNS; j++)
-				{
-					window.draw(map_[i][j].recwall);
+				window.draw(map_[i][j].recwall);
 
-					if (map_[i][j].type == tile_type::score)
-						window.draw(map_[i][j].cipoint);
-					if (map_[i][j].type == tile_type::powerup)
-						window.draw(map_[i][j].cpowerup);
-				}
+				if (map_[i][j].type == tile_type::score)
+					window.draw(map_[i][j].cipoint);
+				if (map_[i][j].type == tile_type::powerup)
+					window.draw(map_[i][j].cpowerup);
 			}
+		}
 
 
-			window.draw(s);
-			window.draw(timer);
-			window.draw(circle);
-			window.draw(line1);
-			window.draw(line2);
+		window.draw(s);
+		window.draw(timer);
+		window.draw(circle);
+		window.draw(line1);
+		window.draw(line2);
 
-			Mouse mouse;
+		Mouse mouse;
 
-			if (circle.getGlobalBounds().contains(mouse.getPosition(window).x, mouse.getPosition(window).y)) {
+		if (circle.getGlobalBounds().contains(mouse.getPosition(window).x, mouse.getPosition(window).y)) {
 
-				line1.setFillColor(Color::Red);
-				line2.setFillColor(Color::Red);
+			line1.setFillColor(Color::Red);
+			line2.setFillColor(Color::Red);
 
-				if (Mouse::isButtonPressed(Mouse::Left)) {
-					gameS.stop();
-					line1.setFillColor(Color::White);
-					line2.setFillColor(Color::White);
-
-					soundclick.play();
-					pause(window);
-				}
-			}
-			else {
+			if (Mouse::isButtonPressed(Mouse::Left)) {
+				gameS.stop();
 				line1.setFillColor(Color::White);
 				line2.setFillColor(Color::White);
+
+				soundclick.play();
+				pause(window);
 			}
-
-			//pacman 
-			if (cherry)
-				window.draw(cherrySprite);
-
-			window.draw(pacman.sprite);
-
-			if (hundredshow)
-				window.draw(hundred);
-
-			if (!pacman.isAlive)
-				sf::sleep(sf::seconds(pacman.delay));
-
-			window.draw(rect_right);
-			window.draw(rect_left);
-			window.display();
 		}
+		else {
+			line1.setFillColor(Color::White);
+			line2.setFillColor(Color::White);
+		}
+
+		//pacman 
+		if (cherry)
+			window.draw(cherrySprite);
+
+		window.draw(pacman.sprite);
+
+		if (hundredshow)
+			window.draw(hundred);
+
+		if (!pacman.isAlive)
+			sf::sleep(sf::seconds(pacman.delay));
+
+		stringstream sec3_manip;
+		sec3_manip << timer_3seconds;
+		if (sec3_timer == true && sec3_clock.getElapsedTime().asSeconds() >= 1) {
+			timer_3seconds++;
+			if (timer_3seconds == 3)
+				sec3_timer = false;
+		}
+		if(sec3_timer)
+			window.draw(sec3_text);
+
+		window.draw(rect_right);
+		window.draw(rect_left);
+		window.display();
 	}
 }
 
@@ -1350,6 +1368,7 @@ void pause(RenderWindow& window) {
 			if (Mouse::isButtonPressed(Mouse::Left)) {
 				menupause[1].setFillColor(Color::White);
 				soundclick.play();
+				timer_min = 0, timer_sec = 0;
 				mainmenu(window);
 			}
 		}
@@ -1532,12 +1551,14 @@ void UsernameWindow(RenderWindow& window) {
 			if (event.type == Event::Closed || event.key.code == Keyboard::Key::Escape) {
 				// suppose to make ******************AreYouSure()***************
 				soundclick.play();
+				num = 0;
 				window.close();
 			}
 
 			// save username
 			if (Keyboard::isKeyPressed(Keyboard::Enter)) {
 				soundclick.play();
+				num = 0;
 				mainmenu(window);
 			}
 
