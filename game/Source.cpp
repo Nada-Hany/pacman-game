@@ -50,6 +50,12 @@ void LoadHighScores();
 void UsernameWindow(RenderWindow& window);
 template <size_t ROW, size_t COL>
 void LoadEasyMap(int(&map)[ROW][COL]);
+template <size_t ROW2, size_t COL2>
+void LoadmediumMap(int(&map)[ROW2][COL2]);
+template <size_t ROW3, size_t COL3>
+void LoadhardMap(int(&map)[ROW3][COL3]);
+
+
 
 struct tile
 {
@@ -150,9 +156,15 @@ void mainmenu(RenderWindow& window);
 void play(RenderWindow& window);
 void mainmenu2(RenderWindow& window);
 void Easy(RenderWindow& window);
-void originalwindow(RenderWindow& window);
+void originaleasywindow(RenderWindow& window);
 void pause(RenderWindow& window);
 void introduction_window(RenderWindow& window);
+void Medium(RenderWindow& window);
+void originalmediumwindow(RenderWindow& window);
+void Hard(RenderWindow& window);
+void originalhardwindow(RenderWindow& window);
+
+
 
 //funcs
 void get_tile_cor(float x, float y, int& row, int& col) {
@@ -351,7 +363,7 @@ int main() {
 	pacman.initial_x = 9 * TILESIZE + TILESIZE / 2 + offset_x;
 	pacman.initial_y = 15 * TILESIZE + TILESIZE / 2 + offset_y;
 	pacman.sprite.setOrigin((player_width / 2), (player_height / 2));
-	pacman.sprite.setPosition(pacman.initial_x,pacman.initial_y);
+	pacman.sprite.setPosition(pacman.initial_x, pacman.initial_y);
 	pacman.sprite.setTextureRect(IntRect(0, 0, player_width, player_height)); //x y w h
 
 	//ghosts
@@ -445,7 +457,7 @@ void mainmenu(RenderWindow& window) {
 	mainmenu[1].setCharacterSize(50);
 	mainmenu[2].setCharacterSize(50);
 
-	FloatRect textrect  = mainmenu[0].getLocalBounds();
+	FloatRect textrect = mainmenu[0].getLocalBounds();
 	FloatRect textrect1 = mainmenu[1].getLocalBounds();
 	FloatRect textrect2 = mainmenu[2].getLocalBounds();
 
@@ -656,10 +668,10 @@ void mainmenu2(RenderWindow& window) {
 					soundclick.play();
 					//alhassan
 					LoadEasyMap(changing_map);
-					originalwindow(window);
+					originaleasywindow(window);
 				}
 			}
-			
+
 			else if (event.type == Event::MouseMoved) {
 				// Check if the mouse is over the button
 				sf::Vector2f mousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
@@ -735,6 +747,11 @@ void mainmenu2(RenderWindow& window) {
 			if (Mouse::isButtonPressed(Mouse::Left)) {
 				mainmenu2[1].setFillColor(Color::White);
 				//function of medium and call inside it originalwindow function
+				LoadmediumMap(changing_map);
+
+				Medium(window);
+
+
 			}
 		}
 		else {
@@ -748,6 +765,9 @@ void mainmenu2(RenderWindow& window) {
 			if (Mouse::isButtonPressed(Mouse::Left)) {
 				mainmenu2[2].setFillColor(Color::White);
 				//function of hard and call inside it originalwindow function
+				LoadhardMap(changing_map);
+
+				Hard(window);
 
 			}
 		}
@@ -817,13 +837,13 @@ void Easy(RenderWindow& window) {
 			}
 		}
 		window.clear();
-		originalwindow(window);
+		originaleasywindow(window);
 		window.display();
 	}
 }
 
 //original window of the game includes string/map.....rest of the game
-void originalwindow(RenderWindow& window) {
+void originaleasywindow(RenderWindow& window) {
 
 	//prepare the sound
 	//select sound
@@ -947,6 +967,7 @@ void originalwindow(RenderWindow& window) {
 	bool gamess = 1;
 	int timer_3seconds = 1;
 	float elapsedTime_cherry = 0;
+
 
 	gameS.play();
 	Time resettime = seconds(4.0f);
@@ -1162,11 +1183,12 @@ void originalwindow(RenderWindow& window) {
 			elapsedTime_cherry = clock_cherry.getElapsedTime().asSeconds();
 			if (elapsedTime_cherry > 5 && hundredshow == false && pacman.isAlive) {
 				cherry = true;
+
 			}
 			if (elapsedTime_cherry > 10) {
 				cherry = false;
 				hundredshow = false;
-				clock_cherry.restart();
+
 			}
 			//eat cherry
 			if (pacman.sprite.getGlobalBounds().intersects(cherrySprite.getGlobalBounds()) && cherry) {
@@ -1280,13 +1302,66 @@ void originalwindow(RenderWindow& window) {
 			if (timer_3seconds == 3)
 				sec3_timer = false;
 		}
-		if(sec3_timer)
+		if (sec3_timer)
 			window.draw(sec3_text);
 
 		window.draw(rect_right);
 		window.draw(rect_left);
 		window.display();
 	}
+}
+
+//medium windows
+void Medium(RenderWindow& window) {
+	while (window.isOpen()) {
+		Event event;
+		while (window.pollEvent(event)) {
+			if (event.type == Event::Closed) {
+				window.close();
+				break;
+			}
+			else if (event.type == Event::KeyReleased) {
+				if (event.key.code == Keyboard::Escape) {
+					num = 0;
+					return;
+				}
+			}
+		}
+		window.clear();
+		originalmediumwindow(window);
+		window.display();
+	}
+}
+
+//original medium window
+void originalmediumwindow(RenderWindow& window) {
+}
+
+//hard window
+void Hard(RenderWindow& window) {
+
+	while (window.isOpen()) {
+		Event event;
+		while (window.pollEvent(event)) {
+			if (event.type == Event::Closed) {
+				window.close();
+				break;
+			}
+			else if (event.type == Event::KeyReleased) {
+				if (event.key.code == Keyboard::Escape) {
+					num = 0;
+					return;
+				}
+			}
+		}
+		window.clear();
+		originalhardwindow(window);
+		window.display();
+	}
+}
+
+//original hard window
+void originalhardwindow(RenderWindow& window) {
 }
 
 //to pause in the middle of the game
@@ -1392,7 +1467,7 @@ void pause(RenderWindow& window) {
 				menupause[0].setFillColor(Color::White);
 				soundclick.play();
 				isPaused = false;
-				originalwindow(window);
+				originaleasywindow(window);
 			}
 		}
 		else {
@@ -1415,7 +1490,7 @@ void pause(RenderWindow& window) {
 				for (int i = 0; i < ghosts_number; i++) {
 					restart_ghost(ghosts[i]);
 				}
-				
+
 				mainmenu(window);
 			}
 		}
@@ -1693,6 +1768,40 @@ void LoadEasyMap(int(&map)[ROW][COL]) {
 	LoadMap.close();
 }
 
+//load medium map
+template <size_t ROW2, size_t COL2>
+void LoadmediumMap(int(&map)[ROW2][COL2]) {
+	// open the data file to load the map
+	ifstream LoadMap("data/Medium_Map.txt");
+
+	// adding the map to our game
+	for (int i = 0; i < NUMBERROW; i++) {
+		for (int j = 0; j < NUMBERCOLUMNS; j++) {
+			LoadMap >> map[i][j];
+		}
+	}
+
+	// closing the file
+	LoadMap.close();
+}
+
+//load hard map
+template <size_t ROW3, size_t COL3>
+void LoadhardMap(int(&map)[ROW3][COL3]) {
+	// open the data file to load the map
+	ifstream LoadMap("data/Hard_Map.txt");
+
+	// adding the map to our game
+	for (int i = 0; i < NUMBERROW; i++) {
+		for (int j = 0; j < NUMBERCOLUMNS; j++) {
+			LoadMap >> map[i][j];
+		}
+	}
+
+	// closing the file
+	LoadMap.close();
+}
+
 //ghost
 
 void ghosts_animation(struct Ghosts ghosts[])
@@ -1892,5 +2001,5 @@ void restart_ghost(Ghosts& ghosts) {
 	ghosts.sprite.setPosition(ghosts.initial_x, ghosts.initial_y);
 	ghosts.moving_direction = -1;
 	ghosts.animation = 0;
-	
+
 }
