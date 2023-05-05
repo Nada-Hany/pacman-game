@@ -42,23 +42,6 @@ enum class tile_type
 	//Wall=0 ,Point=1 ,Space=2 ,powerup=3 ,Ghosts=4 ,Pacmam=5 ,cherry=6
 };
 
-// our small data base
-string username;
-map<string, int> Users;
-void SaveHighScores();
-void SaveNewScore(int score);
-void LoadHighScores();
-void UsernameWindow(RenderWindow& window);
-template <size_t ROW, size_t COL>
-void LoadEasyMap(int(&map)[ROW][COL]);
-template <size_t ROW2, size_t COL2>
-void LoadmediumMap(int(&map)[ROW2][COL2]);
-template <size_t ROW3, size_t COL3>
-void LoadhardMap(int(&map)[ROW3][COL3]);
-void LoadingWindow(RenderWindow& window);
-
-
-
 struct tile
 {
 	Sprite cherry;
@@ -166,6 +149,20 @@ void originalmediumwindow(RenderWindow& window);
 void Hard(RenderWindow& window);
 void originalhardwindow(RenderWindow& window);
 
+// our small data base
+string username;
+map<string, int> Users;
+void SaveHighScores();
+void SaveNewScore(int score);
+void LoadHighScores();
+void UsernameWindow(RenderWindow& window);
+template <size_t ROW, size_t COL>
+void LoadEasyMap(int(&map)[ROW][COL]);
+template <size_t ROW2, size_t COL2>
+void LoadmediumMap(int(&map)[ROW2][COL2]);
+template <size_t ROW3, size_t COL3>
+void LoadhardMap(int(&map)[ROW3][COL3]);
+void LoadingWindow(RenderWindow& window);
 
 
 //funcs
@@ -2059,7 +2056,7 @@ void LoadingWindow(RenderWindow& window)
 		Event event;
 		while (window.pollEvent(event)) {
 			if (event.type == Event::Closed) {
-				window.close();
+				return;
 			}
 
 			if (Keyboard::isKeyPressed(Keyboard::Space) || clock.getElapsedTime().asSeconds() >= 1.0f) {
