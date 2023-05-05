@@ -42,7 +42,6 @@ enum class tile_type
 	//Wall=0 ,Point=1 ,Space=2 ,powerup=3 ,Ghosts=4 ,Pacmam=5 ,cherry=6
 };
 
-<<<<<<< HEAD
 // our small data base
 string username;
 map<string, int> Users;
@@ -57,8 +56,6 @@ void LoadmediumMap(int(&map)[ROW2][COL2]);
 template <size_t ROW3, size_t COL3>
 void LoadhardMap(int(&map)[ROW3][COL3]);
 
-=======
->>>>>>> 994af266261f3e197bcf457a7a2bd6e704135823
 struct tile
 {
 	Sprite cherry;
@@ -167,8 +164,6 @@ void Medium(RenderWindow& window);
 void originalmediumwindow(RenderWindow& window);
 void Hard(RenderWindow& window);
 void originalhardwindow(RenderWindow& window);
-<<<<<<< HEAD
-=======
 
 // our small data base
 string username;
@@ -185,7 +180,6 @@ template <size_t ROW3, size_t COL3>
 void LoadhardMap(int(&map)[ROW3][COL3]);
 void LoadingWindow(RenderWindow& window);
 
->>>>>>> 994af266261f3e197bcf457a7a2bd6e704135823
 
 //funcs
 void get_tile_cor(float x, float y, int& row, int& col) {
@@ -690,12 +684,9 @@ void mainmenu2(RenderWindow& window) {
 					soundclick.play();
 					//alhassan
 					LoadEasyMap(changing_map);
-<<<<<<< HEAD
 					originaleasywindow(window);
-=======
 					Easy(window);
 					LoadingWindow(window);
->>>>>>> 994af266261f3e197bcf457a7a2bd6e704135823
 				}
 			}
 
@@ -864,10 +855,7 @@ void Easy(RenderWindow& window) {
 			}
 		}
 		window.clear();
-<<<<<<< HEAD
-=======
 		LoadingWindow(window);
->>>>>>> 994af266261f3e197bcf457a7a2bd6e704135823
 		originaleasywindow(window);
 		window.display();
 	}
@@ -1239,7 +1227,6 @@ void originaleasywindow(RenderWindow& window) {
 
 			//cherry
 			elapsedTime_cherry = clock_cherry.getElapsedTime().asSeconds();
-<<<<<<< HEAD
 			if (elapsedTime_cherry >= 5 && hundredshow == false && pacman.isAlive) {
 				cherry_appear = true;
 
@@ -1255,7 +1242,6 @@ void originaleasywindow(RenderWindow& window) {
 				eatcherrysound.play();
 				pacman.score += 100;
 				hundredshow = true;
-=======
 			if (elapsedTime_cherry > 5 && hundredshow == false && pacman.isAlive) {
 				if (elapsedTime_cherry > 10 && hundredshow == false && pacman.isAlive) {
 					cherry = true;
@@ -1309,7 +1295,6 @@ void originaleasywindow(RenderWindow& window) {
 					pacman.sprite.setPosition(left_hole - TILESIZE / 2, y_pac);
 				}
 
->>>>>>> 994af266261f3e197bcf457a7a2bd6e704135823
 			}
 
 			window.clear();
@@ -1356,7 +1341,6 @@ void originaleasywindow(RenderWindow& window) {
 					pause(window);
 				}
 			}
-<<<<<<< HEAD
 
 			//hole 
 			int left_hole = offset_x, right_hole = offset_x + (NUMBERCOLUMNS * TILESIZE) - TILESIZE;
@@ -1402,9 +1386,7 @@ void originaleasywindow(RenderWindow& window) {
 
 			if (Mouse::isButtonPressed(Mouse::Left)) {
 				gameS.stop();
-=======
 			else {
->>>>>>> 994af266261f3e197bcf457a7a2bd6e704135823
 				line1.setFillColor(Color::White);
 				line2.setFillColor(Color::White);
 			}
@@ -1459,7 +1441,6 @@ void Medium(RenderWindow& window) {
 				}
 			}
 		}
-<<<<<<< HEAD
 		else {
 			line1.setFillColor(Color::White);
 			line2.setFillColor(Color::White);
@@ -1494,16 +1475,13 @@ void Medium(RenderWindow& window) {
 
 		window.draw(rect_right);
 		window.draw(rect_left);
-=======
 		window.clear();
 		LoadingWindow(window);
 		originalmediumwindow(window);
->>>>>>> 994af266261f3e197bcf457a7a2bd6e704135823
 		window.display();
 	}
 }
 
-<<<<<<< HEAD
 //medium windows
 void Medium(RenderWindow& window) {
 	while (window.isOpen()) {
@@ -1526,8 +1504,6 @@ void Medium(RenderWindow& window) {
 	}
 }
 
-=======
->>>>>>> 994af266261f3e197bcf457a7a2bd6e704135823
 //original medium window
 void originalmediumwindow(RenderWindow& window) {
 }
@@ -1550,10 +1526,7 @@ void Hard(RenderWindow& window) {
 			}
 		}
 		window.clear();
-<<<<<<< HEAD
-=======
 		LoadingWindow(window);
->>>>>>> 994af266261f3e197bcf457a7a2bd6e704135823
 		originalhardwindow(window);
 		window.display();
 	}
@@ -1974,10 +1947,6 @@ void LoadEasyMap(int(&map)[ROW][COL]) {
 	LoadMap.close();
 }
 
-<<<<<<< HEAD
-//n
-=======
->>>>>>> 994af266261f3e197bcf457a7a2bd6e704135823
 //load medium map
 template <size_t ROW2, size_t COL2>
 void LoadmediumMap(int(&map)[ROW2][COL2]) {
@@ -2206,8 +2175,6 @@ void restart_ghost(Ghosts& ghosts) {
 	ghosts.moving_direction = -1;
 	ghosts.animation = 0;
 
-<<<<<<< HEAD
-=======
 }
 
 void LoadingWindow(RenderWindow& window)
@@ -2264,5 +2231,4 @@ void LoadingWindow(RenderWindow& window)
 
 		window.display();
 	}
->>>>>>> 994af266261f3e197bcf457a7a2bd6e704135823
 }
