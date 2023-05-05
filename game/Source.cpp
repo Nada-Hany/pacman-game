@@ -5,6 +5,8 @@
 #include <algorithm>
 #include <fstream>
 #include <iostream>
+#include <vector>
+#include <queue>
 
 using namespace std;
 using namespace sf;
@@ -49,8 +51,8 @@ struct tile
 	CircleShape cpowerup;
 	RectangleShape recwall;
 	tile_type type;
-	int columns;
-	int rows;
+	int column;
+	int row;
 	struct tile* parent = NULL;
 
 };
@@ -100,6 +102,7 @@ void enumDirectionPACMAN(PACMAN& pacman) {
 struct Ghosts
 {
 	Sprite sprite;
+	Sprite home_sprite;
 	direction direction;
 	int moving_direction = -1;
 	// 0 right , 1 up , 2 left , 3 down
@@ -107,7 +110,22 @@ struct Ghosts
 	// 0 normal , 1 power up , 2 face , 3 end time
 	int animation;
 	int initial_x, initial_y;
+	bool isDead = false;
+	bool gotHome = false;
+	
 	bool isBFS = false;
+	float speed = ghostSpeed;
+	int frames_per_tile;
+
+	vector<tile> shortest_path;
+	vector<tile> home_path;
+	vector<tile> corner_path;
+	int shortest_path_index;
+	int algo_window_BFS;
+	int step_counts_BFS;
+	int num_tiles_past_BFS;
+
+	int step_counts_rand;
 
 }ghosts[4];
 // 0 red , 1 pink , 2 orange , 3 blue 
@@ -165,7 +183,6 @@ void LoadmediumMap(int(&map)[ROW2][COL2]);
 template <size_t ROW3, size_t COL3>
 void LoadhardMap(int(&map)[ROW3][COL3]);
 void LoadingWindow(RenderWindow& window);
-
 
 //funcs
 void get_tile_cor(float x, float y, int& row, int& col) {
@@ -340,14 +357,20 @@ void change_direction(Sprite& sprite, int& keyPressed, int& moving_direction, in
 }
 
 void ghosts_animation(struct Ghosts ghosts[]);
-bool check_wall(int& direction, Sprite& ghost);
+bool check_wall(int& directio0, Sprite& ghostn);
 void move_random(struct Ghosts ghosts[]);
 
 void restart_pacman(PACMAN& pacman);
 void restart_ghost(Ghosts& ghosts);
 
+//BFS
+//bool exist_in_closed(tile* tile, vector <struct tile>& closed);	
+//void find_optimal_path(tile* current, tile* target, vector <tile>* get_path);
+//void catch_target(Ghosts& ghost, Sprite& target);
+//void random_direction(Sprite& sprite, int& direction);
+
 int num = 3, num2 = 0;
-bool isPaused = false, sec3_timer = false;
+bool isPaused = true;
 int timer_sec = 0, timer_min = 0;
 
 //small ghosts of mainmenu
@@ -388,18 +411,25 @@ int main() {
 	ghosts[3].initial_y = offset_y + 9 * TILESIZE + HALF_TILESIZE;
 	ghosts[3].sprite.setPosition(ghosts[3].initial_x, ghosts[3].initial_y);
 
+	//setting home sprite 
+	/*for (int i = 0; i < ghosts_number; i++) {
+		ghosts[i].home_sprite.setTexture(blue_ghost_texture);
+		ghosts[i].home_sprite.setOrigin(ghost_width / 2, ghost_height / 2);
+		ghosts[i].home_sprite.setPosition(ghosts[i].initial_x, ghosts[i].initial_y);
+	}*/
+
 	Image icon;
 	icon.loadFromFile("pngs/cherry.png");
 	window.setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr());
 
 	window.setFramerateLimit(60);
 	while (window.isOpen()) {
-		if (num == 3) {
+		if (num == 3) 
 			introduction_window(window);
-		}
-		if (num == 1) {
+
+		if (num == 1) 
 			play(window);
-		}
+		
 	}
 	return 0;
 }
@@ -671,7 +701,6 @@ void mainmenu2(RenderWindow& window) {
 					//alhassan
 					LoadEasyMap(changing_map);
 					Easy(window);
-					LoadingWindow(window);
 				}
 			}
 
@@ -840,7 +869,7 @@ void Easy(RenderWindow& window) {
 			}
 		}
 		window.clear();
-		LoadingWindow(window);
+		//LoadingWindow(window);
 		originaleasywindow(window);
 		window.display();
 	}
@@ -888,11 +917,6 @@ void originaleasywindow(RenderWindow& window) {
 	font.loadFromFile("fonts/CrackMan.ttf");
 	Text s;
 	Text timer, sec3_text;
-	sec3_text.setCharacterSize(30);
-	sec3_text.setFont(font);
-	FloatRect sec3_floatrect = sec3_text.getGlobalBounds();
-	sec3_text.setOrigin(sec3_floatrect.left + sec3_floatrect.width / 2.0f, sec3_floatrect.top + sec3_floatrect.height / 2.0f);
-	sec3_text.setPosition(1920 / 2, 1080 / 2);
 
 	//circle of pause
 	CircleShape circle(50, 50);
@@ -925,6 +949,9 @@ void originaleasywindow(RenderWindow& window) {
 	timer.setCharacterSize(70);
 	timer.setFillColor(Color::White);
 	timer.setPosition(50, 120);
+
+	sec3_text.setFont(font);
+	sec3_text.setCharacterSize(200);
 
 	//cherry
 	Texture cherryTexture;
@@ -971,19 +998,33 @@ void originaleasywindow(RenderWindow& window) {
 	endtime_ghost_texture.loadFromFile("pngs/blue and grey ghosts.png");
 	ghosts[0].isBFS = true;
 
-
 	bool sound = 0, sound2 = 0;
-	bool gamess = 1;
-	int timer_3seconds = 1, powerUp_8secTimer = 0;
+	bool gamess = 1, sec3_timer = true;;
+	int timer_3seconds = 4, powerUp_8secTimer = 0;
 	float elapsedTime_cherry = 0;
-
 
 	gameS.play();
 	Time resettime = seconds(4.0f);
 	Clock clock_cherry, play_clock, sec3_clock, powerUp_clock;;
 
-	isPaused = false;
+	isPaused = true;
 
+	//getting the path of home to each ghost
+
+	//for (int i = 0; i < ghosts_number; i++) {
+	//	//target
+	//	float x_home = ghosts[i].initial_x, y_home = ghosts[i].initial_y;
+	//	int row_home, col_home;
+	//	get_tile_cor(x_home, y_home, row_home, col_home);
+	//	tile* target = &map_[row_home][col_home];
+	//	//start
+	//	float x_ghost = ghosts[i].sprite.getPosition().x, y_ghost = ghosts[i].sprite.getPosition().y;
+	//	int row_ghost, col_ghost;
+	//	get_tile_cor(x_ghost, y_ghost, row_ghost, col_ghost);
+	//	tile* start = &map_[row_ghost][col_ghost];
+	//	find_optimal_path(start, target, &ghosts[i].home_path);
+
+	//}
 
 	while (window.isOpen()) {
 
@@ -1033,12 +1074,12 @@ void originaleasywindow(RenderWindow& window) {
 					map_[i][j].recwall.setFillColor(Color::Black);
 				}
 				map_[i][j].recwall.setPosition(j * TILESIZE + offset_x, i * TILESIZE + offset_y);
-				map_[i][j].rows = i;
-				map_[i][j].columns = j;
+				map_[i][j].row = i;
+				map_[i][j].column = j;
 			}
 
 		}
-
+		}
 
 		Event event;
 		while (window.pollEvent(event)) {
@@ -1063,6 +1104,7 @@ void originaleasywindow(RenderWindow& window) {
 				if (event.key.code == Keyboard::Escape) {
 					soundclick.play();
 					isPaused = true;
+					powerUp_Sound.pause();
 					gameS.stop();
 					pause(window);
 					return;
@@ -1104,7 +1146,45 @@ void originaleasywindow(RenderWindow& window) {
 
 		}
 
-		if (!isPaused && !sec3_timer)
+		//3 seconds timer
+		stringstream sec3_manip;
+
+		if (sec3_timer && sec3_clock.getElapsedTime().asSeconds() >= 1) {
+			timer_3seconds--;
+			sec3_clock.restart();
+			if (timer_3seconds == 0)
+			{
+				sec3_timer = false;
+				isPaused = false;
+			}
+		}
+		sec3_manip << timer_3seconds;
+		sec3_text.setString(sec3_manip.str());
+		FloatRect sec3_floatrect = sec3_text.getLocalBounds();
+		sec3_text.setOrigin(sec3_floatrect.left + sec3_floatrect.width / 2.0f, sec3_floatrect.top + sec3_floatrect.height / 2.0f);
+		sec3_text.setPosition(1920 / 2, 1080 / 2);
+
+		//timer text
+		char x = ':';
+
+		if (play_clock.getElapsedTime().asSeconds() >= 1) {
+			timer_sec++;
+			play_clock.restart();
+			if (timer_sec % 60 == 0) {
+				timer_sec = 0;
+				timer_min++;
+			}
+		}
+		stringstream time_manip;
+		time_manip << "time " << timer_min << x << timer_sec;
+		timer.setString(time_manip.str());
+
+		//update score text
+		stringstream score_manip;
+		score_manip << "score:" << pacman.score;
+		s.setString(score_manip.str());
+
+		if (isPaused == false)
 		{
 			//moving
 			float x_pac = pacman.sprite.getPosition().x, y_pac = pacman.sprite.getPosition().y;
@@ -1112,13 +1192,14 @@ void originaleasywindow(RenderWindow& window) {
 			get_tile_cor(x_pac, y_pac, row_pac, col_pac);
 			change_direction(pacman.sprite, pacman.keyPressed, pacman.moving_direction, row_pac, col_pac);
 
-			if (pacman.moving_direction == 0 && pacman.isAlive) {
+			if(pacman.moving_direction == 0 && pacman.isAlive) {
 
 				move_right(pacman.sprite, pacman.moving_direction);
 				pacman.animation_alive++;
 				pacman.sprite.setScale(1, 1);
 				pacman.sprite.setTextureRect(IntRect(player_width * pacman.animation_alive, 0, player_width, player_height));
 				pacman.animation_alive %= 8;
+				pacman.animetion_dead %= 12;
 			}
 			else if (pacman.moving_direction == 2 && pacman.isAlive) {
 				move_left(pacman.sprite, pacman.moving_direction);
@@ -1126,7 +1207,7 @@ void originaleasywindow(RenderWindow& window) {
 				pacman.sprite.setScale(-1, 1);
 				pacman.sprite.setTextureRect(IntRect(player_width * pacman.animation_alive, 0, player_width, player_height));
 				pacman.animation_alive %= 8;
-
+				pacman.animetion_dead %= 12;
 
 			}
 			else if (pacman.moving_direction == 1 && pacman.isAlive) {
@@ -1135,6 +1216,7 @@ void originaleasywindow(RenderWindow& window) {
 				pacman.sprite.setScale(1, 1);
 				pacman.sprite.setTextureRect(IntRect(player_width * pacman.animation_alive, player_height, player_width, player_height));
 				pacman.animation_alive %= 8;
+				pacman.animetion_dead %= 12;
 
 			}
 			else if (pacman.moving_direction == 3 && pacman.isAlive) {
@@ -1143,7 +1225,7 @@ void originaleasywindow(RenderWindow& window) {
 				pacman.sprite.setScale(1, -1);
 				pacman.sprite.setTextureRect(IntRect(player_width * pacman.animation_alive, player_height, player_width, player_height));
 				pacman.animation_alive %= 8;
-
+				pacman.animetion_dead %= 12;
 			}
 
 			//ghosts
@@ -1172,7 +1254,7 @@ void originaleasywindow(RenderWindow& window) {
 						ghosts[i].animation = 1;
 				}
 			}
-
+			//if power up mode activated 
 			if (pacman.powerBallBool)
 			{
 
@@ -1182,7 +1264,10 @@ void originaleasywindow(RenderWindow& window) {
 					if (ghosts[i].animation == 1)
 					{
 						if (pacman.sprite.getGlobalBounds().intersects(ghosts[i].sprite.getGlobalBounds()))
+						{
 							ghosts[i].animation = 2;
+							ghosts[i].isDead = true;
+						}
 					}
 				}
 				//check if the time passed after pacman ate the power up ball is eight seconds then
@@ -1194,12 +1279,20 @@ void originaleasywindow(RenderWindow& window) {
 						powerUp_Sound.stop();
 						powerUp_8secTimer = 0;
 						for (int i = 0; i < ghosts_number; i++) 
+						{
 							ghosts[i].animation = 0;
+						}
 					}
 				}
 			}
-			//eat cherry
+			//eaten ghost goes home! 
+		/*	for (int i = 0; i < ghosts_number; i++) {
+				if (!ghosts[i].isDead)
+					continue;
+				catch_target(ghosts[i], ghosts[i].home_sprite);
+			}*/
 
+			//eat cherry
 			if (pacman.sprite.getGlobalBounds().intersects(cherrySprite.getGlobalBounds()) && cherry == true && pacman.cherry_taken == false) {
 				cherry = false;
 				pacman.cherry_taken = true;
@@ -1208,147 +1301,119 @@ void originaleasywindow(RenderWindow& window) {
 				hundredshow = true;
 			}
 
-
-
-			//cherry
+			//cherry appearing 
 			elapsedTime_cherry = clock_cherry.getElapsedTime().asSeconds();
-			if (elapsedTime_cherry > 5 && hundredshow == false && pacman.isAlive) {
-				if (elapsedTime_cherry > 10 && hundredshow == false && pacman.isAlive) {
-					cherry = true;
-
-				}
-				if (elapsedTime_cherry > 10) {
-					cherry = false;
-					hundredshow = false;
-
-				}
-				//eat cherry
-				if (pacman.sprite.getGlobalBounds().intersects(cherrySprite.getGlobalBounds()) && cherry) {
-					cherry = false;
-					eatcherrysound.play();
-					pacman.score += 100;
-					hundredshow = true;
-				}
-
-				//update score text
-				stringstream score_manip;
-				score_manip << "score:" << pacman.score;
-				s.setString(score_manip.str());
-
-
-				char x = ':';
-
-				if (play_clock.getElapsedTime().asSeconds() >= 1) {
-					timer_sec++;
-					play_clock.restart();
-					if (timer_sec % 60 == 0) {
-						timer_sec = 0;
-						timer_min++;
-					}
-				}
-				stringstream time_manip;
-				time_manip << "time " << timer_min << x << timer_sec;
-				timer.setString(time_manip.str());
-
-				if (pacman.isAlive == false && pacman.deathSound == false) {
-					deathSound.play();
-					pacman.deathSound = true;
-				}
-
-				//hole 
-				int left_hole = offset_x, right_hole = offset_x + (NUMBERCOLUMNS * TILESIZE) - TILESIZE;
-
-				if (x_pac + TILESIZE / 2 <= left_hole && pacman.moving_direction == 2) {
-					pacman.sprite.setPosition(right_hole + TILESIZE / 2, y_pac);
-				}
-				if (x_pac - player_width / 2 >= right_hole && pacman.moving_direction == 0) {
-					pacman.sprite.setPosition(left_hole - TILESIZE / 2, y_pac);
-				}
-
+			
+			if (elapsedTime_cherry > 10 && hundredshow == false && pacman.isAlive) {
+				cherry = true;
+			}
+			if (elapsedTime_cherry > 10) {
+				cherry = false;
+				hundredshow = false;
 			}
 
-			window.clear();
-			//map
-			for (int i = 0; i < NUMBERROW; i++)
+			//eat cherry
+			if (pacman.sprite.getGlobalBounds().intersects(cherrySprite.getGlobalBounds()) && cherry) {
+				cherry = false;
+				eatcherrysound.play();
+				pacman.score += 100;
+				hundredshow = true;
+			}
+
+			//collision with the ghost so pacman would die
+
+		/*	for (int i = 0; i < ghosts_number; i++) {
+				if (ghosts[i].sprite.getGlobalBounds().intersects(pacman.sprite.getGlobalBounds()) && !ghosts[i].isDead) {
+					pacman.isAlive = false;
+					pacman.sprite.setTexture(pacman.deadPac_texture);
+				}
+			}*/
+			//if pamcan is dead -> play death sound
+			if (pacman.isAlive == false && pacman.deathSound == false) {
+				deathSound.play();
+				pacman.deathSound = true;
+			}
+
+
+			//hole 
+			int left_hole = offset_x, right_hole = offset_x + (NUMBERCOLUMNS * TILESIZE) - TILESIZE;
+
+			if (x_pac + TILESIZE / 2 <= left_hole && pacman.moving_direction == 2) {
+				pacman.sprite.setPosition(right_hole + TILESIZE / 2, y_pac);
+			}
+			if (x_pac - player_width / 2 >= right_hole && pacman.moving_direction == 0) {
+				pacman.sprite.setPosition(left_hole - TILESIZE / 2, y_pac);
+			}
+
+		}
+		window.clear();
+		//map
+		for (int i = 0; i < NUMBERROW; i++)
+		{
+			for (int j = 0; j < NUMBERCOLUMNS; j++)
 			{
-				for (int j = 0; j < NUMBERCOLUMNS; j++)
-				{
-					window.draw(map_[i][j].recwall);
+				window.draw(map_[i][j].recwall);
 
-					if (map_[i][j].type == tile_type::score)
-						window.draw(map_[i][j].cipoint);
-					if (map_[i][j].type == tile_type::powerup)
-						window.draw(map_[i][j].cpowerup);
-				}
+				if (map_[i][j].type == tile_type::score)
+					window.draw(map_[i][j].cipoint);
+				if (map_[i][j].type == tile_type::powerup)
+					window.draw(map_[i][j].cpowerup);
 			}
+		}
+		//pause button and score text
+		window.draw(s);
+		window.draw(timer);
+		window.draw(circle);
+		window.draw(line1);
+		window.draw(line2);
 
-			//pause button and score text
-			window.draw(s);
-			window.draw(timer);
-			window.draw(circle);
-			window.draw(line1);
-			window.draw(line2);
+		Mouse mouse;
 
-			window.draw(s);
-			window.draw(timer);
-			window.draw(circle);
-			window.draw(line1);
-			window.draw(line2);
+		if (circle.getGlobalBounds().contains(mouse.getPosition(window).x, mouse.getPosition(window).y)) {
 
-			Mouse mouse;
+			line1.setFillColor(Color::Red);
+			line2.setFillColor(Color::Red);
 
-			if (circle.getGlobalBounds().contains(mouse.getPosition(window).x, mouse.getPosition(window).y)) {
-
-				line1.setFillColor(Color::Red);
-				line2.setFillColor(Color::Red);
-
-				if (Mouse::isButtonPressed(Mouse::Left)) {
-					gameS.stop();
-					line1.setFillColor(Color::White);
-					line2.setFillColor(Color::White);
-
-					soundclick.play();
-					pause(window);
-				}
-			}
-			else {
+			if (Mouse::isButtonPressed(Mouse::Left)) {
+				gameS.stop();
 				line1.setFillColor(Color::White);
 				line2.setFillColor(Color::White);
+
+				soundclick.play();
+				pause(window);
 			}
-
-			//pacman 
-			if (cherry)
-				window.draw(cherrySprite);
-
-			for (int i = 0; i < 4; i++)
-			{
-				window.draw(ghosts[i].sprite);
-			}
-
-			window.draw(pacman.sprite);
-
-			if (hundredshow)
-				window.draw(hundred);
-
-			if (!pacman.isAlive)
-				sf::sleep(sf::seconds(pacman.delay));
-
-			stringstream sec3_manip;
-			sec3_manip << timer_3seconds;
-			if (sec3_timer == true && sec3_clock.getElapsedTime().asSeconds() >= 1) {
-				timer_3seconds++;
-				if (timer_3seconds == 3)
-					sec3_timer = false;
-			}
-			if (sec3_timer)
-				window.draw(sec3_text);
-
-			window.draw(rect_right);
-			window.draw(rect_left);
-			window.display();
 		}
+		else {
+			line1.setFillColor(Color::White);
+			line2.setFillColor(Color::White);
+		}
+
+		//pacman 
+		if (cherry)
+			window.draw(cherrySprite);
+
+		for (int i = 0; i < 4; i++)
+		{
+			window.draw(ghosts[i].sprite);
+		}
+
+		window.draw(pacman.sprite);
+
+		if (hundredshow)
+			window.draw(hundred);
+
+		if (!pacman.isAlive)
+			sf::sleep(sf::seconds(pacman.delay));
+
+
+		if (sec3_timer)
+			window.draw(sec3_text);
+
+		window.draw(rect_right);
+		window.draw(rect_left);
+		window.display();
 	}
-}
+
 
 //medium windows
 void Medium(RenderWindow& window) {
@@ -1507,7 +1572,6 @@ void pause(RenderWindow& window) {
 			if (Mouse::isButtonPressed(Mouse::Left)) {
 				menupause[0].setFillColor(Color::White);
 				soundclick.play();
-				isPaused = false;
 				originaleasywindow(window);
 			}
 		}
@@ -2043,8 +2107,191 @@ void restart_ghost(Ghosts& ghosts) {
 	ghosts.sprite.setPosition(ghosts.initial_x, ghosts.initial_y);
 	ghosts.moving_direction = -1;
 	ghosts.animation = 0;
-
+	ghosts.isDead = false;
 }
+
+//BFS 
+
+//bool exist_in_closed(tile* tile, vector <struct tile>& closed) {
+//	bool ans = 0;
+//	for (int i = 0; i < closed.size(); i++) {
+//
+//		if (tile->row == closed[i].row && tile->column == closed[i].column)
+//			ans = 1;
+//	}
+//	return ans;
+//}
+
+//void find_optimal_path(tile* current, tile* target, vector <tile>* get_path) {
+//	queue <tile> open;
+//	vector <tile> closed;
+//
+//	open.push(*current);
+//
+//	while (!open.empty()) {
+//
+//		current = &map_[open.front().row][open.front().column];
+//
+//		open.pop();
+//
+//		if (current == target)
+//			break;
+//
+//		if (current->column + 1 <= NUMBERCOLUMNS) {
+//			tile* right_tile = &map_[current->row][current->column + 1];
+//			if (right_tile->type != tile_type::wall)
+//			{
+//				bool check_right = exist_in_closed(right_tile, closed);
+//				if (!check_right) {
+//					open.push(*right_tile);
+//					right_tile->parent = &map_[current->row][current->column];
+//				}
+//			}
+//		}
+//		else if (current->column - 1 >= 0) {
+//			tile* left_tile = &map_[current->row][current->column - 1];
+//
+//			if (left_tile->type != tile_type::wall)
+//			{
+//				bool check_left = exist_in_closed(left_tile, closed);
+//				if (!check_left) {
+//					open.push(*left_tile);
+//					left_tile->parent = &map_[current->row][current->column];
+//				}
+//			}
+//		}
+//		else if (current->row - 1 >= 0) {
+//			tile* up_tile = &map_[current->row - 1][current->column];
+//			if (up_tile->type != tile_type::wall)
+//			{
+//				bool check_up = exist_in_closed(up_tile, closed);
+//				if (!check_up) {
+//					open.push(*up_tile);
+//					up_tile->parent = &map_[current->row][current->column];
+//				}
+//			}
+//		}
+//		else if (current->row + 1 <= NUMBERROW) {
+//			tile* down_tile = &map_[current->row + 1][current->column];
+//
+//			if (down_tile->type != tile_type::wall)
+//			{
+//				bool check_down = exist_in_closed(down_tile, closed);
+//				if (!check_down) {
+//					open.push(*down_tile);
+//					down_tile->parent = &map_[current->row][current->column];
+//				}
+//			}
+//		}
+//		closed.push_back(*current);
+//	}
+//
+//	(*get_path).clear();
+//	while (current->parent != NULL) {
+//		(*get_path).push_back(*current);
+//		current = current->parent;
+//	}
+//}
+
+//void catch_target(Ghosts& ghost, Sprite& target) {
+//
+//	//if the ghost finished a whole tile 
+//	if (ghost.step_counts_BFS % ghost.frames_per_tile == 0) {
+//		int row, col;
+//		float x = ghost.sprite.getPosition().x,
+//			y = ghost.sprite.getPosition().y;
+//		get_tile_cor(x, y, row, col);
+//		ghost.step_counts_BFS = 0;
+//
+//		//if the tile past equals the tiles needed to repeat the algo, or if it's first time for the algo to run.
+//		if (ghost.num_tiles_past_BFS == ghost.algo_window_BFS) {
+//			int row_1, col_1;
+//			float x_1 = target.getPosition().x,
+//				y_1 = target.getPosition().y;
+//
+//			get_tile_cor(x_1, y_1, row_1, col_1);
+//			tile* start_pointer = &map_[row][col];
+//			start_pointer->parent = NULL;
+//			tile* target_pointer = &map_[row_1][col_1];
+//
+//			find_optimal_path(start_pointer, target_pointer, &ghost.shortest_path);
+//			ghost.num_tiles_past_BFS = 0;
+//			ghost.shortest_path_index = ghost.shortest_path.size() - 1;
+//
+//		}
+//		else {
+//			ghost.num_tiles_past_BFS++;
+//		}
+//
+//		//if the ghost finished the whole path needed to catch the player last run -> move random.
+//		if (ghost.shortest_path_index == -1) {
+//
+//			if (ghost.step_counts_rand % ghost.frames_per_tile == 0) {
+//
+//				ghost.step_counts_rand = 0;
+//				random_direction(ghost.sprite, ghost.moving_direction);
+//			}
+//			ghost.step_counts_rand++;
+//		}
+//		else
+//		{
+//			tile next_tile = ghost.shortest_path[ghost.shortest_path_index];
+//			ghost.shortest_path_index--;
+//			int col_diff = col - next_tile.column;
+//			int row_diff = row - next_tile.row;
+//			//left
+//			if (col_diff == 1) {
+//				ghost.moving_direction = 2;
+//			}
+//			//right
+//			else if (col_diff == -1) {
+//				ghost.moving_direction = 0;
+//			}
+//			//up
+//			else if (row_diff == 1) {
+//				ghost.moving_direction = 1;
+//			}
+//			//down
+//			else {
+//				ghost.moving_direction = 3;
+//			}
+//		}
+//	}
+//	ghost.step_counts_BFS++;
+//}
+//void random_direction(Sprite& sprite, int& direction) {
+//
+//	srand((int)time(0));
+//
+//	int avaialble_ways = 0;
+//
+//	int random_direction = rand() % 4;
+//
+//	for (int moves = 0; moves < 4; moves++)
+//	{
+//		if (moves != (2 + direction) % 4)
+//		{
+//			if (check_wall(moves, sprite) != 0)
+//
+//				avaialble_ways++;
+//		}
+//	}
+//
+//	if (avaialble_ways > 0)
+//	{
+//		while (check_wall(random_direction, sprite) == 0 || random_direction == (2 + direction) % 4)
+//		{
+//			random_direction = rand() % 4;
+//		}
+//
+//		direction = random_direction;
+//	}
+//	else
+//	{
+//		direction = (2 + direction) % 4;
+//	}
+//}
+
 
 void LoadingWindow(RenderWindow& window)
 {
