@@ -1,2 +1,3 @@
-.vs/*
-x64/Debug/*
+/.vs/*
+/x64/Debug/*
+/game/x64/*
