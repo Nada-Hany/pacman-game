@@ -667,7 +667,7 @@ void mainmenu2(RenderWindow& window) {
 					soundclick.play();
 					//alhassan
 					LoadEasyMap(changing_map);
-					originaleasywindow(window);
+					Easy(window);
 					LoadingWindow(window);
 				}
 			}
@@ -2059,7 +2059,7 @@ void LoadingWindow(RenderWindow& window)
 				return;
 			}
 
-			if (Keyboard::isKeyPressed(Keyboard::Space) || clock.getElapsedTime().asSeconds() >= 1.0f) {
+			if (Keyboard::isKeyPressed(Keyboard::Space) || clock.getElapsedTime().asSeconds() >= 10.0f) {
 				//put the original window
 				return;
 			}
