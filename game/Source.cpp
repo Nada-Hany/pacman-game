@@ -4,6 +4,7 @@
 #include <map>
 #include <algorithm>
 #include <fstream>
+#include <iostream>
 
 using namespace std;
 using namespace sf;
@@ -63,6 +64,7 @@ struct tile
 	tile_type type;
 	int columns;
 	int rows;
+	struct tile* parent = NULL;
 
 };
 tile map_[NUMBERROW][NUMBERCOLUMNS];
@@ -117,8 +119,8 @@ struct Ghosts
 	int frames;
 	// 0 normal , 1 power up , 2 face , 3 end time
 	int animation;
-
 	int initial_x, initial_y;
+	bool isBFS = false;
 
 }ghosts[4];
 // 0 red , 1 pink , 2 orange , 3 blue 
@@ -962,6 +964,7 @@ void originaleasywindow(RenderWindow& window) {
 	powerup_ghost_texture.loadFromFile("pngs/ghosts in power up mode.png");
 	face_ghost_texture.loadFromFile("pngs/Ghost eyes.png");
 	endtime_ghost_texture.loadFromFile("pngs/blue and grey ghosts.png");
+	ghosts[0].isBFS = true;
 
 	bool sound = 0, sound2 = 0;
 	bool gamess = 1;
@@ -1165,22 +1168,26 @@ void originaleasywindow(RenderWindow& window) {
 
 			if (pacman.powerBallBool)
 			{
-				if (powerUp_clock.restart().asSeconds() >= 1) {
-					powerUp_8secTimer++;
-					if (powerUp_8secTimer == 8) {
-						powerUp_Sound.pause();
-						powerUp_8secTimer = 0;
-						for (int i = 0; i < ghosts_number; i++) 
-							ghosts[i].animation = 0;
-					}
-				}
-				// check if pacman ate a ghost    // check timer ??
+
 				for (int i = 0; i < ghosts_number; i++)
 				{
+					// check if pacman ate a ghost    // check timer ??
 					if (ghosts[i].animation == 1)
 					{
 						if (pacman.sprite.getGlobalBounds().intersects(ghosts[i].sprite.getGlobalBounds()))
 							ghosts[i].animation = 2;
+					}
+				}
+				//check if the time passed after pacman ate the power up ball is eight seconds then
+				//return the ghosts to the normal mode/animation and stop the sound.
+				if (powerUp_clock.getElapsedTime().asSeconds() >= 1) {
+					powerUp_8secTimer++;
+					powerUp_clock.restart();
+					if (powerUp_8secTimer == 8) {
+						powerUp_Sound.stop();
+						powerUp_8secTimer = 0;
+						for (int i = 0; i < ghosts_number; i++) 
+							ghosts[i].animation = 0;
 					}
 				}
 			}
@@ -1872,16 +1879,16 @@ void ghosts_animation(struct Ghosts ghosts[])
 			switch (ghosts[i].moving_direction)
 			{
 			case 0:
-				ghosts[i].sprite.setTextureRect(IntRect(0, 0, 40, 30));
+				ghosts[i].sprite.setTextureRect(IntRect(0, 0, 38, 38));
 				break;
 			case 1:
-				ghosts[i].sprite.setTextureRect(IntRect(40, 0, 40, 30));
+				ghosts[i].sprite.setTextureRect(IntRect(38, 0, 38, 38));
 				break;
 			case 2:
-				ghosts[i].sprite.setTextureRect(IntRect(40 * 2, 0, 40, 30));
+				ghosts[i].sprite.setTextureRect(IntRect(38 * 2, 0, 38, 38));
 				break;
 			case 3:
-				ghosts[i].sprite.setTextureRect(IntRect(40 * 3, 0, 40, 30));
+				ghosts[i].sprite.setTextureRect(IntRect(38 * 3, 0, 38, 38));
 				break;
 			}
 		}
@@ -1904,42 +1911,34 @@ bool check_wall(int& direction, Sprite& ghost)
 
 	if (direction == 0)
 	{
-		get_tile_cor(x + (ghost_width / 2), y - (ghost_height / 2), row_1, col_1);
-		get_tile_cor(x + (ghost_width / 2), y + (ghost_height / 2), row_2, col_2);
-		if (row_1 == row_2 && col_1 == col_2) condition_1 = true;
+		condition_1 = same_tile_horz(ghost);
 
-		get_tile_cor(x + (ghost_width / 2) + ghostSpeed, y, row, col);
+		get_tile_cor(x + (ghost_width / 2) + ghostSpeed + 0.001, y, row, col);
 		if (map_[row][col].type == tile_type::wall || !condition_1)
 			can_move = false;
 	}
 	else if (direction == 1)
 	{
-		get_tile_cor(x - (ghost_width / 2), y - (ghost_height / 2), row_1, col_1);
-		get_tile_cor(x + (ghost_width / 2), y - (ghost_height / 2), row_2, col_2);
-		if (row_1 == row_2 && col_1 == col_2) condition_1 = true;
+		condition_1 = same_tile_vert(ghost);
 
-		get_tile_cor(x, y - ghostSpeed - (ghost_height / 2) + diff, row, col);
+		get_tile_cor(x, y - ghostSpeed - (ghost_height / 2) - 0.001, row, col);
 		if (map_[row][col].type == tile_type::wall || !condition_1)
 			can_move = false;
 	}
 	else if (direction == 2)
 	{
-		get_tile_cor(x - (ghost_width / 2), y - (ghost_height / 2), row_1, col_1);
-		get_tile_cor(x - (ghost_width / 2), y + (ghost_height / 2), row_2, col_2);
-		if (row_1 == row_2 && col_1 == col_2) condition_1 = true;
+		condition_1 = same_tile_horz(ghost);
 
-		get_tile_cor(x - ((ghost_width / 2) - diff) - ghostSpeed, y, row, col);
+		get_tile_cor(x - ((ghost_width / 2) - 0.001) - ghostSpeed, y, row, col);
 		if (map_[row][col].type == tile_type::wall || !condition_1)
 			can_move = false;
 
 	}
 	else if (direction == 3)
 	{
-		get_tile_cor(x - (ghost_width / 2), y + (ghost_height / 2), row_1, col_1);
-		get_tile_cor(x + (ghost_width / 2), y + (ghost_height / 2), row_2, col_2);
-		if (row_1 == row_2 && col_1 == col_2) condition_1 = true;
+		condition_1 = same_tile_vert(ghost);
 
-		get_tile_cor(x, y + ghostSpeed + (ghost_height / 2), row, col);
+		get_tile_cor(x, y + ghostSpeed + (ghost_height / 2) + 0.001, row, col);
 		if (map_[row][col].type == tile_type::wall || !condition_1)
 			can_move = false;
 	}
@@ -1952,6 +1951,8 @@ void move_random(struct Ghosts ghosts[])
 
 	for (int i = 0; i < 4; i++)
 	{
+		if (ghosts[i].isBFS == true)
+			continue;
 		int avaialble_ways = 0;
 		for (int moves = 0; moves < 4; moves++)
 		{
