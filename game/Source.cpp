@@ -42,20 +42,6 @@ enum class tile_type
 	//Wall=0 ,Point=1 ,Space=2 ,powerup=3 ,Ghosts=4 ,Pacmam=5 ,cherry=6
 };
 
-// our small data base
-string username;
-map<string, int> Users;
-void SaveHighScores();
-void SaveNewScore(int score);
-void LoadHighScores();
-void UsernameWindow(RenderWindow& window);
-template <size_t ROW, size_t COL>
-void LoadEasyMap(int(&map)[ROW][COL]);
-template <size_t ROW2, size_t COL2>
-void LoadmediumMap(int(&map)[ROW2][COL2]);
-template <size_t ROW3, size_t COL3>
-void LoadhardMap(int(&map)[ROW3][COL3]);
-
 struct tile
 {
 	Sprite cherry;
@@ -684,7 +670,6 @@ void mainmenu2(RenderWindow& window) {
 					soundclick.play();
 					//alhassan
 					LoadEasyMap(changing_map);
-					originaleasywindow(window);
 					Easy(window);
 					LoadingWindow(window);
 				}
@@ -950,7 +935,7 @@ void originaleasywindow(RenderWindow& window) {
 	float cherry_x = 9 * TILESIZE + TILESIZE / 2 + offset_x;
 	float cherry_y = 3 * TILESIZE + TILESIZE / 2 + offset_y;
 	cherrySprite.setPosition(cherry_x, cherry_y);
-	bool cherry_appear = false;
+	bool cherry = false;
 
 	//afterEdit
 	Font numberFont;
@@ -1215,8 +1200,8 @@ void originaleasywindow(RenderWindow& window) {
 			}
 			//eat cherry
 
-			if (pacman.sprite.getGlobalBounds().intersects(cherrySprite.getGlobalBounds()) && cherry_appear == true && pacman.cherry_taken == false) {
-				cherry_appear = false;
+			if (pacman.sprite.getGlobalBounds().intersects(cherrySprite.getGlobalBounds()) && cherry == true && pacman.cherry_taken == false) {
+				cherry = false;
 				pacman.cherry_taken = true;
 				eatcherrysound.play();
 				pacman.score += 100;
@@ -1227,21 +1212,6 @@ void originaleasywindow(RenderWindow& window) {
 
 			//cherry
 			elapsedTime_cherry = clock_cherry.getElapsedTime().asSeconds();
-			if (elapsedTime_cherry >= 5 && hundredshow == false && pacman.isAlive) {
-				cherry_appear = true;
-
-			}
-			if (elapsedTime_cherry >= 10) {
-				cherry_appear = false;
-				hundredshow = false;
-
-			}
-			//eat cherry
-			if (pacman.sprite.getGlobalBounds().intersects(cherrySprite.getGlobalBounds()) && cherry_appear) {
-				cherry_appear = false;
-				eatcherrysound.play();
-				pacman.score += 100;
-				hundredshow = true;
 			if (elapsedTime_cherry > 5 && hundredshow == false && pacman.isAlive) {
 				if (elapsedTime_cherry > 10 && hundredshow == false && pacman.isAlive) {
 					cherry = true;
@@ -1341,51 +1311,6 @@ void originaleasywindow(RenderWindow& window) {
 					pause(window);
 				}
 			}
-
-			//hole 
-			int left_hole = offset_x, right_hole = offset_x + (NUMBERCOLUMNS * TILESIZE) - TILESIZE;
-			//check if the player entered the left hole to move him to the right one
-			if (x_pac + TILESIZE / 2 <= left_hole && pacman.moving_direction == 2) {
-				pacman.sprite.setPosition(right_hole + TILESIZE / 2, y_pac);
-			}
-			//check if the player entered the right hole to move him to the left one 
-			if (x_pac - player_width / 2 >= right_hole && pacman.moving_direction == 0) {
-				pacman.sprite.setPosition(left_hole - TILESIZE / 2, y_pac);
-			}
-
-		}
-
-		window.clear();
-		//map
-		for (int i = 0; i < NUMBERROW; i++)
-		{
-			for (int j = 0; j < NUMBERCOLUMNS; j++)
-			{
-				window.draw(map_[i][j].recwall);
-
-				if (map_[i][j].type == tile_type::score)
-					window.draw(map_[i][j].cipoint);
-				if (map_[i][j].type == tile_type::powerup)
-					window.draw(map_[i][j].cpowerup);
-			}
-		}
-
-		//pause button and score text
-		window.draw(s);
-		window.draw(timer);
-		window.draw(circle);
-		window.draw(line1);
-		window.draw(line2);
-
-		Mouse mouse;
-
-		if (circle.getGlobalBounds().contains(mouse.getPosition(window).x, mouse.getPosition(window).y)) {
-
-			line1.setFillColor(Color::Red);
-			line2.setFillColor(Color::Red);
-
-			if (Mouse::isButtonPressed(Mouse::Left)) {
-				gameS.stop();
 			else {
 				line1.setFillColor(Color::White);
 				line2.setFillColor(Color::White);
@@ -1441,64 +1366,8 @@ void Medium(RenderWindow& window) {
 				}
 			}
 		}
-		else {
-			line1.setFillColor(Color::White);
-			line2.setFillColor(Color::White);
-		}
-
-		//pacman 
-		if (cherry_appear)
-			window.draw(cherrySprite);
-
-		for (int i = 0; i < 4; i++)
-		{
-			window.draw(ghosts[i].sprite);
-		}
-
-		window.draw(pacman.sprite);
-
-		if (hundredshow)
-			window.draw(hundred);
-
-		if (!pacman.isAlive)
-			sf::sleep(sf::seconds(pacman.delay));
-
-		stringstream sec3_manip;
-		sec3_manip << timer_3seconds;
-		if (sec3_timer == true && sec3_clock.getElapsedTime().asSeconds() >= 1) {
-			timer_3seconds++;
-			if (timer_3seconds == 3)
-				sec3_timer = false;
-		}
-		if (sec3_timer)
-			window.draw(sec3_text);
-
-		window.draw(rect_right);
-		window.draw(rect_left);
 		window.clear();
 		LoadingWindow(window);
-		originalmediumwindow(window);
-		window.display();
-	}
-}
-
-//medium windows
-void Medium(RenderWindow& window) {
-	while (window.isOpen()) {
-		Event event;
-		while (window.pollEvent(event)) {
-			if (event.type == Event::Closed) {
-				window.close();
-				break;
-			}
-			else if (event.type == Event::KeyReleased) {
-				if (event.key.code == Keyboard::Escape) {
-					num = 0;
-					return;
-				}
-			}
-		}
-		window.clear();
 		originalmediumwindow(window);
 		window.display();
 	}
