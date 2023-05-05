@@ -1566,7 +1566,6 @@ void introduction_window(RenderWindow& window)
 	texturePAC_MAN.loadFromFile("pngs/PAC-MAN.png");
 	Sprite spritePAC_MAN;
 	spritePAC_MAN.setTexture(texturePAC_MAN);
-	spritePAC_MAN.setPosition(0.0f, -400.0f);
 	//spritePAC_MAN.setPosition(0.0f, -400.0f);
 
 	Texture texturePA_MAN;
@@ -1579,7 +1578,7 @@ void introduction_window(RenderWindow& window)
 	Sprite spriteC;
 	spriteC.setTexture(textureC);
 	float C_x = (-132.0f - 57.0f) * 2;
-	spriteC.setPosition(C_x, -400.0f);
+	//spriteC.setPosition(C_x, -400.0f);
 	spriteC.setPosition(C_x, 0);
 
 	Texture textureCclosed;
@@ -1587,14 +1586,14 @@ void introduction_window(RenderWindow& window)
 	Sprite spriteCclosed;
 	spriteCclosed.setTexture(textureCclosed);
 	float Cclosed_x = (-132.0f) * 2;
-	spriteCclosed.setPosition(Cclosed_x, -400.0f);
+	//spriteCclosed.setPosition(Cclosed_x, -400.0f);
 	spriteCclosed.setPosition(Cclosed_x, 0);
 
 	SoundBuffer buffer;
 	buffer.loadFromFile("sounds/Pacman_Introduction_Music-KP-826387403(1).wav");
 	Sound Soundpacman;
 	Soundpacman.setBuffer(buffer);
-	Soundpacman.setLoop(true);
+	//Soundpacman.setLoop(true);
 	Soundpacman.play();
 
 	Clock clock;
