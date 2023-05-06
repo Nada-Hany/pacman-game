@@ -24,7 +24,7 @@ using namespace sf;
 #define player_height 38
 const int diff = ((TILESIZE - player_width) / 2);
 #define baseSpeed 2.5
-#define baseSpeed 2
+#define baseSpeed 4
 //ghost 
 #define speedInPowerUp 1
 #define ghostSpeed 2
@@ -104,7 +104,7 @@ struct Ghosts
 	Sprite sprite;
 	Sprite home_sprite;
 	direction direction;
-	int moving_direction = -1;
+	int moving_direction = 1;
 	// 0 right , 1 up , 2 left , 3 down
 	int frames;
 	// 0 normal , 1 power up , 2 face , 3 end time
@@ -112,7 +112,6 @@ struct Ghosts
 	int initial_x, initial_y;
 	bool isDead = false;
 	bool gotHome = false;
-	
 	bool isBFS = false;
 	float speed = ghostSpeed;
 	int frames_per_tile;
@@ -183,6 +182,7 @@ void LoadmediumMap(int(&map)[ROW2][COL2]);
 template <size_t ROW3, size_t COL3>
 void LoadhardMap(int(&map)[ROW3][COL3]);
 void LoadingWindow(RenderWindow& window);
+
 
 //funcs
 void get_tile_cor(float x, float y, int& row, int& col) {
@@ -357,20 +357,20 @@ void change_direction(Sprite& sprite, int& keyPressed, int& moving_direction, in
 }
 
 void ghosts_animation(struct Ghosts ghosts[]);
-bool check_wall(int& directio0, Sprite& ghostn);
+bool check_wall(int& direction, Sprite& ghost);
 void move_random(struct Ghosts ghosts[]);
 
 void restart_pacman(PACMAN& pacman);
 void restart_ghost(Ghosts& ghosts);
 
 //BFS
-//bool exist_in_closed(tile* tile, vector <struct tile>& closed);	
-//void find_optimal_path(tile* current, tile* target, vector <tile>* get_path);
-//void catch_target(Ghosts& ghost, Sprite& target);
-//void random_direction(Sprite& sprite, int& direction);
+bool exist_in_closed(tile* tile, vector <struct tile>& closed);	
+void find_optimal_path(tile* current, tile* target, vector <tile>* get_path);
+void catch_target(Ghosts& ghost, Sprite& target);
+void random_direction(Sprite& sprite, int& direction);
 
 int num = 3, num2 = 0;
-bool isPaused = true;
+bool isPaused = false, sec3_timer = true;
 int timer_sec = 0, timer_min = 0;
 
 //small ghosts of mainmenu
@@ -379,7 +379,7 @@ Texture redghost[4];
 int main() {
 
 	RenderWindow window(VideoMode(1920, 1080), "Main Menu", Style::Fullscreen);
-	window.setFramerateLimit(40);
+	window.setFramerateLimit(30);
 
 	//pacman
 	pacman.alivePac_texture.loadFromFile("pngs/alive pacman2-20.png");
@@ -412,11 +412,12 @@ int main() {
 	ghosts[3].sprite.setPosition(ghosts[3].initial_x, ghosts[3].initial_y);
 
 	//setting home sprite 
-	/*for (int i = 0; i < ghosts_number; i++) {
+	for (int i = 0; i < ghosts_number; i++) {
 		ghosts[i].home_sprite.setTexture(blue_ghost_texture);
 		ghosts[i].home_sprite.setOrigin(ghost_width / 2, ghost_height / 2);
 		ghosts[i].home_sprite.setPosition(ghosts[i].initial_x, ghosts[i].initial_y);
-	}*/
+	}
+
 
 	Image icon;
 	icon.loadFromFile("pngs/cherry.png");
@@ -424,12 +425,12 @@ int main() {
 
 	window.setFramerateLimit(60);
 	while (window.isOpen()) {
-		if (num == 3) 
+		if (num == 3) {
 			introduction_window(window);
-
-		if (num == 1) 
+		}
+		if (num == 1) {
 			play(window);
-		
+		}
 	}
 	return 0;
 }
@@ -688,23 +689,44 @@ void mainmenu2(RenderWindow& window) {
 				window.close();
 				break;
 			}
-			else if (event.type == Event::KeyReleased) {
+			if (event.type == Event::KeyReleased) {
 				if (event.key.code == Keyboard::Escape) {
 					soundclick.play();
 					mainmenu(window);
 				}
 			}
-			else if (event.type == Event::MouseButtonPressed) {
+			if (event.type == Event::MouseButtonPressed) {
 				Vector2f mousePos = window.mapPixelToCoords(Mouse::getPosition(window));
 				if (mainmenu2[0].getGlobalBounds().contains(mousePos)) {
 					soundclick.play();
 					//alhassan
 					LoadEasyMap(changing_map);
 					Easy(window);
+					LoadingWindow(window);
 				}
 			}
 
-			else if (event.type == Event::MouseMoved) {
+			if (event.type == Event::MouseButtonPressed) {
+				Vector2f mousePos = window.mapPixelToCoords(Mouse::getPosition(window));
+				if (mainmenu2[1].getGlobalBounds().contains(mousePos)) {
+					soundclick.play();
+					LoadmediumMap(changing_map);
+					Medium(window);
+					LoadingWindow(window);
+				}
+			}
+
+			if (event.type == Event::MouseButtonPressed) {
+				Vector2f mousePos = window.mapPixelToCoords(Mouse::getPosition(window));
+				if (mainmenu2[2].getGlobalBounds().contains(mousePos)) {
+					soundclick.play();
+					LoadhardMap(changing_map);
+					Hard(window);
+					LoadingWindow(window);
+				}
+			}
+
+			if (event.type == Event::MouseMoved) {
 				// Check if the mouse is over the button
 				sf::Vector2f mousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
 				if (mainmenu2[0].getGlobalBounds().contains(mousePos)) {
@@ -722,6 +744,7 @@ void mainmenu2(RenderWindow& window) {
 					if (!sound2) {
 						// Play the sound if the mouse just entered the button
 						soundselect.play();
+
 					}
 					sound2 = true;
 				}
@@ -734,6 +757,7 @@ void mainmenu2(RenderWindow& window) {
 					if (!sound3) {
 						// Play the sound if the mouse just entered the button
 						soundselect.play();
+
 					}
 					sound3 = true;
 				}
@@ -762,9 +786,6 @@ void mainmenu2(RenderWindow& window) {
 
 			if (Mouse::isButtonPressed(Mouse::Left)) {
 				mainmenu2[0].setFillColor(Color::White);
-				soundclick.play();
-				Easy(window);
-				//originalwindow(window);
 			}
 		}
 		else {
@@ -778,11 +799,6 @@ void mainmenu2(RenderWindow& window) {
 
 			if (Mouse::isButtonPressed(Mouse::Left)) {
 				mainmenu2[1].setFillColor(Color::White);
-				//function of medium and call inside it originalwindow function
-				LoadmediumMap(changing_map);
-
-				Medium(window);
-
 
 			}
 		}
@@ -796,10 +812,6 @@ void mainmenu2(RenderWindow& window) {
 
 			if (Mouse::isButtonPressed(Mouse::Left)) {
 				mainmenu2[2].setFillColor(Color::White);
-				//function of hard and call inside it originalwindow function
-				LoadhardMap(changing_map);
-
-				Hard(window);
 
 			}
 		}
@@ -869,7 +881,7 @@ void Easy(RenderWindow& window) {
 			}
 		}
 		window.clear();
-		//LoadingWindow(window);
+		LoadingWindow(window);
 		originaleasywindow(window);
 		window.display();
 	}
@@ -950,9 +962,6 @@ void originaleasywindow(RenderWindow& window) {
 	timer.setFillColor(Color::White);
 	timer.setPosition(50, 120);
 
-	sec3_text.setFont(font);
-	sec3_text.setCharacterSize(200);
-
 	//cherry
 	Texture cherryTexture;
 	cherryTexture.loadFromFile("pngs/cherry.png");
@@ -964,7 +973,6 @@ void originaleasywindow(RenderWindow& window) {
 	cherrySprite.setPosition(cherry_x, cherry_y);
 	bool cherry = false;
 
-	//afterEdit
 	Font numberFont;
 	numberFont.loadFromFile("fonts/Joystix.ttf");
 	bool hundredshow = false;
@@ -975,6 +983,10 @@ void originaleasywindow(RenderWindow& window) {
 	hundred.setFillColor(Color::Yellow);
 	hundred.setPosition(cherry_x, cherry_y + 10);
 	hundred.setOrigin((player_width / 2), (player_height / 2));
+
+	sec3_text.setFont(font);
+	sec3_text.setCharacterSize(200);
+
 
 	//hole
 	RectangleShape rect_right;
@@ -996,10 +1008,12 @@ void originaleasywindow(RenderWindow& window) {
 	powerup_ghost_texture.loadFromFile("pngs/ghosts in power up mode.png");
 	face_ghost_texture.loadFromFile("pngs/Ghost eyes.png");
 	endtime_ghost_texture.loadFromFile("pngs/blue and grey ghosts.png");
+
 	ghosts[0].isBFS = true;
 
+
 	bool sound = 0, sound2 = 0;
-	bool gamess = 1, sec3_timer = true;;
+	bool gamess = 1;
 	int timer_3seconds = 4, powerUp_8secTimer = 0;
 	float elapsedTime_cherry = 0;
 
@@ -1007,24 +1021,30 @@ void originaleasywindow(RenderWindow& window) {
 	Time resettime = seconds(4.0f);
 	Clock clock_cherry, play_clock, sec3_clock, powerUp_clock;;
 
-	isPaused = true;
+	isPaused = true , sec3_timer = true;
 
 	//getting the path of home to each ghost
 
-	//for (int i = 0; i < ghosts_number; i++) {
-	//	//target
-	//	float x_home = ghosts[i].initial_x, y_home = ghosts[i].initial_y;
-	//	int row_home, col_home;
-	//	get_tile_cor(x_home, y_home, row_home, col_home);
-	//	tile* target = &map_[row_home][col_home];
-	//	//start
-	//	float x_ghost = ghosts[i].sprite.getPosition().x, y_ghost = ghosts[i].sprite.getPosition().y;
-	//	int row_ghost, col_ghost;
-	//	get_tile_cor(x_ghost, y_ghost, row_ghost, col_ghost);
-	//	tile* start = &map_[row_ghost][col_ghost];
-	//	find_optimal_path(start, target, &ghosts[i].home_path);
+	for (int i = 0; i < ghosts_number; i++) {
+		//target
+		float x_home = ghosts[i].initial_x, y_home = ghosts[i].initial_y;
+		int row_home, col_home;
+		get_tile_cor(x_home, y_home, row_home, col_home);
+		tile* target = &map_[row_home][col_home];
+		//start
+		float x_ghost = ghosts[i].sprite.getPosition().x, y_ghost = ghosts[i].sprite.getPosition().y;
+		int row_ghost, col_ghost;
+		get_tile_cor(x_ghost, y_ghost, row_ghost, col_ghost);
+		tile* start = &map_[row_ghost][col_ghost];
+		find_optimal_path(start, target, &ghosts[i].home_path);
+	}
 
-	//}
+	for (int i = 0; i < ghosts_number; i++) {
+		ghosts[i].algo_window_BFS = 10;
+		ghosts[i].num_tiles_past_BFS = ghosts[i].algo_window_BFS;
+		ghosts[i].frames_per_tile = TILESIZE / ghosts[i].speed;
+		
+	}
 
 	while (window.isOpen()) {
 
@@ -1079,7 +1099,7 @@ void originaleasywindow(RenderWindow& window) {
 			}
 
 		}
-		}
+
 
 		Event event;
 		while (window.pollEvent(event)) {
@@ -1149,7 +1169,7 @@ void originaleasywindow(RenderWindow& window) {
 		//3 seconds timer
 		stringstream sec3_manip;
 
-		if (sec3_timer && sec3_clock.getElapsedTime().asSeconds() >= 1) {
+		/*if (sec3_timer && sec3_clock.getElapsedTime().asSeconds() >= 1) {
 			timer_3seconds--;
 			sec3_clock.restart();
 			if (timer_3seconds == 0)
@@ -1157,7 +1177,7 @@ void originaleasywindow(RenderWindow& window) {
 				sec3_timer = false;
 				isPaused = false;
 			}
-		}
+		}*/
 		sec3_manip << timer_3seconds;
 		sec3_text.setString(sec3_manip.str());
 		FloatRect sec3_floatrect = sec3_text.getLocalBounds();
@@ -1184,7 +1204,7 @@ void originaleasywindow(RenderWindow& window) {
 		score_manip << "score:" << pacman.score;
 		s.setString(score_manip.str());
 
-		if (isPaused == false)
+		if (/*!*/  isPaused/* && sec3_timer == false*/)
 		{
 			//moving
 			float x_pac = pacman.sprite.getPosition().x, y_pac = pacman.sprite.getPosition().y;
@@ -1192,14 +1212,13 @@ void originaleasywindow(RenderWindow& window) {
 			get_tile_cor(x_pac, y_pac, row_pac, col_pac);
 			change_direction(pacman.sprite, pacman.keyPressed, pacman.moving_direction, row_pac, col_pac);
 
-			if(pacman.moving_direction == 0 && pacman.isAlive) {
+			if (pacman.moving_direction == 0 && pacman.isAlive) {
 
 				move_right(pacman.sprite, pacman.moving_direction);
 				pacman.animation_alive++;
 				pacman.sprite.setScale(1, 1);
 				pacman.sprite.setTextureRect(IntRect(player_width * pacman.animation_alive, 0, player_width, player_height));
 				pacman.animation_alive %= 8;
-				pacman.animetion_dead %= 12;
 			}
 			else if (pacman.moving_direction == 2 && pacman.isAlive) {
 				move_left(pacman.sprite, pacman.moving_direction);
@@ -1207,7 +1226,7 @@ void originaleasywindow(RenderWindow& window) {
 				pacman.sprite.setScale(-1, 1);
 				pacman.sprite.setTextureRect(IntRect(player_width * pacman.animation_alive, 0, player_width, player_height));
 				pacman.animation_alive %= 8;
-				pacman.animetion_dead %= 12;
+
 
 			}
 			else if (pacman.moving_direction == 1 && pacman.isAlive) {
@@ -1216,7 +1235,6 @@ void originaleasywindow(RenderWindow& window) {
 				pacman.sprite.setScale(1, 1);
 				pacman.sprite.setTextureRect(IntRect(player_width * pacman.animation_alive, player_height, player_width, player_height));
 				pacman.animation_alive %= 8;
-				pacman.animetion_dead %= 12;
 
 			}
 			else if (pacman.moving_direction == 3 && pacman.isAlive) {
@@ -1225,11 +1243,33 @@ void originaleasywindow(RenderWindow& window) {
 				pacman.sprite.setScale(1, -1);
 				pacman.sprite.setTextureRect(IntRect(player_width * pacman.animation_alive, player_height, player_width, player_height));
 				pacman.animation_alive %= 8;
-				pacman.animetion_dead %= 12;
+
 			}
 
 			//ghosts
+			//random move
 			move_random(ghosts);
+
+			for (int i = 0; i < ghosts_number; i++) {
+				if (!ghosts[i].isBFS)
+				{
+					random_direction(ghosts[i].sprite, ghosts[i].moving_direction);
+					switch ((ghosts[i].moving_direction)) {
+					case 0:
+						move_right(ghosts[i].sprite, (ghosts[i].moving_direction));
+						break;
+					case 1:
+						move_up(ghosts[i].sprite, (ghosts[i].moving_direction));
+						break;
+					case 2:
+						move_left(ghosts[i].sprite, (ghosts[i].moving_direction));
+						break;
+					case 3:
+						move_down(ghosts[i].sprite, (ghosts[i].moving_direction));
+						break;
+					}
+				}
+			}
 
 			ghosts_animation(ghosts);
 
@@ -1251,10 +1291,14 @@ void originaleasywindow(RenderWindow& window) {
 					powerUp_Sound.play();
 					pacman.powerBallBool = true; // for mai ghost
 					for (int i = 0; i < ghosts_number; i++)
+					{
 						ghosts[i].animation = 1;
+						ghosts[i].speed = speedInPowerUp;
+
+					}
 				}
 			}
-			//if power up mode activated 
+			//if power up mode activated
 			if (pacman.powerBallBool)
 			{
 
@@ -1278,19 +1322,54 @@ void originaleasywindow(RenderWindow& window) {
 					if (powerUp_8secTimer == 8) {
 						powerUp_Sound.stop();
 						powerUp_8secTimer = 0;
-						for (int i = 0; i < ghosts_number; i++) 
+						for (int i = 0; i < ghosts_number; i++)
 						{
+							if (ghosts[i].isDead)
+								continue;
 							ghosts[i].animation = 0;
+							ghosts[i].speed = ghostSpeed;
 						}
 					}
 				}
 			}
-			//eaten ghost goes home! 
-		/*	for (int i = 0; i < ghosts_number; i++) {
+
+			//eaten ghosts go home! 
+			for (int i = 0; i < ghosts_number; i++) {
 				if (!ghosts[i].isDead)
 					continue;
 				catch_target(ghosts[i], ghosts[i].home_sprite);
-			}*/
+
+				switch ((ghosts[i].moving_direction)) {
+				case 0:
+					move_right(ghosts[i].sprite, (ghosts[i].moving_direction));
+					break;
+				case 1:
+					move_up(ghosts[i].sprite, (ghosts[i].moving_direction));
+					break;
+				case 2:
+					move_left(ghosts[i].sprite, (ghosts[i].moving_direction));
+					break;
+				case 3:
+					move_down(ghosts[i].sprite, (ghosts[i].moving_direction));
+					break;
+				}
+				float x_ghost = ghosts[i].sprite.getPosition().x,
+					y_ghost = ghosts[i].sprite.getPosition().y;
+				int row_ghost, col_ghost;
+				float x_home = ghosts[i].home_sprite.getPosition().x,
+					y_home = ghosts[i].home_sprite.getPosition().y;
+				int row_home, col_home;
+				get_tile_cor(x_ghost, y_ghost, row_ghost, col_ghost);
+				get_tile_cor(x_home, y_home, row_home, col_home);
+				if (&map_[row_home][col_home] == &map_[row_ghost][col_ghost]) {
+					ghosts[i].isDead = false;
+					ghosts[i].speed = ghostSpeed;
+					ghosts[i].animation = 0;
+				}
+				
+			}
+			
+			
 
 			//eat cherry
 			if (pacman.sprite.getGlobalBounds().intersects(cherrySprite.getGlobalBounds()) && cherry == true && pacman.cherry_taken == false) {
@@ -1300,26 +1379,20 @@ void originaleasywindow(RenderWindow& window) {
 				pacman.score += 100;
 				hundredshow = true;
 			}
-
 			//cherry appearing 
 			elapsedTime_cherry = clock_cherry.getElapsedTime().asSeconds();
-			
-			if (elapsedTime_cherry > 10 && hundredshow == false && pacman.isAlive) {
-				cherry = true;
-			}
-			if (elapsedTime_cherry > 10) {
-				cherry = false;
-				hundredshow = false;
-			}
 
-			//eat cherry
-			if (pacman.sprite.getGlobalBounds().intersects(cherrySprite.getGlobalBounds()) && cherry) {
-				cherry = false;
-				eatcherrysound.play();
-				pacman.score += 100;
-				hundredshow = true;
-			}
+			if (elapsedTime_cherry > 5 && hundredshow == false && pacman.isAlive) {
+				if (elapsedTime_cherry > 10 && hundredshow == false && pacman.isAlive) {
+					cherry = true;
 
+				}
+				if (elapsedTime_cherry > 10) {
+					cherry = false;
+					hundredshow = false;
+
+				}
+			}
 			//collision with the ghost so pacman would die
 
 		/*	for (int i = 0; i < ghosts_number; i++) {
@@ -1328,13 +1401,12 @@ void originaleasywindow(RenderWindow& window) {
 					pacman.sprite.setTexture(pacman.deadPac_texture);
 				}
 			}*/
-			//if pamcan is dead -> play death sound
+
+			// if pamcan is dead->play death sound
 			if (pacman.isAlive == false && pacman.deathSound == false) {
 				deathSound.play();
 				pacman.deathSound = true;
 			}
-
-
 			//hole 
 			int left_hole = offset_x, right_hole = offset_x + (NUMBERCOLUMNS * TILESIZE) - TILESIZE;
 
@@ -1343,6 +1415,27 @@ void originaleasywindow(RenderWindow& window) {
 			}
 			if (x_pac - player_width / 2 >= right_hole && pacman.moving_direction == 0) {
 				pacman.sprite.setPosition(left_hole - TILESIZE / 2, y_pac);
+			}
+
+			//red ghost catch pacman
+			for (int i = 0; i < ghosts_number; i++) {
+				if (!ghosts[i].isBFS)
+					continue;
+				catch_target(ghosts[i], pacman.sprite);
+				switch ((ghosts[i].moving_direction)) {
+				case 0:
+					move_right(ghosts[i].sprite, (ghosts[i].moving_direction));
+					break;
+				case 1:
+					move_up(ghosts[i].sprite, (ghosts[i].moving_direction));
+					break;
+				case 2:
+					move_left(ghosts[i].sprite, (ghosts[i].moving_direction));
+					break;
+				case 3:
+					move_down(ghosts[i].sprite, (ghosts[i].moving_direction));
+					break;
+				}
 			}
 
 		}
@@ -1360,6 +1453,7 @@ void originaleasywindow(RenderWindow& window) {
 					window.draw(map_[i][j].cpowerup);
 			}
 		}
+
 		//pause button and score text
 		window.draw(s);
 		window.draw(timer);
@@ -1392,7 +1486,7 @@ void originaleasywindow(RenderWindow& window) {
 		if (cherry)
 			window.draw(cherrySprite);
 
-		for (int i = 0; i < 4; i++)
+		for (int i = 0; i < 1; i++)
 		{
 			window.draw(ghosts[i].sprite);
 		}
@@ -1405,15 +1499,14 @@ void originaleasywindow(RenderWindow& window) {
 		if (!pacman.isAlive)
 			sf::sleep(sf::seconds(pacman.delay));
 
-
-		if (sec3_timer)
-			window.draw(sec3_text);
+		/*if (sec3_timer)
+			window.draw(sec3_text);*/
 
 		window.draw(rect_right);
 		window.draw(rect_left);
 		window.display();
 	}
-
+}
 
 //medium windows
 void Medium(RenderWindow& window) {
@@ -1440,6 +1533,34 @@ void Medium(RenderWindow& window) {
 
 //original medium window
 void originalmediumwindow(RenderWindow& window) {
+	//circle of pause
+	CircleShape circle(50, 50);
+	circle.setOrigin(Vector2f(50, 50));
+	circle.setPosition(Vector2f(1800, 70));
+	circle.setFillColor(Color::Black);
+	circle.setOutlineThickness(5);
+	circle.setOutlineColor(Color::White);
+
+
+	while (window.isOpen()) {
+		Event event;
+		while (window.pollEvent(event)) {
+			if (event.type == Event::Closed) {
+				window.close();
+				break;
+			}
+			else if (event.type == Event::KeyReleased) {
+				if (event.key.code == Keyboard::Escape) {
+					num = 0;
+					return;
+				}
+			}
+		}
+		window.clear();
+		window.draw(circle);
+		window.display();
+
+	}
 }
 
 //hard window
@@ -1572,6 +1693,7 @@ void pause(RenderWindow& window) {
 			if (Mouse::isButtonPressed(Mouse::Left)) {
 				menupause[0].setFillColor(Color::White);
 				soundclick.play();
+				isPaused = false;
 				originaleasywindow(window);
 			}
 		}
@@ -1763,7 +1885,7 @@ void UsernameWindow(RenderWindow& window) {
 
 	Font font;
 	font.loadFromFile("fonts/CrackMan.ttf");
-	
+
 	spritePAC_MAN.setScale(.05f, 0.5f);
 	spritePAC_MAN.setPosition(0, -400.0f);
 
@@ -1783,15 +1905,12 @@ void UsernameWindow(RenderWindow& window) {
 			if (event.type == Event::Closed || event.key.code == Keyboard::Key::Escape) {
 				// suppose to make ******************AreYouSure()***************
 				soundclick.play();
-				num = 0;
 				soundclick.play();
 				window.close();
 			}
 
 			// save username
 			if (Keyboard::isKeyPressed(Keyboard::Enter)) {
-				soundclick.play();
-				num = 0;
 				soundclick.play();
 				mainmenu(window);
 			}
@@ -2033,20 +2152,21 @@ bool check_wall(int& direction, Sprite& ghost)
 	return can_move;
 }
 
-void move_random(struct Ghosts ghosts[])
+void move_random(Ghosts ghost[])
 {
 	srand((int)time(0));
 
 	for (int i = 0; i < 4; i++)
 	{
-		if (ghosts[i].isBFS == true)
+		if (ghosts[i].isBFS)
 			continue;
+
 		int avaialble_ways = 0;
 		for (int moves = 0; moves < 4; moves++)
 		{
-			if (moves != (2 + ghosts[i].moving_direction) % 4)
+			if (moves != (2 + ghost[i].moving_direction) % 4)
 			{
-				if (check_wall(moves, ghosts[i].sprite))
+				if (check_wall(moves, ghost[i].sprite))
 
 					avaialble_ways++;
 			}
@@ -2055,28 +2175,28 @@ void move_random(struct Ghosts ghosts[])
 		int random_direction = rand() % 4;
 		if (avaialble_ways > 0)
 		{
-			while (check_wall(random_direction, ghosts[i].sprite) == 0 || random_direction == (2 + ghosts[i].moving_direction) % 4)
+			while (check_wall(random_direction, ghost[i].sprite) == 0 || random_direction == (2 + ghost[i].moving_direction) % 4)
 			{
 				random_direction = rand() % 4;
 			}
 
-			ghosts[i].moving_direction = random_direction;
+			ghost[i].moving_direction = random_direction;
 		}
 		else
 		{
-			ghosts[i].moving_direction = (2 + ghosts[i].moving_direction) % 4;
+			ghost[i].moving_direction = (2 + ghost[i].moving_direction) % 4;
 		}
-		if (ghosts[i].moving_direction == 0)
-			ghosts[i].sprite.move(ghostSpeed, 0);
+		if (ghost[i].moving_direction == 0)
+			ghost[i].sprite.move(ghostSpeed, 0);
 
-		else  if (ghosts[i].moving_direction == 1)
-			ghosts[i].sprite.move(0, -ghostSpeed);
+		else  if (ghost[i].moving_direction == 1)
+			ghost[i].sprite.move(0, -ghostSpeed);
 
-		else if (ghosts[i].moving_direction == 2)
-			ghosts[i].sprite.move(-ghostSpeed, 0);
+		else if (ghost[i].moving_direction == 2)
+			ghost[i].sprite.move(-ghostSpeed, 0);
 
-		else if (ghosts[i].moving_direction == 3)
-			ghosts[i].sprite.move(0, ghostSpeed);
+		else if (ghost[i].moving_direction == 3)
+			ghost[i].sprite.move(0, ghostSpeed);
 	}
 
 
@@ -2107,190 +2227,195 @@ void restart_ghost(Ghosts& ghosts) {
 	ghosts.sprite.setPosition(ghosts.initial_x, ghosts.initial_y);
 	ghosts.moving_direction = -1;
 	ghosts.animation = 0;
-	ghosts.isDead = false;
+
 }
+
 
 //BFS 
 
-//bool exist_in_closed(tile* tile, vector <struct tile>& closed) {
-//	bool ans = 0;
-//	for (int i = 0; i < closed.size(); i++) {
-//
-//		if (tile->row == closed[i].row && tile->column == closed[i].column)
-//			ans = 1;
-//	}
-//	return ans;
-//}
+bool exist_in_closed(tile* tile, vector <struct tile>& closed) {
+	bool ans = 0;
+	for (int i = 0; i < closed.size(); i++) {
 
-//void find_optimal_path(tile* current, tile* target, vector <tile>* get_path) {
-//	queue <tile> open;
-//	vector <tile> closed;
-//
-//	open.push(*current);
-//
-//	while (!open.empty()) {
-//
-//		current = &map_[open.front().row][open.front().column];
-//
-//		open.pop();
-//
-//		if (current == target)
-//			break;
-//
-//		if (current->column + 1 <= NUMBERCOLUMNS) {
-//			tile* right_tile = &map_[current->row][current->column + 1];
-//			if (right_tile->type != tile_type::wall)
-//			{
-//				bool check_right = exist_in_closed(right_tile, closed);
-//				if (!check_right) {
-//					open.push(*right_tile);
-//					right_tile->parent = &map_[current->row][current->column];
-//				}
-//			}
-//		}
-//		else if (current->column - 1 >= 0) {
-//			tile* left_tile = &map_[current->row][current->column - 1];
-//
-//			if (left_tile->type != tile_type::wall)
-//			{
-//				bool check_left = exist_in_closed(left_tile, closed);
-//				if (!check_left) {
-//					open.push(*left_tile);
-//					left_tile->parent = &map_[current->row][current->column];
-//				}
-//			}
-//		}
-//		else if (current->row - 1 >= 0) {
-//			tile* up_tile = &map_[current->row - 1][current->column];
-//			if (up_tile->type != tile_type::wall)
-//			{
-//				bool check_up = exist_in_closed(up_tile, closed);
-//				if (!check_up) {
-//					open.push(*up_tile);
-//					up_tile->parent = &map_[current->row][current->column];
-//				}
-//			}
-//		}
-//		else if (current->row + 1 <= NUMBERROW) {
-//			tile* down_tile = &map_[current->row + 1][current->column];
-//
-//			if (down_tile->type != tile_type::wall)
-//			{
-//				bool check_down = exist_in_closed(down_tile, closed);
-//				if (!check_down) {
-//					open.push(*down_tile);
-//					down_tile->parent = &map_[current->row][current->column];
-//				}
-//			}
-//		}
-//		closed.push_back(*current);
-//	}
-//
-//	(*get_path).clear();
-//	while (current->parent != NULL) {
-//		(*get_path).push_back(*current);
-//		current = current->parent;
-//	}
-//}
+		if (tile->row == closed[i].row && tile->column == closed[i].column)
+			ans = 1;
+	}
+	return ans;
+}
 
-//void catch_target(Ghosts& ghost, Sprite& target) {
-//
-//	//if the ghost finished a whole tile 
-//	if (ghost.step_counts_BFS % ghost.frames_per_tile == 0) {
-//		int row, col;
-//		float x = ghost.sprite.getPosition().x,
-//			y = ghost.sprite.getPosition().y;
-//		get_tile_cor(x, y, row, col);
-//		ghost.step_counts_BFS = 0;
-//
-//		//if the tile past equals the tiles needed to repeat the algo, or if it's first time for the algo to run.
-//		if (ghost.num_tiles_past_BFS == ghost.algo_window_BFS) {
-//			int row_1, col_1;
-//			float x_1 = target.getPosition().x,
-//				y_1 = target.getPosition().y;
-//
-//			get_tile_cor(x_1, y_1, row_1, col_1);
-//			tile* start_pointer = &map_[row][col];
-//			start_pointer->parent = NULL;
-//			tile* target_pointer = &map_[row_1][col_1];
-//
-//			find_optimal_path(start_pointer, target_pointer, &ghost.shortest_path);
-//			ghost.num_tiles_past_BFS = 0;
-//			ghost.shortest_path_index = ghost.shortest_path.size() - 1;
-//
-//		}
-//		else {
-//			ghost.num_tiles_past_BFS++;
-//		}
-//
-//		//if the ghost finished the whole path needed to catch the player last run -> move random.
-//		if (ghost.shortest_path_index == -1) {
-//
-//			if (ghost.step_counts_rand % ghost.frames_per_tile == 0) {
-//
-//				ghost.step_counts_rand = 0;
-//				random_direction(ghost.sprite, ghost.moving_direction);
-//			}
-//			ghost.step_counts_rand++;
-//		}
-//		else
-//		{
-//			tile next_tile = ghost.shortest_path[ghost.shortest_path_index];
-//			ghost.shortest_path_index--;
-//			int col_diff = col - next_tile.column;
-//			int row_diff = row - next_tile.row;
-//			//left
-//			if (col_diff == 1) {
-//				ghost.moving_direction = 2;
-//			}
-//			//right
-//			else if (col_diff == -1) {
-//				ghost.moving_direction = 0;
-//			}
-//			//up
-//			else if (row_diff == 1) {
-//				ghost.moving_direction = 1;
-//			}
-//			//down
-//			else {
-//				ghost.moving_direction = 3;
-//			}
-//		}
-//	}
-//	ghost.step_counts_BFS++;
-//}
-//void random_direction(Sprite& sprite, int& direction) {
-//
-//	srand((int)time(0));
-//
-//	int avaialble_ways = 0;
-//
-//	int random_direction = rand() % 4;
-//
-//	for (int moves = 0; moves < 4; moves++)
-//	{
-//		if (moves != (2 + direction) % 4)
-//		{
-//			if (check_wall(moves, sprite) != 0)
-//
-//				avaialble_ways++;
-//		}
-//	}
-//
-//	if (avaialble_ways > 0)
-//	{
-//		while (check_wall(random_direction, sprite) == 0 || random_direction == (2 + direction) % 4)
-//		{
-//			random_direction = rand() % 4;
-//		}
-//
-//		direction = random_direction;
-//	}
-//	else
-//	{
-//		direction = (2 + direction) % 4;
-//	}
-//}
+void find_optimal_path(tile* current, tile* target, vector <tile>* get_path) {
+	queue <tile> open;
+	vector <tile> closed;
+
+	open.push(*current);
+
+	while (!open.empty()) {
+
+		current = &map_[open.front().row][open.front().column];
+
+		open.pop();
+
+		if (current == target)
+			break;
+
+		if (current->column + 1 <= NUMBERCOLUMNS - 1) {
+			tile* right_tile = &map_[current->row][current->column + 1];
+			if (right_tile->type != tile_type::wall)
+			{
+				bool check_right = exist_in_closed(right_tile, closed);
+				if (!check_right) {
+					open.push(*right_tile);
+					right_tile->parent = &map_[current->row][current->column];
+				}
+			}
+		}
+		else if (current->column - 1 >= 0) {
+			tile* left_tile = &map_[current->row][current->column - 1];
+
+			if (left_tile->type != tile_type::wall)
+			{
+				bool check_left = exist_in_closed(left_tile, closed);
+				if (!check_left) {
+					open.push(*left_tile);
+					left_tile->parent = &map_[current->row][current->column];
+				}
+			}
+		}
+		else if (current->row - 1 >= 0) {
+			tile* up_tile = &map_[current->row - 1][current->column];
+			if (up_tile->type != tile_type::wall)
+			{
+				bool check_up = exist_in_closed(up_tile, closed);
+				if (!check_up) {
+					open.push(*up_tile);
+					up_tile->parent = &map_[current->row][current->column];
+				}
+			}
+		}
+		else if (current->row + 1 <= NUMBERROW) {
+			tile* down_tile = &map_[current->row + 1][current->column];
+
+			if (down_tile->type != tile_type::wall)
+			{
+				bool check_down = exist_in_closed(down_tile, closed);
+				if (!check_down) {
+					open.push(*down_tile);
+					down_tile->parent = &map_[current->row][current->column];
+				}
+			}
+		}
+		closed.push_back(*current);
+	}
+
+	(*get_path).clear();
+	while (current->parent != NULL) {
+		(*get_path).push_back(*current);
+		current = current->parent;
+	}
+}
+
+void catch_target(Ghosts& ghost, Sprite& target) {
+
+	//if the ghost finished a whole tile 
+	if (ghost.step_counts_BFS % ghost.frames_per_tile == 0) {
+		int row, col;
+		float x = ghost.sprite.getPosition().x,
+			y = ghost.sprite.getPosition().y;
+		get_tile_cor(x, y, row, col);
+		ghost.step_counts_BFS = 0;
+
+		//if the tile past equals the tiles needed to repeat the algo, or if it's first time for the algo to run.
+		if (ghost.num_tiles_past_BFS == ghost.algo_window_BFS) {
+			int row_1, col_1;
+			float x_1 = target.getPosition().x,
+				y_1 = target.getPosition().y;
+
+			get_tile_cor(x_1, y_1, row_1, col_1);
+			tile* start_pointer = &map_[row][col];
+			start_pointer->parent = NULL;
+			tile* target_pointer = &map_[row_1][col_1];
+
+			find_optimal_path(start_pointer, target_pointer, &ghost.shortest_path);
+			ghost.num_tiles_past_BFS = 0;
+			ghost.shortest_path_index = ghost.shortest_path.size() - 1;
+
+		}
+		else {
+			ghost.num_tiles_past_BFS++;
+		}
+
+		//if the ghost finished the whole path needed to catch the player last run -> move random.
+		if (ghost.shortest_path_index == -1) {
+
+			if (ghost.step_counts_rand % ghost.frames_per_tile == 0) {
+
+				ghost.step_counts_rand = 0;
+				random_direction(ghost.sprite, ghost.moving_direction);
+				//move_random(gho);
+			}
+			ghost.step_counts_rand++;
+		}
+		else
+		{
+			tile next_tile = ghost.shortest_path[ghost.shortest_path_index];
+			ghost.shortest_path_index--;
+			int col_diff = col - next_tile.column;
+			int row_diff = row - next_tile.row;
+			//left
+			if (col_diff == 1) {
+				ghost.moving_direction = 2;
+			}
+			//right
+			else if (col_diff == -1) {
+				ghost.moving_direction = 0;
+			}
+			//up
+			else if (row_diff == 1) {
+				ghost.moving_direction = 1;
+			}
+			//down
+			else {
+				ghost.moving_direction = 3;
+			}
+		}
+	}
+	ghost.step_counts_BFS++;
+}
+
+
+void random_direction(Sprite& sprite, int& direction) {
+
+	srand((int)time(0));
+
+	int avaialble_ways = 0;
+
+	int random_direction = rand() % 4;
+
+	for (int moves = 0; moves < 4; moves++)
+	{
+		if (moves != (2 + direction) % 4)
+		{
+			if (check_wall(moves, sprite) != 0)
+
+				avaialble_ways++;
+		}
+	}
+
+	if (avaialble_ways > 0)
+	{
+		while (check_wall(random_direction, sprite) == 0 || random_direction == (2 + direction) % 4)
+		{
+			random_direction = rand() % 4;
+		}
+
+		direction = random_direction;
+	}
+	else
+	{
+		direction = (2 + direction) % 4;
+	}
+}
+
 
 
 void LoadingWindow(RenderWindow& window)
