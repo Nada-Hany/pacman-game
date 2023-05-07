@@ -23,11 +23,10 @@ using namespace sf;
 #define player_width 38
 #define player_height 38
 const int diff = ((TILESIZE - player_width) / 2);
-#define baseSpeed 2.5
-#define baseSpeed 4
+#define baseSpeed 5
 //ghost 
 #define speedInPowerUp 1
-#define ghostSpeed 2
+#define ghostSpeed 5
 #define ghost_width 38
 #define ghost_height 38
 #define ghosts_number 4
@@ -103,7 +102,6 @@ struct Ghosts
 {
 	Sprite sprite;
 	Sprite home_sprite;
-	direction direction;
 	int moving_direction = 1;
 	// 0 right , 1 up , 2 left , 3 down
 	int frames;
@@ -136,22 +134,6 @@ Texture blue_ghost_texture;
 Texture powerup_ghost_texture;
 Texture face_ghost_texture;
 Texture endtime_ghost_texture;
-
-void enumDirectionGHOST(Ghosts& ghost) {
-	switch (ghost.moving_direction)
-	{
-	case 0:
-		ghost.direction = direction::right;
-	case 1:
-		ghost.direction = direction::up;
-	case 2:
-		ghost.direction = direction::left;
-	case 3:
-		ghost.direction = direction::down;
-	default:
-		break;
-	}
-}
 
 int selected(Text mainmenu[3], RenderWindow& window);
 void selected2(Text mainmenu[3], RenderWindow& window);
@@ -214,7 +196,7 @@ bool same_tile_vert(Sprite& sprite) {
 	return condition_1;
 }
 
-void move_right(Sprite& sprite, int& lastKeyPressed) {
+void move_right(Sprite& sprite, int& lastKeyPressed, float speed = baseSpeed) {
 	float y = sprite.getPosition().y, x = sprite.getPosition().x;
 	bool condition_1 = false, condition_2 = true;
 
@@ -222,7 +204,7 @@ void move_right(Sprite& sprite, int& lastKeyPressed) {
 
 	int row, col;
 
-	get_tile_cor(x + (player_width / 2) + baseSpeed + 0.0001, y, row, col);
+	get_tile_cor(x + (player_width / 2) + speed + 0.0001, y, row, col);
 	if (map_[row][col].type == tile_type::wall) {
 		if ((col * TILESIZE + offset_x) - (x + (player_width / 2) + diff) > 0) {
 
@@ -239,12 +221,12 @@ void move_right(Sprite& sprite, int& lastKeyPressed) {
 	else {
 		if (condition_1 && condition_2)
 		{
-			sprite.move(baseSpeed, 0);
+			sprite.move(speed, 0);
 			lastKeyPressed = 0;
 		}
 	}
 }
-void move_left(Sprite& sprite, int& moving_direction) {
+void move_left(Sprite& sprite, int& moving_direction, float speed = baseSpeed) {
 	float y = sprite.getPosition().y, x = sprite.getPosition().x;
 	bool condition_1 = false, condition_2 = true;
 
@@ -253,7 +235,7 @@ void move_left(Sprite& sprite, int& moving_direction) {
 	int row, col;
 
 
-	get_tile_cor(x - ((player_width / 2)) - baseSpeed - 0.001, y, row, col);
+	get_tile_cor(x - ((player_width / 2)) - speed - 0.001, y, row, col);
 
 	if (map_[row][col].type == tile_type::wall)
 	{
@@ -270,12 +252,12 @@ void move_left(Sprite& sprite, int& moving_direction) {
 
 	else {
 		if (condition_1 && condition_2) {
-			sprite.move(-baseSpeed, 0);
+			sprite.move(-speed, 0);
 			moving_direction = 2;
 		}
 	}
 }
-void move_up(Sprite& sprite, int& moving_direction) {
+void move_up(Sprite& sprite, int& moving_direction, float speed = baseSpeed) {
 	float y = sprite.getPosition().y, x = sprite.getPosition().x;
 	bool condition_1 = false, condition_2 = true;
 
@@ -283,7 +265,7 @@ void move_up(Sprite& sprite, int& moving_direction) {
 
 	int row, col;
 
-	get_tile_cor(x, y - baseSpeed - (player_height / 2) - 0.001, row, col);
+	get_tile_cor(x, y - speed - (player_height / 2) - 0.001, row, col);
 
 	if (map_[row][col].type == tile_type::wall) {
 		if (x, (y - (player_height / 2) - diff) - (row * TILESIZE + TILESIZE + offset_y) > 0) {
@@ -295,9 +277,9 @@ void move_up(Sprite& sprite, int& moving_direction) {
 	}
 	else
 		if (condition_1 && condition_2)
-			sprite.move(0, -baseSpeed), moving_direction = 1;
+			sprite.move(0, -speed), moving_direction = 1;
 }
-void move_down(Sprite& sprite, int& moving_direction) {
+void move_down(Sprite& sprite, int& moving_direction , float speed = baseSpeed) {
 	float y = sprite.getPosition().y, x = sprite.getPosition().x;
 	bool condition_1 = false, condition_2 = true;
 
@@ -305,7 +287,7 @@ void move_down(Sprite& sprite, int& moving_direction) {
 
 	int row, col;
 
-	get_tile_cor(x, y + baseSpeed + (player_height / 2) + 0.001, row, col);
+	get_tile_cor(x, y + speed + (player_height / 2) + 0.001, row, col);
 	if (map_[row][col].type == tile_type::wall) {
 
 		if ((row * TILESIZE + offset_y) - (y + (player_height / 2) + diff) > 0)
@@ -317,7 +299,7 @@ void move_down(Sprite& sprite, int& moving_direction) {
 			condition_2 = false;
 	}
 	else
-		if (condition_1 && condition_2) sprite.move(0, baseSpeed), moving_direction = 3;
+		if (condition_1 && condition_2) sprite.move(0, speed), moving_direction = 3;
 }
 void change_direction(Sprite& sprite, int& keyPressed, int& moving_direction, int row, int col) {
 
@@ -424,7 +406,6 @@ int main() {
 	icon.loadFromFile("pngs/cherry.png");
 	window.setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr());
 
-	window.setFramerateLimit(60);
 	while (window.isOpen()) {
 		if (num == 3) {
 			introduction_window(window);
@@ -432,6 +413,7 @@ int main() {
 		if (num == 1) {
 			play(window);
 		}
+
 	}
 	return 0;
 }
@@ -511,14 +493,14 @@ void mainmenu(RenderWindow& window) {
 		Event event;
 		while (window.pollEvent(event)) {
 			if (event.type == Event::Closed) {
-				window.close();
-				break;
+				return;
 			}
 			else if (event.type == Event::KeyReleased) {
 				if (event.key.code == Keyboard::Escape) {
 					soundclick.play();
 					window.close();
 					return;
+					//return;
 				}
 			}
 			//to make the sound of button
@@ -563,15 +545,22 @@ void mainmenu(RenderWindow& window) {
 					soundclick.play();
 					//open mainmenu
 					mainmenu2(window);
+					//window.close();
+
+
 				}
 				if (mainmenu[1].getGlobalBounds().contains(mousePos)) {
 					soundclick.play();
 					//open high score menu
 					mainmenu2(window);
+					//window.close();
+
+
 				}
 				if (mainmenu[2].getGlobalBounds().contains(mousePos)) {
 					soundclick.play();
-					window.close();
+					//window.close();
+
 				}
 			}
 		}
@@ -600,7 +589,7 @@ void mainmenu(RenderWindow& window) {
 
 			if (Mouse::isButtonPressed(Mouse::Left)) {
 				mainmenu[2].setFillColor(Color::White);
-				window.close();
+				return;
 				soundclick.play();
 				sound = 0;
 
@@ -1015,7 +1004,6 @@ void originaleasywindow(RenderWindow& window) {
 
 	ghosts[0].isBFS = true;
 
-
 	bool sound = 0, sound2 = 0;
 	bool gamess = 1;
 	int timer_3seconds = 4, powerUp_8secTimer = 0;
@@ -1029,24 +1017,24 @@ void originaleasywindow(RenderWindow& window) {
 
 	//getting the path of home to each ghost
 
-	for (int i = 0; i < ghosts_number; i++) {
-		//target
-		float x_home = ghosts[i].initial_x, y_home = ghosts[i].initial_y;
-		int row_home, col_home;
-		get_tile_cor(x_home, y_home, row_home, col_home);
-		tile* target = &map_[row_home][col_home];
-		//start
-		float x_ghost = ghosts[i].sprite.getPosition().x, y_ghost = ghosts[i].sprite.getPosition().y;
-		int row_ghost, col_ghost;
-		get_tile_cor(x_ghost, y_ghost, row_ghost, col_ghost);
-		tile* start = &map_[row_ghost][col_ghost];
-		find_optimal_path(start, target, &ghosts[i].home_path);
-	}
+	//for (int i = 0; i < ghosts_number; i++) {
+	//	//target
+	//	float x_home = ghosts[i].initial_x, y_home = ghosts[i].initial_y;
+	//	int row_home, col_home;
+	//	get_tile_cor(x_home, y_home, row_home, col_home);
+	//	tile* target = &map_[row_home][col_home];
+	//	//start
+	//	float x_ghost = ghosts[i].sprite.getPosition().x, y_ghost = ghosts[i].sprite.getPosition().y;
+	//	int row_ghost, col_ghost;
+	//	get_tile_cor(x_ghost, y_ghost, row_ghost, col_ghost);
+	//	tile* start = &map_[row_ghost][col_ghost];
+	//	find_optimal_path(start, target, &ghosts[i].home_path);
+	//}
 
 	for (int i = 0; i < ghosts_number; i++) {
 		ghosts[i].algo_window_BFS = 10;
 		ghosts[i].num_tiles_past_BFS = ghosts[i].algo_window_BFS;
-		ghosts[i].frames_per_tile = TILESIZE / ghosts[i].speed;
+		ghosts[i].frames_per_tile = TILESIZE / ghostSpeed;
 		
 	}
 
@@ -1179,7 +1167,7 @@ void originaleasywindow(RenderWindow& window) {
 		//3 seconds timer
 		stringstream sec3_manip;
 
-		if (sec3_timer && sec3_clock.getElapsedTime().asSeconds() >= 1) {
+	/*	if (sec3_timer && sec3_clock.getElapsedTime().asSeconds() >= 1) {
 			timer_3seconds--;
 			sec3_clock.restart();
 			if (timer_3seconds == 0)
@@ -1187,7 +1175,7 @@ void originaleasywindow(RenderWindow& window) {
 				sec3_timer = false;
 				isPaused = false;
 			}
-		}
+		}*/
 
 		sec3_manip << timer_3seconds;
 		sec3_text.setString(sec3_manip.str());
@@ -1216,7 +1204,12 @@ void originaleasywindow(RenderWindow& window) {
 		s.setString(score_manip.str());
 
 
-		if (!isPaused && sec3_timer == false)
+
+
+
+
+
+		if (/*!*/isPaused /*&& sec3_timer == false*/)
 		{
 			//moving
 			float x_pac = pacman.sprite.getPosition().x, y_pac = pacman.sprite.getPosition().y;
@@ -1260,7 +1253,7 @@ void originaleasywindow(RenderWindow& window) {
 
 			//ghosts
 			//random move
-			move_random(ghosts);
+			//move_random(ghosts);
 
 			/*for (int i = 0; i < ghosts_number; i++) {
 				if (!ghosts[i].isBFS)
@@ -1346,7 +1339,7 @@ void originaleasywindow(RenderWindow& window) {
 			}
 
 			//eaten ghosts go home! 
-			for (int i = 0; i < ghosts_number; i++) {
+			/*for (int i = 0; i < ghosts_number; i++) {
 				if (!ghosts[i].isDead)
 					continue;
 				catch_target(ghosts[i], ghosts[i].home_sprite);
@@ -1379,7 +1372,8 @@ void originaleasywindow(RenderWindow& window) {
 					ghosts[i].animation = 0;
 				}
 				
-			}
+			}*/
+
 
 			//red ghost catch pacman
 			for (int i = 0; i < ghosts_number; i++) {
@@ -1388,16 +1382,19 @@ void originaleasywindow(RenderWindow& window) {
 				catch_target(ghosts[i], pacman.sprite);
 				switch ((ghosts[i].moving_direction)) {
 				case 0:
-					move_right(ghosts[i].sprite, (ghosts[i].moving_direction));
+					move_right(ghosts[i].sprite, (ghosts[i].moving_direction), ghostSpeed);
 					break;
 				case 1:
-					move_up(ghosts[i].sprite, (ghosts[i].moving_direction));
+					//ghosts[i].sprite.move(0, -ghostSpeed);
+					move_up(ghosts[i].sprite, (ghosts[i].moving_direction), ghostSpeed);
 					break;
 				case 2:
-					move_left(ghosts[i].sprite, (ghosts[i].moving_direction));
+					//ghosts[i].sprite.move(-ghostSpeed ,  0);
+					move_left(ghosts[i].sprite, (ghosts[i].moving_direction), ghostSpeed);
 					break;
 				case 3:
-					move_down(ghosts[i].sprite, (ghosts[i].moving_direction));
+					//ghosts[i].sprite.move(0, ghostSpeed);
+					move_down(ghosts[i].sprite, (ghosts[i].moving_direction), ghostSpeed);
 					break;
 				}
 			}
@@ -1454,9 +1451,13 @@ void originaleasywindow(RenderWindow& window) {
 				}
 			}
 
-			
-
 		}
+
+
+
+
+
+
 		window.clear();
 		//map
 		for (int i = 0; i < NUMBERROW; i++)
@@ -1506,7 +1507,7 @@ void originaleasywindow(RenderWindow& window) {
 		if (cherry)
 			window.draw(cherrySprite);
 
-		for (int i = 0; i < ghosts_number; i++)
+		for (int i = 0; i < 1; i++)
 		{
 			window.draw(ghosts[i].sprite);
 		}
@@ -2419,49 +2420,63 @@ void find_optimal_path(tile* current, tile* target, vector <tile>* get_path) {
 		if (current == target)
 			break;
 
-		if (current->column + 1 <= NUMBERCOLUMNS - 1) {
-			tile* right_tile = &map_[current->row][current->column + 1];
-			if (right_tile->type != tile_type::wall)
+		// right
+		if (current->column + 1 <= NUMBERCOLUMNS) {
+			tile* next_tile = &map_[current->row][current->column + 1];
+			if (next_tile->type != tile_type::wall)
 			{
-				bool check_right = exist_in_closed(right_tile, closed);
+				bool check_right = exist_in_closed(next_tile, closed);
 				if (!check_right) {
-					open.push(*right_tile);
-					right_tile->parent = &map_[current->row][current->column];
+					cout << "right pushed : " << next_tile->row << " " << next_tile->column<<endl;
+					open.push(*next_tile);
+					next_tile->parent = &map_[current->row][current->column];
 				}
 			}
 		}
-		else if (current->column - 1 >= 0) {
-			tile* left_tile = &map_[current->row][current->column - 1];
 
-			if (left_tile->type != tile_type::wall)
+		//left
+		if (current->column - 1 >= 0) {
+			tile* next_tile = &map_[current->row][current->column - 1];
+
+			if (next_tile->type != tile_type::wall)
 			{
-				bool check_left = exist_in_closed(left_tile, closed);
+				bool check_left = exist_in_closed(next_tile, closed);
 				if (!check_left) {
-					open.push(*left_tile);
-					left_tile->parent = &map_[current->row][current->column];
-				}
-			}
-		}
-		else if (current->row - 1 >= 0) {
-			tile* up_tile = &map_[current->row - 1][current->column];
-			if (up_tile->type != tile_type::wall)
-			{
-				bool check_up = exist_in_closed(up_tile, closed);
-				if (!check_up) {
-					open.push(*up_tile);
-					up_tile->parent = &map_[current->row][current->column];
-				}
-			}
-		}
-		else if (current->row + 1 <= NUMBERROW) {
-			tile* down_tile = &map_[current->row + 1][current->column];
+					cout << "left pushed : " << next_tile->row << " " << next_tile->column << endl;
 
-			if (down_tile->type != tile_type::wall)
+					open.push(*next_tile);
+					next_tile->parent = &map_[current->row][current->column];
+				}
+			}
+		}
+
+		//up
+		if (current->row - 1 >= 0) {
+			tile* next_tile = &map_[current->row - 1][current->column];
+			if (next_tile->type != tile_type::wall)
 			{
-				bool check_down = exist_in_closed(down_tile, closed);
+				bool check_up = exist_in_closed(next_tile, closed);
+				if (!check_up) {
+					cout << "up pushed : " << next_tile->row << " " << next_tile->column << endl;
+
+					open.push(*next_tile);
+					next_tile->parent = &map_[current->row][current->column];
+				}
+			}
+		}
+
+		//down
+		if (current->row + 1 <= NUMBERROW - 1) {
+			tile* next_tile = &map_[current->row + 1][current->column];
+
+			if (next_tile->type != tile_type::wall)
+			{
+				bool check_down = exist_in_closed(next_tile, closed);
 				if (!check_down) {
-					open.push(*down_tile);
-					down_tile->parent = &map_[current->row][current->column];
+					cout << "down pushed : " << next_tile->row << " " << next_tile->column << endl;
+
+					open.push(*next_tile);
+					next_tile->parent = &map_[current->row][current->column];
 				}
 			}
 		}
@@ -2507,21 +2522,17 @@ void catch_target(Ghosts& ghost, Sprite& target) {
 
 		//if the ghost finished the whole path needed to catch the player last run -> move random.
 		if (ghost.shortest_path_index == -1) {
-
-			if (ghost.step_counts_rand % ghost.frames_per_tile == 0) {
-
-				ghost.step_counts_rand = 0;
-				random_direction(ghost.sprite, ghost.moving_direction);
-				//move_random(gho);
-			}
-			ghost.step_counts_rand++;
+			random_direction(ghost.sprite, ghost.moving_direction);
+			
 		}
 		else
 		{
+
 			tile next_tile = ghost.shortest_path[ghost.shortest_path_index];
 			ghost.shortest_path_index--;
 			int col_diff = col - next_tile.column;
 			int row_diff = row - next_tile.row;
+			cout << endl << next_tile.row << " " << next_tile.column << endl;
 			//left
 			if (col_diff == 1) {
 				ghost.moving_direction = 2;
@@ -2535,7 +2546,7 @@ void catch_target(Ghosts& ghost, Sprite& target) {
 				ghost.moving_direction = 1;
 			}
 			//down
-			else {
+			else if (row_diff == -1) {
 				ghost.moving_direction = 3;
 			}
 		}
@@ -2556,25 +2567,15 @@ void random_direction(Sprite& sprite, int& direction) {
 	{
 		if (moves != (2 + direction) % 4)
 		{
-			if (check_wall(moves, sprite) != 0)
-
-				avaialble_ways++;
+			if (check_wall(moves, sprite) != 0) {
+				direction = moves;
+				return;
+			}
+			
 		}
 	}
+	direction = (2 + direction) % 4;
 
-	if (avaialble_ways > 0)
-	{
-		while (check_wall(random_direction, sprite) == 0 || random_direction == (2 + direction) % 4)
-		{
-			random_direction = rand() % 4;
-		}
-
-		direction = random_direction;
-	}
-	else
-	{
-		direction = (2 + direction) % 4;
-	}
 }
 
 
