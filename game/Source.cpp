@@ -183,7 +183,6 @@ template <size_t ROW3, size_t COL3>
 void LoadhardMap(int(&map)[ROW3][COL3]);
 void LoadingWindow(RenderWindow& window);
 
-
 //funcs
 void get_tile_cor(float x, float y, int& row, int& col) {
 	x = x - offset_x, y = y - offset_y;
@@ -376,6 +375,8 @@ int timer_sec = 0, timer_min = 0;
 //small ghosts of mainmenu
 Texture redghost[4];
 
+void check_pause(RenderWindow& window, bool& pressed_pause);
+
 int main() {
 
 	RenderWindow window(VideoMode(1920, 1080), "Main Menu", Style::Fullscreen);
@@ -521,7 +522,7 @@ void mainmenu(RenderWindow& window) {
 				}
 			}
 			//to make the sound of button
-			else  if (event.type == Event::MouseMoved) {
+			if (event.type == Event::MouseMoved) {
 				// Check if the mouse is over the button
 				Vector2f mousePos = window.mapPixelToCoords(Mouse::getPosition(window));
 				if (mainmenu[2].getGlobalBounds().contains(mousePos)) {
@@ -556,7 +557,7 @@ void mainmenu(RenderWindow& window) {
 				}
 			}
 			// 0 -> play ,, 1 -> highscore ,, 2 -> exit
-			else if (event.type == Event::MouseButtonPressed) {
+			if (event.type == Event::MouseButtonPressed) {
 				Vector2f mousePos = window.mapPixelToCoords(Mouse::getPosition(window));
 				if (mainmenu[0].getGlobalBounds().contains(mousePos)) {
 					soundclick.play();
@@ -938,6 +939,9 @@ void originaleasywindow(RenderWindow& window) {
 	circle.setOutlineThickness(5);
 	circle.setOutlineColor(Color::White);
 
+	RectangleShape blackRect (Vector2f(1920.0f, 1080.0f));
+	blackRect.setFillColor(Color{ 0,0,0,100 });
+
 	//two lines oooof pause
 	RectangleShape line1(Vector2f(10, 50));
 	line1.setOrigin(Vector2f(50, 50));
@@ -1046,7 +1050,11 @@ void originaleasywindow(RenderWindow& window) {
 		
 	}
 
+	bool pressed_pause = false;
+
 	while (window.isOpen()) {
+
+		int current_score = 0;
 
 		for (int i = 0; i < NUMBERROW; i++)
 		{
@@ -1062,6 +1070,7 @@ void originaleasywindow(RenderWindow& window) {
 				else if (changing_map[i][j] == 1)
 				{
 					map_[i][j].type = tile_type::score; ;
+					current_score++;
 					map_[i][j].recwall.setSize(Vector2f(TILESIZE, TILESIZE));
 					map_[i][j].recwall.setFillColor(Color::Black);
 
@@ -1126,8 +1135,9 @@ void originaleasywindow(RenderWindow& window) {
 					isPaused = true;
 					powerUp_Sound.pause();
 					gameS.stop();
-					pause(window);
-					return;
+					//pause(window);
+					pressed_pause = true;
+					//return;
 				}
 			}
 
@@ -1169,7 +1179,7 @@ void originaleasywindow(RenderWindow& window) {
 		//3 seconds timer
 		stringstream sec3_manip;
 
-		/*if (sec3_timer && sec3_clock.getElapsedTime().asSeconds() >= 1) {
+		if (sec3_timer && sec3_clock.getElapsedTime().asSeconds() >= 1) {
 			timer_3seconds--;
 			sec3_clock.restart();
 			if (timer_3seconds == 0)
@@ -1177,7 +1187,8 @@ void originaleasywindow(RenderWindow& window) {
 				sec3_timer = false;
 				isPaused = false;
 			}
-		}*/
+		}
+
 		sec3_manip << timer_3seconds;
 		sec3_text.setString(sec3_manip.str());
 		FloatRect sec3_floatrect = sec3_text.getLocalBounds();
@@ -1204,7 +1215,8 @@ void originaleasywindow(RenderWindow& window) {
 		score_manip << "score:" << pacman.score;
 		s.setString(score_manip.str());
 
-		if (/*!*/  isPaused/* && sec3_timer == false*/)
+
+		if (!isPaused && sec3_timer == false)
 		{
 			//moving
 			float x_pac = pacman.sprite.getPosition().x, y_pac = pacman.sprite.getPosition().y;
@@ -1250,7 +1262,7 @@ void originaleasywindow(RenderWindow& window) {
 			//random move
 			move_random(ghosts);
 
-			for (int i = 0; i < ghosts_number; i++) {
+			/*for (int i = 0; i < ghosts_number; i++) {
 				if (!ghosts[i].isBFS)
 				{
 					random_direction(ghosts[i].sprite, ghosts[i].moving_direction);
@@ -1269,7 +1281,7 @@ void originaleasywindow(RenderWindow& window) {
 						break;
 					}
 				}
-			}
+			}*/
 
 			ghosts_animation(ghosts);
 
@@ -1368,54 +1380,6 @@ void originaleasywindow(RenderWindow& window) {
 				}
 				
 			}
-			
-			
-
-			//eat cherry
-			if (pacman.sprite.getGlobalBounds().intersects(cherrySprite.getGlobalBounds()) && cherry == true && pacman.cherry_taken == false) {
-				cherry = false;
-				pacman.cherry_taken = true;
-				eatcherrysound.play();
-				pacman.score += 100;
-				hundredshow = true;
-			}
-			//cherry appearing 
-			elapsedTime_cherry = clock_cherry.getElapsedTime().asSeconds();
-
-			if (elapsedTime_cherry > 5 && hundredshow == false && pacman.isAlive) {
-				if (elapsedTime_cherry > 10 && hundredshow == false && pacman.isAlive) {
-					cherry = true;
-
-				}
-				if (elapsedTime_cherry > 10) {
-					cherry = false;
-					hundredshow = false;
-
-				}
-			}
-			//collision with the ghost so pacman would die
-
-		/*	for (int i = 0; i < ghosts_number; i++) {
-				if (ghosts[i].sprite.getGlobalBounds().intersects(pacman.sprite.getGlobalBounds()) && !ghosts[i].isDead) {
-					pacman.isAlive = false;
-					pacman.sprite.setTexture(pacman.deadPac_texture);
-				}
-			}*/
-
-			// if pamcan is dead->play death sound
-			if (pacman.isAlive == false && pacman.deathSound == false) {
-				deathSound.play();
-				pacman.deathSound = true;
-			}
-			//hole 
-			int left_hole = offset_x, right_hole = offset_x + (NUMBERCOLUMNS * TILESIZE) - TILESIZE;
-
-			if (x_pac + TILESIZE / 2 <= left_hole && pacman.moving_direction == 2) {
-				pacman.sprite.setPosition(right_hole + TILESIZE / 2, y_pac);
-			}
-			if (x_pac - player_width / 2 >= right_hole && pacman.moving_direction == 0) {
-				pacman.sprite.setPosition(left_hole - TILESIZE / 2, y_pac);
-			}
 
 			//red ghost catch pacman
 			for (int i = 0; i < ghosts_number; i++) {
@@ -1437,6 +1401,60 @@ void originaleasywindow(RenderWindow& window) {
 					break;
 				}
 			}
+			
+			//eat cherry
+			if (pacman.sprite.getGlobalBounds().intersects(cherrySprite.getGlobalBounds()) && cherry == true && pacman.cherry_taken == false) {
+				cherry = false;
+				pacman.cherry_taken = true;
+				eatcherrysound.play();
+				pacman.score += 100;
+				hundredshow = true;
+			}
+			//cherry appearing 
+			elapsedTime_cherry = clock_cherry.getElapsedTime().asSeconds();
+			if (elapsedTime_cherry >= 5 && hundredshow == false && pacman.isAlive && pacman.cherry_taken == false) {
+				cherry = true;
+			}
+			if (elapsedTime_cherry >= 10) {
+				cherry = false;
+				hundredshow = false;
+				clock_cherry.restart();
+			}
+			//collision with the ghost so pacman would die
+
+		/*	for (int i = 0; i < ghosts_number; i++) {
+				if (ghosts[i].sprite.getGlobalBounds().intersects(pacman.sprite.getGlobalBounds()) && !ghosts[i].isDead) {
+					pacman.isAlive = false;
+					pacman.sprite.setTexture(pacman.deadPac_texture);
+				}
+			}*/
+
+			// if pamcan is dead->play death sound
+			if (pacman.isAlive == false && pacman.deathSound == false) {
+				deathSound.play();
+				pacman.deathSound = true;
+			}
+			//hole for both pacman and ghosts
+			int left_hole = offset_x, right_hole = offset_x + (NUMBERCOLUMNS * TILESIZE) - TILESIZE;
+
+			if (x_pac + TILESIZE / 2 <= left_hole && pacman.moving_direction == 2) {
+				pacman.sprite.setPosition(right_hole + TILESIZE / 2, y_pac);
+			}
+			if (x_pac - player_width / 2 >= right_hole && pacman.moving_direction == 0) {
+				pacman.sprite.setPosition(left_hole - TILESIZE / 2, y_pac);
+			}
+			for (int i = 0; i < ghosts_number; i++) {
+				float x_ghost = ghosts[i].sprite.getPosition().x,
+					y_ghost = ghosts[i].sprite.getPosition().y;
+				if (x_ghost + TILESIZE / 2 <= left_hole && ghosts[i].moving_direction == 2) {
+					ghosts[i].sprite.setPosition(right_hole + TILESIZE / 2, y_ghost);
+				}
+				if (x_ghost - player_width / 2 >= right_hole && ghosts[i].moving_direction == 0) {
+					ghosts[i].sprite.setPosition(left_hole - TILESIZE / 2, y_ghost);
+				}
+			}
+
+			
 
 		}
 		window.clear();
@@ -1474,7 +1492,9 @@ void originaleasywindow(RenderWindow& window) {
 				line2.setFillColor(Color::White);
 
 				soundclick.play();
-				pause(window);
+				//pause(window);
+				pressed_pause = true;
+				isPaused = true;
 			}
 		}
 		else {
@@ -1486,7 +1506,7 @@ void originaleasywindow(RenderWindow& window) {
 		if (cherry)
 			window.draw(cherrySprite);
 
-		for (int i = 0; i < 1; i++)
+		for (int i = 0; i < ghosts_number; i++)
 		{
 			window.draw(ghosts[i].sprite);
 		}
@@ -1504,6 +1524,12 @@ void originaleasywindow(RenderWindow& window) {
 
 		window.draw(rect_right);
 		window.draw(rect_left);
+
+		if (pressed_pause)
+		{
+			window.draw(blackRect);
+			check_pause(window, pressed_pause);
+		}
 		window.display();
 	}
 }
@@ -1727,6 +1753,141 @@ void pause(RenderWindow& window) {
 
 		window.display();
 
+	}
+}
+
+void check_pause(RenderWindow& window , bool &pressed_pause) {
+	//prepare the sound
+	//select sound
+	SoundBuffer select;
+	select.loadFromFile("sounds/select sound.wav");
+	Sound soundselect;
+	soundselect.setBuffer(select);
+
+	//click sound
+	SoundBuffer click;
+	click.loadFromFile("sounds/enter sound.wav");
+	Sound soundclick;
+	soundclick.setBuffer(click);
+
+	Font font;
+	font.loadFromFile("fonts/CrackMan.ttf");
+
+	Text menupause[2];
+
+	menupause[0].setFont(font);
+	menupause[1].setFont(font);
+
+	menupause[0].setFillColor(Color::White);
+	menupause[1].setFillColor(Color::White);
+
+	menupause[0].setString("Continue");
+	menupause[1].setString("exit");
+
+	menupause[0].setCharacterSize(90);
+	menupause[1].setCharacterSize(90);
+
+	FloatRect textrect = menupause[0].getLocalBounds();
+	FloatRect textrect1 = menupause[1].getLocalBounds();
+
+	menupause[0].setOrigin(textrect.left + textrect.width / 2.0f, textrect.top + textrect.height / 2.0f);
+	menupause[1].setOrigin(textrect1.left + textrect1.width / 2.0f, textrect1.top + textrect1.height / 2.0f);
+
+	menupause[0].setPosition(Vector2f(1920 / 2, 455));
+	menupause[1].setPosition(Vector2f(1920 / 2, 625));
+
+	bool sound = 0, sound2 = 0;
+	isPaused = true;
+
+	Event event;
+
+	while (window.pollEvent(event)) {
+
+		if (event.type == Event::Closed) {
+			window.close();
+			break;
+		}
+		//exit
+		else if (event.type == Event::KeyReleased) {
+			if (event.key.code == Keyboard::Escape) {
+				soundclick.play();
+				//NOT HERE BUT WE PUT HERE PAUSE WINDOW.
+				mainmenu(window);
+				return;
+			}
+		}
+		//to make the sound of button
+		else  if (event.type == Event::MouseMoved)
+		{
+			// Check if the mouse is over the button
+			Vector2f mousePos = window.mapPixelToCoords(Mouse::getPosition(window));
+			if (menupause[0].getGlobalBounds().contains(mousePos)) {
+				if (!sound) {
+					// Play the sound if the mouse just entered the button
+					soundselect.play();
+				}
+				sound = true;
+			}
+			else
+			{
+				sound = false;
+			}
+
+			if (menupause[1].getGlobalBounds().contains(mousePos)) {
+				if (!sound2) {
+					// Play the sound if the mouse just entered the button
+					soundselect.play();
+				}
+				sound2 = true;
+			}
+			else {
+				sound2 = false;
+			}
+
+		}
+	}
+	
+	Mouse mouse;
+	if (menupause[0].getGlobalBounds().contains(mouse.getPosition(window).x, mouse.getPosition(window).y)) {
+		menupause[0].setFillColor(Color::Red);
+
+		if (Mouse::isButtonPressed(Mouse::Left)) {
+			menupause[0].setFillColor(Color::White);
+			soundclick.play();
+			pressed_pause = false;
+			isPaused = false;
+			originaleasywindow(window);
+		}
+	}
+	else {
+		menupause[0].setFillColor(Color::White);
+	}
+	// exit
+	if (menupause[1].getGlobalBounds().contains(mouse.getPosition(window).x, mouse.getPosition(window).y)) {
+
+		menupause[1].setFillColor(Color::Red);
+
+		if (Mouse::isButtonPressed(Mouse::Left)) {
+			menupause[1].setFillColor(Color::White);
+			soundclick.play();
+
+			//reloading the map
+			changing_map[NUMBERROW][NUMBERCOLUMNS] = {};
+			LoadEasyMap(changing_map);
+
+			restart_pacman(pacman);
+			for (int i = 0; i < ghosts_number; i++) {
+				restart_ghost(ghosts[i]);
+			}
+
+			mainmenu(window);
+		}
+	}
+	else {
+		menupause[1].setFillColor(Color::White);
+	}
+	for (int i = 0; i < 2; i++) {
+		window.draw(menupause[i]);
 	}
 }
 
