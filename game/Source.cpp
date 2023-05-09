@@ -149,7 +149,7 @@ void Medium(RenderWindow& window);
 void originalmediumwindow(RenderWindow& window);
 void Hard(RenderWindow& window);
 void originalhardwindow(RenderWindow& window);
-void areyousure(RenderWindow& window);
+void areyousure(RenderWindow& window, bool& pressed_exit);
 void gameover(RenderWindow& window);
 
 // our small data base
@@ -380,8 +380,10 @@ int current_map = -1;
 //small ghosts of mainmenu
 Texture redghost[3];
 
-
 int main() {
+
+	RectangleShape blackRect(Vector2f(1920.0f, 1080.0f));
+	blackRect.setFillColor(Color{ 0,0,0,180 });
 
 	red_ghost_texture.loadFromFile("pngs/red ghost sprite.png");
 	pink_ghost_texture.loadFromFile("pngs/pink ghost sprite.png");
@@ -398,6 +400,9 @@ int main() {
 	icon.loadFromFile("pngs/cherry.png");
 	window.setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr());
 
+	bool pressed_exit = true;
+
+
 	while (window.isOpen()) {
 		if (num == 3) {
 			introduction_window(window);
@@ -412,6 +417,12 @@ int main() {
 
 //mainmenu -->>> play settings exit
 void mainmenu(RenderWindow& window) {
+
+	Texture texturePAC_MAN;
+	texturePAC_MAN.loadFromFile("pngs/PA_-MAN.png");
+	Sprite spritePAC_MAN;
+	spritePAC_MAN.setTexture(texturePAC_MAN);
+	spritePAC_MAN.setPosition(0, -300);
 
 	//prepare the sound
 	//select sound
@@ -428,7 +439,7 @@ void mainmenu(RenderWindow& window) {
 
 	//background
 	Texture backtextmain;
-	backtextmain.loadFromFile("pngs/new background2.jpg");
+	backtextmain.loadFromFile("pngs/background3.jpg");
 	Sprite spriteback;
 	spriteback.setTexture(backtextmain);
 	FloatRect backrect = spriteback.getLocalBounds();
@@ -441,7 +452,7 @@ void mainmenu(RenderWindow& window) {
 	spriteredghost1.setTexture(redghost[1]);
 	FloatRect redghostrect1 = spriteredghost1.getLocalBounds();
 	spriteredghost1.setOrigin(redghostrect1.left + redghostrect1.width / 2.0f, redghostrect1.top + redghostrect1.height / 2.0f);
-	spriteredghost1.setPosition(Vector2f(830, 840));
+	spriteredghost1.setPosition(Vector2f(650, 900));
 
 	Font font;
 	font.loadFromFile("fonts/CrackMan.ttf");
@@ -461,9 +472,9 @@ void mainmenu(RenderWindow& window) {
 	mainmenu[1].setString("high score");
 	mainmenu[2].setString("exit");
 
-	mainmenu[0].setCharacterSize(100);
-	mainmenu[1].setCharacterSize(75);
-	mainmenu[2].setCharacterSize(100);
+	mainmenu[0].setCharacterSize(60);
+	mainmenu[1].setCharacterSize(60);
+	mainmenu[2].setCharacterSize(60);
 
 	FloatRect textrect = mainmenu[0].getLocalBounds();
 	FloatRect textrect1 = mainmenu[1].getLocalBounds();
@@ -473,13 +484,35 @@ void mainmenu(RenderWindow& window) {
 	mainmenu[1].setOrigin(textrect1.left + textrect1.width / 2.0f, textrect1.top + textrect1.height / 2.0f);
 	mainmenu[2].setOrigin(textrect2.left + textrect2.width / 2.0f, textrect2.top + textrect2.height / 2.0f);
 
-	mainmenu[0].setPosition(Vector2f(830, 200));
-	mainmenu[1].setPosition(Vector2f(1000, 550));
-	mainmenu[2].setPosition(Vector2f(850, 900));
+	mainmenu[0].setPosition(Vector2f(960, 600));
+	mainmenu[1].setPosition(Vector2f(960, 700));
+	mainmenu[2].setPosition(Vector2f(960, 800));
+
+	RectangleShape blackRect(Vector2f(1920.0f, 1080.0f));
+	blackRect.setFillColor(Color{ 0,0,0,180 });
+
+	RectangleShape blackRect2(Vector2f(1920.0f, 1080.0f));
+	blackRect2.setFillColor(Color{ 0,0,0,160 });
+
+	//pavman rotate
+	Texture texturePacman;
+	texturePacman.loadFromFile("pngs/pacman3.png");
+	Sprite spritepacman;
+	spritepacman.setTexture(texturePacman);
+	spritepacman.setPosition(770, 240);
+	FloatRect pacmanRect = spritepacman.getLocalBounds();
+	spritepacman.setOrigin(85.0f, 89.0f);
+	spritepacman.setScale(0.75f, 0.75f);
+
+	float angle = 0.f;
+	float rotationSpeed = 5.0f;
+	Clock clock;
+
 
 	bool sound = 0;
 	bool sound2 = 0;
 	bool sound4 = 0;
+	bool pressed_exit = false;
 
 	while (window.isOpen()) {
 		Event event;
@@ -491,10 +524,11 @@ void mainmenu(RenderWindow& window) {
 			if (event.type == Event::KeyReleased) {
 				if (event.key.code == Keyboard::Escape) {
 					soundclick.play();
-					areyousure(window);
-					return;
+					pressed_exit = true;
+					num = 4;
 				}
 			}
+
 			//to make the sound of button
 			if (event.type == Event::MouseMoved) {
 				// Check if the mouse is over the button
@@ -548,7 +582,9 @@ void mainmenu(RenderWindow& window) {
 				}
 				if (mainmenu[2].getGlobalBounds().contains(mousePos)) {
 					soundclick.play();
-					areyousure(window);
+
+					pressed_exit = true;
+					num = 4;
 
 				}
 			}
@@ -557,10 +593,26 @@ void mainmenu(RenderWindow& window) {
 		num = selected(mainmenu, window);
 
 		if (num != 0) {
-			return;
+			if (num == 4) {
+				window.draw(blackRect);
+				areyousure(window, pressed_exit);
+				return;
+			}
 		}
+		angle += rotationSpeed;
+		if (angle >= 360.f) {
+			angle = 0.0f;
+		}
+
+		spritepacman.setRotation(angle);
+
+
 		window.clear();
 		window.draw(spriteback);
+		window.draw(blackRect2);
+		window.draw(spritePAC_MAN);
+		window.draw(spritepacman);
+
 		for (int i = 0; i < 3; i++) {
 			window.draw(mainmenu[i]);
 		}
@@ -578,14 +630,19 @@ void mainmenu(RenderWindow& window) {
 
 			if (Mouse::isButtonPressed(Mouse::Left)) {
 				mainmenu[2].setFillColor(Color::White);
-				return;
-				soundclick.play();
+				pressed_exit = true;
+
 				sound = 0;
+
 
 			}
 		}
 		else {
 			mainmenu[2].setFillColor(Color::White);
+		}
+		if (pressed_exit) {
+			window.draw(blackRect);
+			areyousure(window, pressed_exit);
 		}
 		window.display();
 
@@ -811,6 +868,7 @@ int selected(Text arr[3], RenderWindow& window) {
 
 			if (Mouse::isButtonPressed(Mouse::Left)) {
 				arr[i].setFillColor(Color::White);
+
 				return i + 1;
 			}
 		}
@@ -825,6 +883,7 @@ int selected(Text arr[3], RenderWindow& window) {
 
 //window of (play) then EASY MEDIUM HARD
 void play(RenderWindow& window) {
+
 
 	while (window.isOpen()) {
 		Event event;
@@ -1171,7 +1230,6 @@ void originaleasywindow(RenderWindow& window) {
 					gameS.stop();
 					//pause(window);
 					pressed_pause = true;
-					//return;
 				}
 			}
 
@@ -1664,6 +1722,7 @@ void originalmediumwindow(RenderWindow& window) {
 	SoundBuffer click;
 	click.loadFromFile("sounds/enter sound.wav");
 	Sound soundclick;
+
 	soundclick.setBuffer(click);
 
 	//game sound
@@ -2433,9 +2492,10 @@ void originalmediumwindow(RenderWindow& window) {
 
 			if (Mouse::isButtonPressed(Mouse::Left)) {
 				gameS.stop();
+				soundclick.play();
+
 				line1.setFillColor(Color::White);
 				line2.setFillColor(Color::White);
-				soundclick.play();
 
 				pressed_pause = true;
 				isPaused = true;
@@ -2712,7 +2772,7 @@ void selected2(Text arr2[3], RenderWindow& window) {
 }
 
 //are you sure window
-void areyousure(RenderWindow& window) {
+void areyousure(RenderWindow& window, bool& pressed_exit) {
 
 	//select sound
 	SoundBuffer select;
@@ -2729,14 +2789,15 @@ void areyousure(RenderWindow& window) {
 	Font font;
 	font.loadFromFile("fonts/CrackMan.ttf");
 
-	//ARE YOU SURE
-	Texture textsure;
-	textsure.loadFromFile("pngs/are_you_sure.jpg");
-	Sprite spritesure;
-	spritesure.setTexture(textsure);
-	FloatRect rectsure = spritesure.getLocalBounds();
-	spritesure.setOrigin(rectsure.left + rectsure.width / 2.0f, rectsure.top + rectsure.height / 2.0f);
-	spritesure.setPosition(Vector2f(960, 540));
+	Text areyousuree;
+
+	areyousuree.setFont(font);
+	areyousuree.setFillColor(Color::White);
+	areyousuree.setString("ARE YOU SURE!?");
+	areyousuree.setCharacterSize(100);
+	FloatRect textrect3 = areyousuree.getLocalBounds();
+	areyousuree.setOrigin(textrect3.left + textrect3.width / 2.0f, textrect3.top + textrect3.height / 2.0f);
+	areyousuree.setPosition(960, 500);
 
 	//yes no
 	Text yesno[2];
@@ -2766,94 +2827,89 @@ void areyousure(RenderWindow& window) {
 
 	bool sound = 0, sound2 = 0;
 
-	while (window.isOpen()) {
-		Event event;
-		while (window.pollEvent(event)) {
-			if (event.type == Event::Closed) {
+	Event event;
+	while (window.pollEvent(event)) {
+		if (event.type == Event::Closed) {
+			window.close();
+			break;
+		}
+		if (event.type == Event::KeyReleased) {
+			if (event.key.code == Keyboard::Escape) {
 				window.close();
+				soundselect.play();
 				break;
 			}
-			if (event.type == Event::KeyReleased) {
-				if (event.key.code == Keyboard::Escape) {
+		}
+		if (event.type == Event::MouseButtonPressed) {
+			Vector2f mousePos = window.mapPixelToCoords(Mouse::getPosition(window));
+			for (int i = 0; i < 2; i++) {
+				if (yesno[i].getGlobalBounds().contains(mousePos)) {
+					soundclick.play();
+
+				}
+
+			}
+		}
+		if (event.type == Event::MouseMoved) {
+			// Check if the mouse is over the button
+			sf::Vector2f mousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
+			if (yesno[0].getGlobalBounds().contains(mousePos)) {
+				if (!sound) {
+					// Play the sound if the mouse just entered the button
 					soundselect.play();
-					window.close();
-					return;
 				}
+				sound = true;
 			}
-			if (event.type == Event::MouseButtonPressed) {
-				Vector2f mousePos = window.mapPixelToCoords(Mouse::getPosition(window));
-				for (int i = 0; i < 2; i++) {
-					if (yesno[i].getGlobalBounds().contains(mousePos)) {
-						soundclick.play();
-
-					}
-
-				}
-			}
-			if (event.type == Event::MouseMoved) {
-				// Check if the mouse is over the button
-				sf::Vector2f mousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
-				if (yesno[0].getGlobalBounds().contains(mousePos)) {
-					if (!sound) {
-						// Play the sound if the mouse just entered the button
-						soundselect.play();
-					}
-					sound = true;
-				}
-				else {
-					sound = false;
-				}
-
-				if (yesno[1].getGlobalBounds().contains(mousePos)) {
-					if (!sound2) {
-						// Play the sound if the mouse just entered the button
-						soundselect.play();
-
-					}
-					sound2 = true;
-				}
-				else {
-					sound2 = false;
-				}
+			else {
+				sound = false;
 			}
 
-		}
+			if (yesno[1].getGlobalBounds().contains(mousePos)) {
+				if (!sound2) {
+					// Play the sound if the mouse just entered the button
+					soundselect.play();
 
-		Mouse mouse;
-		if (yesno[0].getGlobalBounds().contains(mouse.getPosition(window).x, mouse.getPosition(window).y)) {
-
-			yesno[0].setFillColor(Color::Red);
-
-			if (Mouse::isButtonPressed(Mouse::Left)) {
-				window.close();
-				yesno[0].setFillColor(Color::White);
-				break;
+				}
+				sound2 = true;
+			}
+			else {
+				sound2 = false;
 			}
 		}
-		else {
+
+	}
+
+	Mouse mouse;
+	if (yesno[0].getGlobalBounds().contains(mouse.getPosition(window).x, mouse.getPosition(window).y)) {
+
+		yesno[0].setFillColor(Color::Red);
+
+		if (Mouse::isButtonPressed(Mouse::Left)) {
+			window.close();
 			yesno[0].setFillColor(Color::White);
+
 		}
+	}
+	else {
+		yesno[0].setFillColor(Color::White);
+	}
 
-		if (yesno[1].getGlobalBounds().contains(mouse.getPosition(window).x, mouse.getPosition(window).y)) {
+	if (yesno[1].getGlobalBounds().contains(mouse.getPosition(window).x, mouse.getPosition(window).y)) {
 
-			yesno[1].setFillColor(Color::Red);
+		yesno[1].setFillColor(Color::Red);
 
-			if (Mouse::isButtonPressed(Mouse::Left)) {
-				mainmenu(window);
-				yesno[1].setFillColor(Color::White);
-				break;
-			}
-		}
-		else {
+		if (Mouse::isButtonPressed(Mouse::Left)) {
+			mainmenu(window);
 			yesno[1].setFillColor(Color::White);
 		}
-		window.clear();
-		window.draw(spritesure);
-		window.draw(yesno[0]);
-		window.draw(yesno[1]);
-
-		window.display();
 	}
+	else {
+		yesno[1].setFillColor(Color::White);
+	}
+	window.draw(areyousuree);
+	window.draw(yesno[0]);
+	window.draw(yesno[1]);
+
 }
 
 //game over window
@@ -3004,7 +3060,6 @@ void gameover(RenderWindow& window) {
 	}
 
 }
-
 
 // The transition in the beginning
 void introduction_window(RenderWindow& window)
@@ -3743,3 +3798,4 @@ void LoadingWindow(RenderWindow& window)
 		window.display();
 	}
 }
+
