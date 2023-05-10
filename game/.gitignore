@@ -1,5 +1,5 @@
 /.vs/*
-/x64/Debug/*
+*/x64/Debug/*
 /game/x64/*
 /x64/Debug/game.exe
 /x64/Debug/game.pdb
