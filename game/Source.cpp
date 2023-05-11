@@ -119,7 +119,7 @@ Texture face_ghost_texture;
 Texture endtime_ghost_texture;
 
 int selected(Text mainmenu[3], RenderWindow& window, bool pressedExit = false);
-void selected2(Text mainmenu[3], RenderWindow& window, bool pressed_Exit = false);
+void selected2(Text mainmenu[4], RenderWindow& window, bool pressed_Exit = false);
 
 void mainmenu(RenderWindow& window);
 void play(RenderWindow& window);
@@ -199,6 +199,8 @@ void move_right(Sprite& sprite, int& lastKeyPressed, float speed = baseSpeed) {
 	get_tile_cor(x + (player_width / 2) + speed + 0.0001, y, row, col);
 	if (map_[row][col].type == tile_type::wall) {
 		if ((col * TILESIZE + offset_x) - (x + (player_width / 2) + diff) > 0) {
+
+
 
 			if (condition_1 && condition_2)
 			{
@@ -366,7 +368,7 @@ int timer_sec = 0, timer_min = 0;
 int current_map = -1;
 
 //small ghosts of mainmenu
-Texture redghost[3];
+Texture redghost[4];
 
 	RenderWindow window(VideoMode(1920, 1080), "Main Menu", Style::Fullscreen);
 int main() {
@@ -405,6 +407,7 @@ int main() {
 }
 
 //mainmenu -->>> play settings exit
+
 void mainmenu(RenderWindow& window) {
 
 	Texture texturePAC_MAN;
@@ -428,21 +431,9 @@ void mainmenu(RenderWindow& window) {
 
 	//background
 	Texture backtextmain;
-	backtextmain.loadFromFile("pngs/background3.jpg");
+	backtextmain.loadFromFile("pngs/background.jpg");
 	Sprite spriteback;
 	spriteback.setTexture(backtextmain);
-	FloatRect backrect = spriteback.getLocalBounds();
-	spriteback.setOrigin(backrect.left + backrect.width / 2.0f, backrect.top + backrect.height / 2.0f);
-	spriteback.setPosition(Vector2f(1920 / 2, 1080 / 2));
-
-	//small ghsots
-	redghost[1].loadFromFile("pngs/red ghost.png");
-	Sprite spriteredghost1;
-	spriteredghost1.setTexture(redghost[1]);
-	FloatRect redghostrect1 = spriteredghost1.getLocalBounds();
-	spriteredghost1.setOrigin(redghostrect1.left + redghostrect1.width / 2.0f, redghostrect1.top + redghostrect1.height / 2.0f);
-	spriteredghost1.setPosition(Vector2f(780, 890));
-
 
 	Font font;
 	font.loadFromFile("fonts/CrackMan.ttf");
@@ -485,16 +476,13 @@ void mainmenu(RenderWindow& window) {
 
 	bool sound = 0;
 	bool sound2 = 0;
-	bool sound4 = 0;
+	bool sound4 = 0, sound3 = false;
 	bool pressed_exit = false;
 
 	while (window.isOpen()) {
 		Event event;
 		while (window.pollEvent(event)) {
-			if (event.type == Event::Closed) {
-				window.close();
-				break;
-			}
+
 			if (event.type == Event::KeyReleased) {
 				if (event.key.code == Keyboard::Escape) {
 					soundclick.play();
@@ -540,9 +528,20 @@ void mainmenu(RenderWindow& window) {
 					else {
 						sound2 = false;
 					}
+					if (mainmenu[3].getGlobalBounds().contains(mousePos)) {
+						if (!sound3) {
+							// Play the sound if the mouse just entered the button
+							soundselect.play();
+						}
+						sound3 = true;
+					}
+					else {
+						sound3 = false;
+					}
 				}
 			}
-			// 0 -> play ,, 1 -> highscore ,, 2 -> exit
+
+			// 0 -> play ,, 1 -> highscore ,, 2 -> settings, 3 -> exit
 			if (Mouse::isButtonPressed(Mouse::Left)) {
 				Vector2f mousePos = window.mapPixelToCoords(Mouse::getPosition(window));
 				if(!pressed_exit)
@@ -561,13 +560,12 @@ void mainmenu(RenderWindow& window) {
 					if (mainmenu[2].getGlobalBounds().contains(mousePos)) {
 						soundclick.play();
 						settingsWindow();
+						window.setFramerateLimit(30);
 					}
 					if (mainmenu[3].getGlobalBounds().contains(mousePos)) {
 						soundclick.play();
-
-						//pressed_exit = true;
+						pressed_exit = true;
 						num = 4;
-
 					}
 				}
 			}
@@ -600,7 +598,8 @@ void mainmenu(RenderWindow& window) {
 		for (int i = 0; i < 4; i++) {
 			window.draw(mainmenu[i]);
 		}
-		selected2(mainmenu, window, pressed_exit);
+		//selected2(mainmenu, window, pressed_exit);
+
 		//when pressing exit
 		Mouse mouse;
 		//to make small ghost near the word
@@ -612,7 +611,7 @@ void mainmenu(RenderWindow& window) {
 				sound = 1;
 				smallghost = 1;
 				mainmenu[3].setFillColor(Color::Red);
-				window.draw(spriteredghost1);
+				//window.draw(spriteredghost1);
 
 				if (Mouse::isButtonPressed(Mouse::Left)) {
 					mainmenu[3].setFillColor(Color::White);
@@ -620,13 +619,13 @@ void mainmenu(RenderWindow& window) {
 
 					sound = 0;
 
-
 				}
 			}
 			else {
 				mainmenu[3].setFillColor(Color::White);
 			}
 		}
+
 		if (pressed_exit) {
 			window.draw(blackRect);
 			areyousure(window, pressed_exit);
@@ -635,6 +634,140 @@ void mainmenu(RenderWindow& window) {
 
 	}
 }
+
+//mainmenu -->>> play settings exit
+//
+//void mainmenu(RenderWindow& window) {
+//	bool pressedExit = 0;
+//
+//	Font font;
+//	font.loadFromFile("fonts/CrackMan.ttf");
+//
+//	//background
+//	Texture backtextmain;
+//	backtextmain.loadFromFile("pngs/background3.jpg");
+//	Sprite spriteback;
+//	spriteback.setTexture(backtextmain);
+//	FloatRect backrect = spriteback.getLocalBounds();
+//	spriteback.setOrigin(backrect.left + backrect.width / 2.0f, backrect.top + backrect.height / 2.0f);
+//	spriteback.setPosition(Vector2f(1920 / 2, 1080 / 2));
+//
+//	RectangleShape blackRect2(Vector2f(1920.0f, 1080.0f));
+//	blackRect2.setFillColor(Color{ 0,0,0,160 });
+//
+//	// Buttons
+//	Text mainmenu[4];
+//	mainmenu[0].setString("play");
+//	mainmenu[1].setString("high score");
+//	mainmenu[2].setString("Settings");
+//	mainmenu[3].setString("exit");
+//
+//	for (int i = 0; i < 4; i++) {
+//		mainmenu[i].setFont(font);
+//		mainmenu[i].setFillColor(Color::White);
+//		mainmenu[i].setCharacterSize(70);
+//		FloatRect textrect = mainmenu[i].getLocalBounds();
+//		mainmenu[i].setOrigin(textrect.left + textrect.width / 2.0f, textrect.top + textrect.height / 2.0f);
+//		mainmenu[i].setPosition(Vector2f(960, 450 + (i * 150)));
+//	}
+//
+//	//prepare the sound
+//	//select sound
+//	SoundBuffer select;
+//	select.loadFromFile("sounds/select sound.wav");
+//	Sound soundselect;
+//	soundselect.setBuffer(select);
+//
+//	//click sound
+//	SoundBuffer click;
+//	click.loadFromFile("sounds/enter sound.wav");
+//	Sound soundclick;
+//	soundclick.setBuffer(click);
+//
+//	//pacman rotate
+//	Texture texturePAC_MAN;
+//	texturePAC_MAN.loadFromFile("pngs/PA_-MAN.png");
+//	Sprite spritePAC_MAN;
+//	spritePAC_MAN.setTexture(texturePAC_MAN);
+//	spritePAC_MAN.setPosition(0, -300);
+//
+//	Texture texturePacman;
+//	texturePacman.loadFromFile("pngs/pacman3.png");
+//	Sprite spritepacman;
+//	spritepacman.setTexture(texturePacman);
+//	spritepacman.setPosition(770, 240);
+//	FloatRect pacmanRect = spritepacman.getLocalBounds();
+//	spritepacman.setOrigin(85.0f, 89.0f);
+//	spritepacman.setScale(0.75f, 0.75f);
+//
+//	float angle = 0.f;
+//	float rotationSpeed = 5.0f;
+//	Clock clock;
+//
+//	while (window.isOpen()) {
+//		if (!pressedExit) {
+//			// input
+//			Event event;
+//			Vector2f mousePos = window.mapPixelToCoords(Mouse::getPosition(window));
+//			while (window.pollEvent(event)) {
+//				// pressing and selecting
+//				for (int i = 0; i < 4; i++) {
+//					if (mainmenu[i].getGlobalBounds().contains(mousePos)) {
+//						//soundselect.play();
+//						mainmenu[i].setFillColor(Color::Red);
+//
+//						if (Mouse::isButtonPressed(Mouse::Left)) {
+//							soundclick.play();
+//						}
+//					}
+//					else {
+//						mainmenu[i].setFillColor(Color::White);
+//					}
+//
+//					if (Mouse::isButtonPressed(Mouse::Left)) {
+//						if (mainmenu[0].getGlobalBounds().contains(mousePos)) {
+//							mainmenu2(window);
+//						}
+//						else if (mainmenu[1].getGlobalBounds().contains(mousePos)) {
+//							ScoreSheetWindow();
+//						}
+//						else if (mainmenu[2].getGlobalBounds().contains(mousePos)) {
+//							settingsWindow();
+//						}
+//						else if (mainmenu[3].getGlobalBounds().contains(mousePos) or Keyboard::isKeyPressed(Keyboard::Escape)) {
+//							pressedExit = 1;
+//						}
+//					}
+//				}
+//			}
+//
+//			// processing
+//			angle += rotationSpeed;
+//			if (angle >= 360.f) {
+//				angle = 0.0f;
+//			}
+//			spritepacman.setRotation(angle);
+//		}
+//
+//		// draw
+//		window.clear();
+//
+//		window.draw(spriteback);
+//		window.draw(blackRect2);
+//		for (int i = 0; i < 4; i++) {
+//			window.draw(mainmenu[i]);
+//		}
+//		selected2(mainmenu, window, pressedExit);
+//
+//		window.draw(spritepacman);
+//		window.draw(spritePAC_MAN);
+//		if (pressedExit) {
+//			areyousure(window, pressedExit);
+//		}
+//
+//		window.display();
+//	}
+//}
 
 //2nd mainmenu includes -->>> easy medium hard
 void mainmenu2(RenderWindow& window) {
@@ -659,7 +792,7 @@ void mainmenu2(RenderWindow& window) {
 
 	//background
 	Texture backtextmain;
-	backtextmain.loadFromFile("pngs/background3.jpg");
+	backtextmain.loadFromFile("pngs/background.jpg");
 	Sprite spriteback;
 	spriteback.setTexture(backtextmain);
 	FloatRect backrect = spriteback.getLocalBounds();
@@ -1228,7 +1361,7 @@ void originaleasywindow(RenderWindow& window) {
 
 			//save highscore
 			firstGame = true;
-			//victory(window);
+			victory(window);
 		}
 
 		Event event;
@@ -1421,6 +1554,7 @@ void originaleasywindow(RenderWindow& window) {
 					pacman.scoreSound = true;
 					changing_map[row_pac][col_pac] = 2;
 					pacman.score++;
+					SaveNewScore(pacman.score);
 					elapsedTime_afterEat = timeBeforeEat;
 				}
 			}
@@ -2101,7 +2235,7 @@ void originalmediumwindow(RenderWindow& window) {
 		if (current_score == 0) {
 
 			firstGame = true;
-			//victory(window);
+			victory(window);
 		}
 
 		Event event;
@@ -2131,6 +2265,7 @@ void originalmediumwindow(RenderWindow& window) {
 					eatsound.stop();
 					pressed_pause = true;
 					isPaused = true;
+					current_map = 2;
 					gameS.stop();
 					pause(window, pressed_pause, firstGame);
 				}
@@ -2348,6 +2483,7 @@ void originalmediumwindow(RenderWindow& window) {
 					pacman.scoreSound = true;
 					changing_map[row_pac][col_pac] = 2;
 					pacman.score++;
+					SaveNewScore(pacman.score);
 					elapsedTime_afterEat = timeBeforeEat;
 				}
 			}
@@ -3040,7 +3176,7 @@ void originalhardwindow(RenderWindow& window) {
 		current_score -= 5;
 		if (current_score == 0) {
 			firstGame = true;
-			//victory(window);
+			victory(window);
 		}
 
 		Event event;
@@ -3070,6 +3206,7 @@ void originalhardwindow(RenderWindow& window) {
 					powerUp_Sound.stop();
 					eatsound.stop();
 					gameS.stop();
+					current_map = 3;
 					pressed_pause = true;
 					pause(window, pressed_pause, firstGame);
 				}
@@ -3266,6 +3403,7 @@ void originalhardwindow(RenderWindow& window) {
 					pacman.scoreSound = true;
 					changing_map[row_pac][col_pac] = 2;
 					pacman.score++;
+					SaveNewScore(pacman.score);
 					elapsedTime_afterEat = timeBeforeEat;
 				}
 			}
@@ -3779,8 +3917,7 @@ void pause(RenderWindow& window, bool& pressed_pause, bool& firstGame) {
 	}
 }
 
-//to put small ghosts
-void selected2(Text arr2[3], RenderWindow& window, bool pressed_Exit) {
+void selected2(Text arr2[4], RenderWindow& window, bool pressed_Exit) {
 
 	//small ghosts
 	redghost[0].loadFromFile("pngs/blue ghost.png");
@@ -3788,18 +3925,32 @@ void selected2(Text arr2[3], RenderWindow& window, bool pressed_Exit) {
 	spriteredghost.setTexture(redghost[0]);
 	FloatRect redghostrect = spriteredghost.getLocalBounds();
 	spriteredghost.setOrigin(redghostrect.left + redghostrect.width / 2.0f, redghostrect.top + redghostrect.height / 2.0f);
-	spriteredghost.setPosition(Vector2f(760, 450));
+	spriteredghost.setPosition(Vector2f(750, 450));
 
 	redghost[2].loadFromFile("pngs/yellow ghost.png");
 	Sprite spriteredghost2;
 	spriteredghost2.setTexture(redghost[2]);
 	FloatRect redghostrect2 = spriteredghost2.getLocalBounds();
 	spriteredghost2.setOrigin(redghostrect2.left + redghostrect2.width / 2.0f, redghostrect2.top + redghostrect2.height / 2.0f);
-	spriteredghost2.setPosition(Vector2f(620, 600));
+	spriteredghost2.setPosition(Vector2f(960, 600));
+
+	redghost[3].loadFromFile("pngs/green ghost.png");
+	Sprite spriteredghost3;
+	spriteredghost3.setTexture(redghost[3]);
+	FloatRect redghostrect3 = spriteredghost3.getLocalBounds();
+	spriteredghost3.setOrigin(redghostrect3.left + redghostrect3.width / 2.0f, redghostrect3.top + redghostrect3.height / 2.0f);
+	spriteredghost3.setPosition(Vector2f(960, 800));
+
+	redghost[1].loadFromFile("pngs/red ghost.png");
+	Sprite spriteredghost4;
+	spriteredghost4.setTexture(redghost[1]);
+	FloatRect redghostrect4 = spriteredghost4.getLocalBounds();
+	spriteredghost4.setOrigin(redghostrect4.left + redghostrect4.width / 2.0f, redghostrect4.top + redghostrect4.height / 2.0f);
+	spriteredghost4.setPosition(Vector2f(960, 1150));
 
 	Mouse mouse;
 	bool smallghost = 0;
-	for (int i = 0; i < 2; i++) {
+	for (int i = 0; i < 4; i++) {
 		if (arr2[i].getGlobalBounds().contains(mouse.getPosition(window).x, mouse.getPosition(window).y)) {
 			if (!pressed_Exit)
 			{
@@ -3812,12 +3963,20 @@ void selected2(Text arr2[3], RenderWindow& window, bool pressed_Exit) {
 				if (i == 1) {
 					window.draw(spriteredghost2);
 				}
+				if (i == 3) {
+					window.draw(spriteredghost3);
+				}
+				if (i == 2)
+					window.draw(spriteredghost4);
 				if (Mouse::isButtonPressed(Mouse::Left)) {
 					arr2[i].setFillColor(Color::White);
 				}
 				else {
 					arr2[i].setFillColor(Color::White);
 				}
+
+
+				// GHOST OF SETTINGS
 			}
 		}
 	}
@@ -4001,7 +4160,7 @@ void gameover(RenderWindow& window) {
 	FloatRect textrect = exit.getLocalBounds();
 
 	exit.setOrigin(textrect.left + textrect.width / 2.0f, textrect.top + textrect.height / 2.0f);
-	exit.setPosition(Vector2f(960, 540));
+	exit.setPosition(Vector2f(960, 750));
 	bool sound = 0, sound2 = 0;
 
 	while (window.isOpen()) {
@@ -4238,11 +4397,10 @@ void UsernameWindow(RenderWindow& window) {
 	}
 }
 
-
 // Shut The Freak Up and don't play here it's not the game
 void SaveNewScore(int score) {
 	// Saving the new high score if you got it
-	Users.insert({ score, username });
+	Users.insert({ -score, username});
 }
 
 // Also here 
@@ -4281,7 +4439,6 @@ void SaveHighScores() {
 	saveUsernames.close();
 	saveScores.close();
 }
-
 void PrintScores(multimap<int, string>& Scores) {
 	Font font;
 	font.loadFromFile("fonts/emulogic.ttf");
@@ -4357,8 +4514,9 @@ void ScoreSheetWindow() {
 	while (window.isOpen()) {
 		Event event;
 		while (window.pollEvent(event)) {
-			if (Keyboard::isKeyPressed(Keyboard::Escape)) {
-				return;
+			if (event.type == Event::KeyReleased) {
+				if (event.key.code == Keyboard::Escape)
+					return;
 			}
 		}
 		window.clear();
@@ -4648,7 +4806,6 @@ bool exist_in_closed(tile* tile, vector <struct tile>& closed) {
 	}
 	return ans;
 }
-
 void find_optimal_path(tile* current, tile* target, vector <tile>* get_path) {
 	queue <tile> open;
 	vector <tile> closed;
@@ -4726,7 +4883,6 @@ void find_optimal_path(tile* current, tile* target, vector <tile>* get_path) {
 		current = current->parent;
 	}
 }
-
 void catch_target(Ghosts& ghost, Sprite& target) {
 
 	//if the ghost finished a whole tile 
@@ -4792,7 +4948,6 @@ void catch_target(Ghosts& ghost, Sprite& target) {
 	}
 	ghost.step_counts_BFS++;
 }
-
 void random_direction(Sprite& sprite, int& direction) {
 
 	srand((int)time(0));
@@ -4889,6 +5044,122 @@ void updateVolumeStatus() {
 	sound.setVolume(volume);
 }
 
+//void settingsWindow() {
+//
+//	bool isChecked[2]{ 1, 0 };
+//	bool makeit = 1;
+//
+//	Font font;
+//	font.loadFromFile("fonts/emulogic.ttf");
+//
+//	Text Settings[4];
+//
+//	int Setting = 0;
+//	int FullScreen = 1;
+//	int V_Sync = 2;
+//	int Volume = 3;
+//
+//	Settings[Setting].setString("Settings");
+//	Settings[FullScreen].setString("Full Screen");
+//	Settings[V_Sync].setString("V-Sync");
+//	Settings[Volume].setString("Volume");
+//
+//	for (int i = 0; i < 4; i++) {
+//		Settings[i].setFont(font);
+//		FloatRect origin = Settings[i].getLocalBounds();
+//		Settings[i].setOrigin(origin.left + origin.width / 2.f, origin.top + origin.height / 2.f);
+//		Settings[i].setCharacterSize(30);
+//		Settings[i].setFillColor(Color(222, 222, 225));
+//	}
+//
+//	Settings[Setting].setPosition(1920 / 2.f, 130.f);
+//	for (int i = 1; i < 4; i++) {
+//		FloatRect origin = Settings[i].getLocalBounds();
+//		Settings[i].setOrigin(origin.left + origin.width, origin.top + origin.height / 2.f);
+//		Settings[i].setPosition(960.f - 100.f, 190.f + (45.f * i));
+//	}
+//
+//	RectangleShape box[2];
+//	for (int i = 0; i < 2; i++) {
+//		FloatRect origin = box[i].getLocalBounds();
+//		box[i].setOrigin(origin.left, origin.top + origin.height / 2.f);
+//		box[i].setPosition(960.f + 100.f, 190.f + 45.0f * (i + .75));
+//		box[i].setSize(Vector2f(20.0f, 20.0f));
+//		box[i].setOutlineThickness(2.0f);
+//		box[i].setOutlineColor(Color(222, 222, 225));
+//	}
+//
+//	volumeBar.setSize(Vector2f(200, 20));
+//	volumeBar.setFillColor(Color::White);
+//	FloatRect origin = volumeBar.getLocalBounds();
+//	volumeBar.setOrigin(origin.left, origin.top + origin.height / 2.f);
+//	volumeBar.setPosition(960.f + 100.f, 190.f + 45.0f * (3));
+//
+//	while (window.isOpen()) {
+//		Event event;
+//		while (window.pollEvent(event)) {
+//			if (event.type == Event::KeyReleased) {
+//				if (event.key.code == Keyboard::Escape)
+//				{
+//					return;
+//				}
+//			}
+//
+//			auto mousePosition = Mouse::getPosition(window);
+//			if (event.type == Event::MouseButtonPressed) {
+//				if (event.mouseButton.button == Mouse::Left) {
+//
+//					if (event.type == Event::MouseButtonPressed) {
+//						if (event.mouseButton.button == Mouse::Left) {
+//							for (int i = 0; i < 2; i++) {
+//								FloatRect checkboxBounds = box[i].getGlobalBounds();
+//								if (checkboxBounds.contains(static_cast<Vector2f>(mousePosition)))
+//									isChecked[i] = !isChecked[i];
+//							}
+//						}
+//					}
+//				}
+//
+//				if (mousePosition.x >= volumeBar.getPosition().x
+//					&& mousePosition.x <= volumeBar.getPosition().x + 200.0f
+//					&& mousePosition.y >= volumeBar.getPosition().y
+//					&& mousePosition.y <= volumeBar.getPosition().y + volumeBar.getSize().y) {
+//
+//					float newVolume = ((float)mousePosition.x - volumeBar.getPosition().x) / 200.0f * 100.0f;
+//					volume = newVolume;
+//					updateVolumeStatus();
+//				}
+//			}
+//		}
+//		for (int i = 0; i < 2; i++)
+//			box[i].setFillColor(isChecked[i] ? Color::Green : Color::White);
+//
+//		if (!isChecked[0] && makeit) {
+//			makeit = 0;
+//			VideoMode vm(960, 540);
+//			window.create(vm, "Pac-Man");
+//			View view(FloatRect(0, 0, 1920, 1080));
+//			window.setView(view);
+//		}
+//		else if (isChecked[0] && !makeit) {
+//			makeit = 1;
+//			window.create(VideoMode(1920, 1080), "Pac-Man", Style::Fullscreen);
+//		}
+//
+//
+//		window.clear();
+//
+//		for (int i = 0; i < 4; i++) {
+//			window.draw(Settings[i]);
+//		}
+//		for (int i = 0; i < 2; i++) {
+//			window.draw(box[i]);
+//		}
+//		window.draw(volumeBar);
+//
+//		window.display();
+//	}
+//}
 void settingsWindow() {
 
 	bool isChecked[2]{ 1, 0 };
@@ -4943,10 +5214,10 @@ void settingsWindow() {
 	while (window.isOpen()) {
 		Event event;
 		while (window.pollEvent(event)) {
-			if (Keyboard::isKeyPressed(Keyboard::Escape)) {
-				return;
-			}
-
+			if (event.type == Event::KeyReleased) {
+				if (event.key.code == Keyboard::Escape)
+					return;
+				}
 			auto mousePosition = Mouse::getPosition(window);
 			if (event.type == Event::MouseButtonPressed) {
 				if (event.mouseButton.button == Mouse::Left) {
@@ -5003,63 +5274,90 @@ void settingsWindow() {
 	}
 }
 
+void victory(RenderWindow& window) {
+	SoundBuffer select;
+	select.loadFromFile("sounds/select sound.wav");
+	Sound soundselect;
+	soundselect.setBuffer(select);
 
+	//click sound
+	SoundBuffer click;
+	click.loadFromFile("sounds/enter sound.wav");
+	Sound soundclick;
+	soundclick.setBuffer(click);
 
-//void Victory(RenderWindow& window) {
-//
-//	for (int i = 0; i < 4; i++)
-//	{
-//		if (ghosts[i].isBFS || ghosts[i].isDead)
-//			continue;
-//		if (ghosts[i].outOfhome == false)
-//			continue;
-//		float x_ghost = ghosts[i].sprite.getPosition().x, y_ghost = ghosts[i].sprite.getPosition().y;
-//		int row_ghost, col_ghost;
-//		float x_home = ghosts[0].home_sprite.getPosition().x, y_home = ghosts[0].home_sprite.getPosition().y;
-//		int row_home, col_home;
-//		get_tile_cor(x_ghost, y_ghost, row_ghost, col_ghost);
-//		get_tile_cor(x_home, y_home, row_home, col_home);
-//
-//		int avaialble_ways = 0;
-//
-//		for (int moves = 0; moves < 4; moves++)
-//		{
-//			if (moves != (2 + ghost[i].moving_direction) % 4)
-//			{
-//				if (check_wall(moves, ghost[i].sprite))
-//
-//					avaialble_ways++;
-//			}
-//		}
-//
-//		int random_direction = rand() % 4;
-//		if (avaialble_ways > 0)
-//		{
-//			while (check_wall(random_direction, ghost[i].sprite) == 0 || random_direction == (2 + ghost[i].moving_direction) % 4)
-//			{
-//				random_direction = rand() % 4;
-//			}
-//
-//			ghost[i].moving_direction = random_direction;
-//		}
-//		else
-//		{
-//			ghost[i].moving_direction = (2 + ghost[i].moving_direction) % 4;
-//		}
-//		if (ghost[i].moving_direction == 0)
-//			ghost[i].sprite.move(ghosts[i].speed, 0);
-//		//move_right(ghosts[i].sprite, ghosts[i].moving_direction, ghosts[i].speed);
-//
-//		else  if (ghost[i].moving_direction == 1)
-//			ghost[i].sprite.move(0, -ghosts[i].speed);
-//		//move_up(ghosts[i].sprite, ghosts[i].moving_direction, ghosts[i].speed);
-//
-//		else if (ghost[i].moving_direction == 2)
-//			ghost[i].sprite.move(-ghosts[i].speed, 0);
-//		//	move_left(ghosts[i].sprite, ghosts[i].moving_direction, ghosts[i].speed);
-//
-//		else if (&map_[row_home][col_home] != &map_[row_ghost][col_ghost] && ghosts[i].moving_direction == 3)
-//			ghost[i].sprite.move(0, ghosts[i].speed);
-//		//move_down(ghosts[i].sprite, ghosts[i].moving_direction, ghosts[i].speed);
-//
-//	}
+	Font font;
+	font.loadFromFile("fonts/Pixeboy-z8XGD.ttf");
+
+	//game over
+	Texture victory_texture;
+	victory_texture.loadFromFile("pngs/victory.jpg");
+	Sprite victory_sprite;
+	victory_sprite.setTexture(victory_texture);
+
+	Text exit;
+	exit.setFont(font);
+	exit.setFillColor(Color::White);
+	exit.setString("exit");
+	exit.setCharacterSize(100);
+	FloatRect textrect = exit.getLocalBounds();
+
+	exit.setOrigin(textrect.left + textrect.width / 2.0f, textrect.top + textrect.height / 2.0f);
+	exit.setPosition(Vector2f(960, 700));
+	bool sound = 0, sound2 = 0;
+
+	while (window.isOpen()) {
+		Event event;
+		while (window.pollEvent(event)) {
+
+			if (event.type == Event::KeyReleased) {
+				if (event.key.code == Keyboard::Escape) {
+					soundselect.play();
+					mainmenu(window);
+				}
+			}
+
+			if (event.type == Event::MouseButtonPressed) {
+				Vector2f mousePos = window.mapPixelToCoords(Mouse::getPosition(window));
+				if (exit.getGlobalBounds().contains(mousePos))
+					soundclick.play();
+			}
+			if (event.type == Event::MouseMoved) {
+				// Check if the mouse is over the button
+				Vector2f mousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
+				if (exit.getGlobalBounds().contains(mousePos)) {
+					if (!sound) {
+						// Play the sound if the mouse just entered the button
+						soundselect.play();
+					}
+					sound = true;
+				}
+				else {
+					sound = false;
+				}
+
+			}
+		}
+
+		Mouse mouse;
+		// 0 >> yes 
+		if (exit.getGlobalBounds().contains(mouse.getPosition(window).x, mouse.getPosition(window).y)) {
+
+			exit.setFillColor(Color::Red);
+
+			if (Mouse::isButtonPressed(Mouse::Left)) {
+				exit.setFillColor(Color::White);
+				mainmenu(window);
+
+			}
+		}
+		else {
+			exit.setFillColor(Color::White);
+		}
+
+		window.clear();
+		window.draw(victory_sprite);
+		window.draw(exit);
+		window.display();
+	}
+}
