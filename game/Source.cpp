@@ -12,6 +12,7 @@ using namespace std;
 using namespace sf;
 
 //map
+
 #define ll long long
 #define NUMBERCOLUMNS 20
 #define NUMBERROW 22
@@ -70,6 +71,7 @@ struct PACMAN {
 	int animetion_dead = 0;
 	int score = 0;
 	int cut;
+	int lives = 3;
 	int initial_x, initial_y;
 	float delay = 0.2f; // deathPAC
 	bool isAlive = true;
@@ -110,7 +112,6 @@ struct Ghosts
 	int animation;
 	int initial_x, initial_y;
 	bool isDead = false;
-	bool gotHome = true;
 	bool outOfhome = false;
 	bool isBFS = false;
 	float speed = ghostSpeed;
@@ -152,6 +153,7 @@ void Hard(RenderWindow& window);
 void originalhardwindow(RenderWindow& window);
 void areyousure(RenderWindow& window, bool& pressed_exit);
 void gameover(RenderWindow& window);
+void Victory(RenderWindow& window);
 
 // our small data base
 string username;
@@ -573,25 +575,28 @@ void mainmenu(RenderWindow& window) {
 			// 0 -> play ,, 1 -> highscore ,, 2 -> exit
 			if (event.type == Event::MouseButtonPressed) {
 				Vector2f mousePos = window.mapPixelToCoords(Mouse::getPosition(window));
-				if (mainmenu[0].getGlobalBounds().contains(mousePos)) {
-					soundclick.play();
-					//open mainmenu
-					play(window);
+				if(!pressed_exit)
+				{
+					if (mainmenu[0].getGlobalBounds().contains(mousePos)) {
+						soundclick.play();
+						//open mainmenu
+						play(window);
 
-				}
-				if (mainmenu[1].getGlobalBounds().contains(mousePos)) {
-					soundclick.play();
-					//open high score menu
-					play(window);
+					}
+					if (mainmenu[1].getGlobalBounds().contains(mousePos)) {
+						soundclick.play();
+						//open high score menu
+						play(window);
 
 
-				}
-				if (mainmenu[2].getGlobalBounds().contains(mousePos)) {
-					soundclick.play();
+					}
+					if (mainmenu[2].getGlobalBounds().contains(mousePos)) {
+						soundclick.play();
 
-					//pressed_exit = true;
-					num = 4;
+						//pressed_exit = true;
+						num = 4;
 
+					}
 				}
 			}
 		}
@@ -1000,7 +1005,7 @@ void originaleasywindow(RenderWindow& window) {
 	spritelives.setPosition(Vector2f(960, 1010));
 
 	SoundBuffer eat;
-	eat.loadFromFile("sounds/Pac-Man eat.wav");
+	eat.loadFromFile("sounds/Eat dots.wav");
 	Sound eatsound(eat);
 
 	SoundBuffer eatCherry;
@@ -1120,8 +1125,7 @@ void originaleasywindow(RenderWindow& window) {
 	//GHOSTS	
 	// 0 red , 1 pink , 2 orange , 3 blue 
 
-	ghosts[0].isBFS = true;
-	ghosts[0].outOfhome = true;
+
 
 	//setting posiiton only if its the first game or the player pressed exit 
 	if (firstGame)
@@ -1152,6 +1156,7 @@ void originaleasywindow(RenderWindow& window) {
 		ghosts[3].initial_x = offset_x + 10 * TILESIZE + HALF_TILESIZE;
 		ghosts[3].initial_y = offset_y + 9 * TILESIZE + HALF_TILESIZE;
 		ghosts[3].sprite.setPosition(ghosts[3].initial_x, ghosts[3].initial_y);
+		restart_pacman(pacman);
 	}
 
 	for (int i = 0; i < ghosts_number; i++) {
@@ -1165,24 +1170,27 @@ void originaleasywindow(RenderWindow& window) {
 		ghosts[i].algo_window_BFS = 10;
 		ghosts[i].num_tiles_past_BFS = ghosts[i].algo_window_BFS;
 		ghosts[i].frames_per_tile = TILESIZE / ghostSpeed;
-
+		restart_ghost(ghosts[i]);
 	}
-
+	ghosts[0].isBFS = true;
+	ghosts[0].outOfhome = true;
 
 	bool sound = 0, sound2 = 0;
 	bool gamess = 1;
 	int timer_3seconds = 4, powerUp_8secTimer = 0;
 	float elapsedTime_cherry = 0;
+	float elapsedTime_afterEat = 0;
 
 	gameS.play();
 	Time resettime = seconds(4.0f);
-	Clock clock_cherry, play_clock, sec3_clock, powerUp_clock;;
+	Clock clock_cherry, play_clock, sec3_clock, powerUp_clock, afterEat_clock;
 
 	isPaused = true, sec3_timer = true;
 
 	bool pressed_pause = false;
 
 	Clock clock;
+	current_map = 1;
 
 	while (window.isOpen()) {
 
@@ -1240,9 +1248,9 @@ void originaleasywindow(RenderWindow& window) {
 			}
 
 		}
-
+		//victory
 		if (current_score == 0) {
-			//victory
+
 			//save highscore
 		}
 
@@ -1268,12 +1276,12 @@ void originaleasywindow(RenderWindow& window) {
 
 				if (event.key.code == Keyboard::Escape) {
 					soundclick.play();
-					current_map = 1;
+					eatsound.stop();
 					isPaused = true;
-					powerUp_Sound.pause();
-					gameS.stop();
-					//pause(window);
+					powerUp_Sound.stop();
+					gameS.stop();;
 					pressed_pause = true;
+
 				}
 			}
 
@@ -1314,14 +1322,17 @@ void originaleasywindow(RenderWindow& window) {
 
 		//3 seconds timer
 		stringstream sec3_manip;
+		if (!pressed_pause)
 
-		if (sec3_timer && sec3_clock.getElapsedTime().asSeconds() >= 1) {
-			timer_3seconds--;
-			sec3_clock.restart();
-			if (timer_3seconds == 0)
-			{
-				sec3_timer = false;
-				isPaused = false;
+		{
+			if (sec3_timer && sec3_clock.getElapsedTime().asSeconds() >= 1) {
+				timer_3seconds--;
+				sec3_clock.restart();
+				if (timer_3seconds == 0)
+				{
+					sec3_timer = false;
+					isPaused = false;
+				}
 			}
 		}
 
@@ -1334,12 +1345,15 @@ void originaleasywindow(RenderWindow& window) {
 		//timer text
 		char x = ':';
 
-		if (play_clock.getElapsedTime().asSeconds() >= 1) {
-			timer_sec++;
-			play_clock.restart();
-			if (timer_sec % 60 == 0) {
-				timer_sec = 0;
-				timer_min++;
+		if (!isPaused)
+		{
+			if (play_clock.getElapsedTime().asSeconds() >= 1) {
+				timer_sec++;
+				play_clock.restart();
+				if (timer_sec % 60 == 0) {
+					timer_sec = 0;
+					timer_min++;
+				}
 			}
 		}
 		stringstream time_manip;
@@ -1421,16 +1435,27 @@ void originaleasywindow(RenderWindow& window) {
 			//setting the texture for all ghost based on the mode and direction of moving.
 			ghosts_animation(ghosts);
 
-			//eat dots
+			//eat dots and eat sound
+			float timeBeforeEat = afterEat_clock.getElapsedTime().asSeconds();
+
 			if (map_[row_pac][col_pac].type == tile_type::score) {
 				if (map_[row_pac][col_pac].cipoint.getGlobalBounds().contains(pacman.sprite.getPosition().x, pacman.sprite.getPosition().y))
 				{
-					//eatsound.play();
+					pacman.scoreSound = true;
 					changing_map[row_pac][col_pac] = 2;
 					pacman.score++;
-
+					elapsedTime_afterEat = timeBeforeEat;
+				}
+			}
+			if (pacman.scoreSound) {
+				if (eatsound.getStatus() != SoundSource::Playing) {
+					eatsound.play();
+					pacman.scoreSound = false;
 				}
 
+			}
+			if (timeBeforeEat - 0.4 > elapsedTime_afterEat && map_[row_pac][col_pac].type == tile_type::none) {
+				eatsound.stop();
 			}
 
 			//eat powerBall
@@ -1464,7 +1489,7 @@ void originaleasywindow(RenderWindow& window) {
 							int row_ghost, col_ghost;
 							get_tile_cor(x_ghost, y_ghost, row_ghost, col_ghost);
 							ghosts[i].sprite.setPosition(col_ghost * TILESIZE + offset_x + HALF_TILESIZE, row_ghost * TILESIZE + offset_y + HALF_TILESIZE);
-							ghosts[i].animation = 3;
+							ghosts[i].animation = 2;
 							ghosts[i].isDead = true;
 							ghosts[i].step_counts_BFS = 0;
 							ghosts[i].num_tiles_past_BFS = ghosts[i].algo_window_BFS;
@@ -1486,7 +1511,7 @@ void originaleasywindow(RenderWindow& window) {
 								continue;
 							ghosts[i].animation = 0;
 							ghosts[i].speed = ghostSpeed;
-							ghosts[i].gotHome = false;
+							//ghosts[i].gotHome = false;
 						}
 					}
 				}
@@ -1616,6 +1641,33 @@ void originaleasywindow(RenderWindow& window) {
 				}
 			}
 
+
+			Mouse mouse;
+
+			if (circle.getGlobalBounds().contains(mouse.getPosition(window).x, mouse.getPosition(window).y)) {
+
+				line1.setFillColor(Color::Red);
+				line2.setFillColor(Color::Red);
+
+				if (Mouse::isButtonPressed(Mouse::Left)) {
+					gameS.stop();
+					line1.setFillColor(Color::White);
+					line2.setFillColor(Color::White);
+					powerUp_Sound.stop();
+					eatsound.stop();
+					soundclick.play();
+					pressed_pause = true;
+					isPaused = true;
+					current_map = 1;
+					pause(window, pressed_pause, firstGame);
+
+				}
+			}
+			else {
+				line1.setFillColor(Color::White);
+				line2.setFillColor(Color::White);
+			}
+
 		}
 
 		window.clear();
@@ -1661,6 +1713,9 @@ void originaleasywindow(RenderWindow& window) {
 				// -> animation of death finished 
 				// game over , wanna play again ?
 				// save highscore
+				firstGame = true;
+				gameover(window);
+
 			}
 		}
 
@@ -1671,31 +1726,6 @@ void originaleasywindow(RenderWindow& window) {
 		window.draw(line1);
 		window.draw(line2);
 
-
-		Mouse mouse;
-
-		if (circle.getGlobalBounds().contains(mouse.getPosition(window).x, mouse.getPosition(window).y)) {
-
-			line1.setFillColor(Color::Red);
-			line2.setFillColor(Color::Red);
-
-			if (Mouse::isButtonPressed(Mouse::Left)) {
-				gameS.stop();
-				line1.setFillColor(Color::White);
-				line2.setFillColor(Color::White);
-
-				soundclick.play();
-				pressed_pause = true;
-				isPaused = true;
-				current_map = 1;
-				pause(window, pressed_pause, firstGame);
-
-			}
-		}
-		else {
-			line1.setFillColor(Color::White);
-			line2.setFillColor(Color::White);
-		}
 
 		//pacman 
 		if (cherry)
@@ -1799,6 +1829,15 @@ void originalmediumwindow(RenderWindow& window) {
 	Text timer, sec3_text;
 	sec3_text.setCharacterSize(200);
 	sec3_text.setFont(font);
+
+	//pacman lives
+	Texture textlives;
+	textlives.loadFromFile("pngs/pacman lives.png");
+	Sprite spritelives;
+	spritelives.setTexture(textlives);
+	FloatRect rectlives = spritelives.getLocalBounds();
+	spritelives.setOrigin(rectlives.left + rectlives.width / 2.0f, rectlives.top + rectlives.height / 2.0f);
+	spritelives.setPosition(Vector2f(960, 1010));
 
 	//circle of pause
 	CircleShape circle(50, 50);
@@ -1959,13 +1998,11 @@ void originalmediumwindow(RenderWindow& window) {
 		ghosts[3].initial_x = offset_x + 10 * TILESIZE + HALF_TILESIZE;
 		ghosts[3].initial_y = offset_y + 10 * TILESIZE + HALF_TILESIZE;
 		ghosts[3].sprite.setPosition(ghosts[3].initial_x, ghosts[3].initial_y);
+		restart_pacman(pacman);
 	}
 	//GHOSTS	
 	// 0 red , 1 pink , 2 orange , 3 blue 
 
-	ghosts[0].isBFS = true;
-	ghosts[0].outOfhome = true;
-	ghosts[1].isBFS = true;
 
 	for (int i = 0; i < ghosts_number; i++) {
 		//setting home sprite 
@@ -1978,24 +2015,29 @@ void originalmediumwindow(RenderWindow& window) {
 		ghosts[i].algo_window_BFS = 15;
 		ghosts[i].num_tiles_past_BFS = ghosts[i].algo_window_BFS;
 		ghosts[i].frames_per_tile = TILESIZE / ghostSpeed;
+		restart_ghost(ghosts[i]);
 
 	}
+	ghosts[0].isBFS = true;
+	ghosts[0].outOfhome = true;
+	ghosts[1].isBFS = true;
+
 
 	bool sound = 0, sound2 = 0;
 	bool gamess = 1;
-	int timer_3seconds = 1, powerUp_8secTimer = 0;
+	int timer_3seconds = 4, powerUp_8secTimer = 0;
 	float elapsedTime_cherry = 0;
 	float elapsedTime_afterEat = 0;
 
 	gameS.play();
 
 	Time resettime = seconds(4.0f);
-	Clock clock_cherry, play_clock, sec3_clock, powerUp_clock, afterEat_clock;;
+	Clock clock_cherry, play_clock, sec3_clock, powerUp_clock, afterEat_clock;
 
 	isPaused = true, sec3_timer = true;
 	bool pressed_pause = false;
 
-
+	current_map = 2;
 	while (window.isOpen()) {
 
 		int current_score = 0;
@@ -2081,9 +2123,10 @@ void originalmediumwindow(RenderWindow& window) {
 
 				if (event.key.code == Keyboard::Escape) {
 					soundclick.play();
+					powerUp_Sound.stop();
+					eatsound.stop();
 					pressed_pause = true;
 					isPaused = true;
-					current_map = 2;
 					gameS.stop();
 					pause(window, pressed_pause, firstGame);
 				}
@@ -2128,13 +2171,17 @@ void originalmediumwindow(RenderWindow& window) {
 		//3 seconds timer
 		stringstream sec3_manip;
 
-		if (sec3_timer && sec3_clock.getElapsedTime().asSeconds() >= 1) {
-			timer_3seconds--;
-			sec3_clock.restart();
-			if (timer_3seconds == 0)
-			{
-				sec3_timer = false;
-				isPaused = false;
+		if (!pressed_pause)
+
+		{
+			if (sec3_timer && sec3_clock.getElapsedTime().asSeconds() >= 1) {
+				timer_3seconds--;
+				sec3_clock.restart();
+				if (timer_3seconds == 0)
+				{
+					sec3_timer = false;
+					isPaused = false;
+				}
 			}
 		}
 
@@ -2147,12 +2194,15 @@ void originalmediumwindow(RenderWindow& window) {
 		//timer text
 		char x = ':';
 
-		if (play_clock.getElapsedTime().asSeconds() >= 1) {
-			timer_sec++;
-			play_clock.restart();
-			if (timer_sec % 60 == 0) {
-				timer_sec = 0;
-				timer_min++;
+		if (!isPaused)
+		{
+			if (play_clock.getElapsedTime().asSeconds() >= 1) {
+				timer_sec++;
+				play_clock.restart();
+				if (timer_sec % 60 == 0) {
+					timer_sec = 0;
+					timer_min++;
+				}
 			}
 		}
 		stringstream time_manip;
@@ -2360,7 +2410,7 @@ void originalmediumwindow(RenderWindow& window) {
 								continue;
 							ghosts[i].animation = 0;
 							ghosts[i].speed = ghostSpeed;
-							ghosts[i].gotHome = false;
+							//ghosts[i].gotHome = false;
 						}
 					}
 				}
@@ -2490,6 +2540,30 @@ void originalmediumwindow(RenderWindow& window) {
 			if ((x_fire_4 + (TILESIZE / 2)) > (17 * TILESIZE) + (offset_x)) {
 				fireBall_4_Sprite.setPosition((2 * TILESIZE) + (offset_x)+5, (8 * TILESIZE) + (TILESIZE / 2) + (offset_y));
 			}
+			Mouse mouse;
+			//check pause button if pressed 
+			if (circle.getGlobalBounds().contains(mouse.getPosition(window).x, mouse.getPosition(window).y)) {
+
+				line1.setFillColor(Color::Red);
+				line2.setFillColor(Color::Red);
+
+				if (Mouse::isButtonPressed(Mouse::Left)) {
+					gameS.stop();
+					soundclick.play();
+					line1.setFillColor(Color::White);
+					line2.setFillColor(Color::White);
+					powerUp_Sound.stop();
+					eatsound.stop();
+					pressed_pause = true;
+					isPaused = true;
+					pause(window, pressed_pause, firstGame);
+
+				}
+			}
+			else {
+				line1.setFillColor(Color::White);
+				line2.setFillColor(Color::White);
+			}
 
 
 		}
@@ -2522,6 +2596,8 @@ void originalmediumwindow(RenderWindow& window) {
 				// -> animation of death finished 
 				// game over , wanna play again ?
 				// save highscore
+				firstGame = true;
+				gameover(window);
 			}
 		}
 		//pause button and score text
@@ -2530,33 +2606,6 @@ void originalmediumwindow(RenderWindow& window) {
 		window.draw(circle);
 		window.draw(line1);
 		window.draw(line2);
-
-		Mouse mouse;
-		//check pause button if pressed 
-		if (circle.getGlobalBounds().contains(mouse.getPosition(window).x, mouse.getPosition(window).y)) {
-
-			line1.setFillColor(Color::Red);
-			line2.setFillColor(Color::Red);
-
-			if (Mouse::isButtonPressed(Mouse::Left)) {
-				gameS.stop();
-				soundclick.play();
-
-				line1.setFillColor(Color::White);
-				line2.setFillColor(Color::White);
-
-				pressed_pause = true;
-				isPaused = true;
-				current_map = 2;
-
-				pause(window, pressed_pause, firstGame);
-
-			}
-		}
-		else {
-			line1.setFillColor(Color::White);
-			line2.setFillColor(Color::White);
-		}
 
 		//pacman 
 		if (cherry)
@@ -2591,6 +2640,8 @@ void originalmediumwindow(RenderWindow& window) {
 		window.draw(rect_left);
 		window.draw(rect_right2);
 		window.draw(rect_left2);
+
+		window.draw(spritelives);
 
 		if (pressed_pause)
 		{
@@ -2820,8 +2871,6 @@ void originalhardwindow(RenderWindow& window) {
 	//GHOSTS	
 	// 0 red , 1 pink , 2 orange , 3 blue 
 
-	ghosts[0].isBFS = true, ghosts[1].isBFS = true, ghosts[2].isBFS = true, ghosts[3].isBFS = true;
-	ghosts[0].outOfhome = true;
 
 	//setting posiiton only if its the first game or the player pressed exit 
 	if (firstGame)
@@ -2853,6 +2902,7 @@ void originalhardwindow(RenderWindow& window) {
 		ghosts[3].initial_y = offset_y + 10 * TILESIZE + HALF_TILESIZE;
 		ghosts[3].sprite.setPosition(ghosts[3].initial_x, ghosts[3].initial_y);
 
+		restart_pacman(pacman);
 	}
 	for (int i = 0; i < ghosts_number; i++) {
 		//setting home sprite 
@@ -2865,8 +2915,11 @@ void originalhardwindow(RenderWindow& window) {
 		ghosts[i].algo_window_BFS = 1;
 		ghosts[i].num_tiles_past_BFS = ghosts[i].algo_window_BFS;
 		ghosts[i].frames_per_tile = TILESIZE / ghostSpeed;
+		restart_ghost(ghosts[i]);
 
 	}
+	ghosts[0].isBFS = true, ghosts[1].isBFS = true, ghosts[2].isBFS = true, ghosts[3].isBFS = true;
+	ghosts[0].outOfhome = true;
 
 	bool sound = 0, sound2 = 0;
 	bool gamess = 1;
@@ -2887,6 +2940,7 @@ void originalhardwindow(RenderWindow& window) {
 	bool pressed_pause = false;
 
 	Clock clock;
+	current_map = 3;
 
 	while (window.isOpen()) {
 
@@ -2975,9 +3029,10 @@ void originalhardwindow(RenderWindow& window) {
 					current_map = 1;
 					isPaused = true;
 					powerUp_Sound.pause();
+					eatsound.stop();
 					gameS.stop();
-					//pause(window);
 					pressed_pause = true;
+					pause(window, pressed_pause, firstGame);
 				}
 			}
 
@@ -3019,16 +3074,19 @@ void originalhardwindow(RenderWindow& window) {
 		//3 seconds timer
 		stringstream sec3_manip;
 
-		if (sec3_timer && sec3_clock.getElapsedTime().asSeconds() >= 1) {
-			timer_3seconds--;
-			sec3_clock.restart();
-			if (timer_3seconds == 0)
-			{
-				sec3_timer = false;
-				isPaused = false;
+		if (!pressed_pause)
+
+		{
+			if (sec3_timer && sec3_clock.getElapsedTime().asSeconds() >= 1) {
+				timer_3seconds--;
+				sec3_clock.restart();
+				if (timer_3seconds == 0)
+				{
+					sec3_timer = false;
+					isPaused = false;
+				}
 			}
 		}
-
 		sec3_manip << timer_3seconds;
 		sec3_text.setString(sec3_manip.str());
 		FloatRect sec3_floatrect = sec3_text.getLocalBounds();
@@ -3038,12 +3096,15 @@ void originalhardwindow(RenderWindow& window) {
 		//timer text
 		char x = ':';
 
-		if (play_clock.getElapsedTime().asSeconds() >= 1) {
-			timer_sec++;
-			play_clock.restart();
-			if (timer_sec % 60 == 0) {
-				timer_sec = 0;
-				timer_min++;
+		if (!isPaused)
+		{
+			if (play_clock.getElapsedTime().asSeconds() >= 1) {
+				timer_sec++;
+				play_clock.restart();
+				if (timer_sec % 60 == 0) {
+					timer_sec = 0;
+					timer_min++;
+				}
 			}
 		}
 		stringstream time_manip;
@@ -3232,7 +3293,7 @@ void originalhardwindow(RenderWindow& window) {
 								continue;
 							ghosts[i].animation = 0;
 							ghosts[i].speed = ghostSpeed;
-							ghosts[i].gotHome = false;
+							//	ghosts[i].gotHome = false;
 						}
 					}
 				}
@@ -3357,6 +3418,31 @@ void originalhardwindow(RenderWindow& window) {
 				timeCrush = 0;
 				crushBox_clock.restart();
 			}
+
+			Mouse mouse;
+
+			if (circle.getGlobalBounds().contains(mouse.getPosition(window).x, mouse.getPosition(window).y)) {
+
+				line1.setFillColor(Color::Red);
+				line2.setFillColor(Color::Red);
+
+				if (Mouse::isButtonPressed(Mouse::Left)) {
+					gameS.stop();
+					line1.setFillColor(Color::White);
+					line2.setFillColor(Color::White);
+					powerUp_Sound.stop();
+					eatsound.stop();
+					soundclick.play();
+					pressed_pause = true;
+					isPaused = true;
+					pause(window, pressed_pause, firstGame);
+
+				}
+			}
+			else {
+				line1.setFillColor(Color::White);
+				line2.setFillColor(Color::White);
+			}
 		}
 
 		elapsedTime_cruchBox_2 = crushBox_clock_2.getElapsedTime().asSeconds();
@@ -3394,7 +3480,6 @@ void originalhardwindow(RenderWindow& window) {
 
 		}
 
-
 		window.clear();
 		//map
 		window.draw(background_sprite);
@@ -3424,8 +3509,11 @@ void originalhardwindow(RenderWindow& window) {
 				// -> animation of death finished 
 				// game over , wanna play again ?
 				// save highscore
+				firstGame = true;
+				gameover(window);
 			}
 		}
+
 		if (clock.getElapsedTime().asSeconds() > 4.0f)
 		{
 			// Reset the clock
@@ -3440,39 +3528,12 @@ void originalhardwindow(RenderWindow& window) {
 			window.draw(ready);
 		}
 
-
 		//pause button and score text
 		window.draw(s);
 		window.draw(timer);
 		window.draw(circle);
 		window.draw(line1);
 		window.draw(line2);
-
-
-		Mouse mouse;
-
-		if (circle.getGlobalBounds().contains(mouse.getPosition(window).x, mouse.getPosition(window).y)) {
-
-			line1.setFillColor(Color::Red);
-			line2.setFillColor(Color::Red);
-
-			if (Mouse::isButtonPressed(Mouse::Left)) {
-				gameS.stop();
-				line1.setFillColor(Color::White);
-				line2.setFillColor(Color::White);
-
-				soundclick.play();
-				pressed_pause = true;
-				isPaused = true;
-				current_map = 1;
-				pause(window, pressed_pause, firstGame);
-
-			}
-		}
-		else {
-			line1.setFillColor(Color::White);
-			line2.setFillColor(Color::White);
-		}
 
 		//pacman 
 		if (cherry)
@@ -3575,13 +3636,13 @@ void pause(RenderWindow& window, bool& pressed_pause, bool& firstGame) {
 		else if (event.type == Event::KeyReleased) {
 			if (event.key.code == Keyboard::Escape) {
 				soundclick.play();
-				mainmenu(window);
 				//NOT HERE BUT WE PUT HERE PAUSE WINDOW.
 				restart_pacman(pacman);
 				for (int i = 0; i < ghosts_number; i++) {
 					restart_ghost(ghosts[i]);
 				}
 				firstGame = true;
+				mainmenu(window);
 				return;
 			}
 		}
@@ -3590,6 +3651,7 @@ void pause(RenderWindow& window, bool& pressed_pause, bool& firstGame) {
 		{
 			// Check if the mouse is over the button
 			Vector2f mousePos = window.mapPixelToCoords(Mouse::getPosition(window));
+			// 0 >> continue 
 			if (menupause[0].getGlobalBounds().contains(mousePos)) {
 				if (!sound) {
 					// Play the sound if the mouse just entered the button
@@ -3642,11 +3704,8 @@ void pause(RenderWindow& window, bool& pressed_pause, bool& firstGame) {
 	if (menupause[1].getGlobalBounds().contains(mouse.getPosition(window).x, mouse.getPosition(window).y)) {
 
 		menupause[1].setFillColor(Color::Red);
-
+		// 1 >> exit
 		if (Mouse::isButtonPressed(Mouse::Left)) {
-			menupause[1].setFillColor(Color::White);
-			mainmenu(window);
-
 			//reloading the map
 			changing_map[NUMBERROW][NUMBERCOLUMNS] = {};
 
@@ -3655,8 +3714,9 @@ void pause(RenderWindow& window, bool& pressed_pause, bool& firstGame) {
 				restart_ghost(ghosts[i]);
 			}
 			firstGame = true;
+			menupause[1].setFillColor(Color::White);
 			soundclick.play();
-
+			mainmenu(window);
 		}
 	}
 	else {
@@ -3771,13 +3831,13 @@ void areyousure(RenderWindow& window, bool& pressed_exit) {
 	while (window.pollEvent(event)) {
 		if (event.type == Event::Closed) {
 			window.close();
-			break;
+			//break;
 		}
 		if (event.type == Event::KeyReleased) {
 			if (event.key.code == Keyboard::Escape) {
 				window.close();
 				soundselect.play();
-				break;
+				//break;
 			}
 		}
 		if (event.type == Event::MouseButtonPressed) {
@@ -3785,7 +3845,6 @@ void areyousure(RenderWindow& window, bool& pressed_exit) {
 			for (int i = 0; i < 2; i++) {
 				if (yesno[i].getGlobalBounds().contains(mousePos)) {
 					soundclick.play();
-
 				}
 
 			}
@@ -3839,6 +3898,7 @@ void areyousure(RenderWindow& window, bool& pressed_exit) {
 		yesno[1].setFillColor(Color::Red);
 
 		if (Mouse::isButtonPressed(Mouse::Left)) {
+			pressed_exit = false;
 			mainmenu(window);
 			yesno[1].setFillColor(Color::White);
 		}
@@ -3869,72 +3929,51 @@ void gameover(RenderWindow& window) {
 	soundclick.setBuffer(click);
 
 	Font font;
-	font.loadFromFile("fonts/DEBUG FREE TRIAL.ttf");
+	font.loadFromFile("fonts/Pixeboy-z8XGD.ttf");
 
 	//game over
 	Texture textgameover;
 	textgameover.loadFromFile("pngs/game over.png");
 	Sprite spritegameover;
 	spritegameover.setTexture(textgameover);
-	FloatRect rectgameover = spritegameover.getLocalBounds();
-	spritegameover.setOrigin(rectgameover.left + rectgameover.width / 2.0f, rectgameover.top + rectgameover.height / 2.0f);
-	spritegameover.setPosition(Vector2f(960, 540));
+	spritegameover.setPosition(0, 0);
 
-	Text yesno[2];
+	//FloatRect rectgameover = spritegameover.getLocalBounds();
+	//spritegameover.setOrigin(rectgameover.left + rectgameover.width / 2.0f, rectgameover.top + rectgameover.height / 2.0f);
+	//spritegameover.setPosition(Vector2f(960, 540));
 
-	yesno[0].setFont(font);
-	yesno[1].setFont(font);
+	Text exit;
+	exit.setFont(font);
+	exit.setFillColor(Color::White);
+	exit.setString("exit");
+	exit.setCharacterSize(100);
+	FloatRect textrect = exit.getLocalBounds();
 
-
-	yesno[0].setFillColor(Color::White);
-	yesno[1].setFillColor(Color::White);
-
-	yesno[0].setString("yes");
-	yesno[1].setString("no");
-
-	yesno[0].setCharacterSize(100);
-	yesno[1].setCharacterSize(100);
-
-	FloatRect textrect = yesno[0].getLocalBounds();
-	FloatRect textrect1 = yesno[1].getLocalBounds();
-
-	yesno[0].setOrigin(textrect.left + textrect.width / 2.0f, textrect.top + textrect.height / 2.0f);
-	yesno[1].setOrigin(textrect1.left + textrect1.width / 2.0f, textrect1.top + textrect1.height / 2.0f);
-
-	yesno[0].setPosition(Vector2f(760, 680));
-	yesno[1].setPosition(Vector2f(1165, 680));
-
+	exit.setOrigin(textrect.left + textrect.width / 2.0f, textrect.top + textrect.height / 2.0f);
+	exit.setPosition(Vector2f(960, 800));
 	bool sound = 0, sound2 = 0;
 
 	while (window.isOpen()) {
 		Event event;
 		while (window.pollEvent(event)) {
-			if (event.type == Event::Closed) {
-				window.close();
-				break;
-			}
+
 			if (event.type == Event::KeyReleased) {
 				if (event.key.code == Keyboard::Escape) {
 					soundselect.play();
+					firstGame = true; 
 					mainmenu(window);
-					return;
 				}
 			}
 
 			if (event.type == Event::MouseButtonPressed) {
 				Vector2f mousePos = window.mapPixelToCoords(Mouse::getPosition(window));
-				for (int i = 0; i < 2; i++) {
-					if (yesno[i].getGlobalBounds().contains(mousePos)) {
+					if (exit.getGlobalBounds().contains(mousePos)) 
 						soundclick.play();
-
-					}
-
-				}
 			}
 			if (event.type == Event::MouseMoved) {
 				// Check if the mouse is over the button
-				sf::Vector2f mousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
-				if (yesno[0].getGlobalBounds().contains(mousePos)) {
+				Vector2f mousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
+				if (exit.getGlobalBounds().contains(mousePos)) {
 					if (!sound) {
 						// Play the sound if the mouse just entered the button
 						soundselect.play();
@@ -3945,57 +3984,33 @@ void gameover(RenderWindow& window) {
 					sound = false;
 				}
 
-				if (yesno[1].getGlobalBounds().contains(mousePos)) {
-					if (!sound2) {
-						// Play the sound if the mouse just entered the button
-						soundselect.play();
-
-					}
-					sound2 = true;
-				}
-				else {
-					sound2 = false;
-				}
 			}
 		}
 
 		Mouse mouse;
-		if (yesno[0].getGlobalBounds().contains(mouse.getPosition(window).x, mouse.getPosition(window).y)) {
+		// 0 >> yes 
+		if (exit.getGlobalBounds().contains(mouse.getPosition(window).x, mouse.getPosition(window).y)) {
 
-			yesno[0].setFillColor(Color::Red);
+			exit.setFillColor(Color::Red);
 
 			if (Mouse::isButtonPressed(Mouse::Left)) {
+				firstGame = true;
 				// if easy--> easy
 				//if medium-->medium
 				//if hard-->hard
 				//ALL FROM RESTART
-				Easy(window);
-				yesno[0].setFillColor(Color::White);
-
-			}
-		}
-		else {
-			yesno[0].setFillColor(Color::White);
-		}
-
-		if (yesno[1].getGlobalBounds().contains(mouse.getPosition(window).x, mouse.getPosition(window).y)) {
-
-			yesno[1].setFillColor(Color::Red);
-
-			if (Mouse::isButtonPressed(Mouse::Left)) {
+				exit.setFillColor(Color::White);
 				mainmenu(window);
-				yesno[1].setFillColor(Color::White);
-				break;
+			
 			}
 		}
 		else {
-			yesno[1].setFillColor(Color::White);
+			exit.setFillColor(Color::White);
 		}
-
+		
 		window.clear();
 		window.draw(spritegameover);
-		window.draw(yesno[0]);
-		window.draw(yesno[1]);
+		window.draw(exit);
 		window.display();
 	}
 
@@ -4116,38 +4131,16 @@ void UsernameWindow(RenderWindow& window) {
 	Font font;
 	font.loadFromFile("fonts/CrackMan.ttf");
 
-
-	//background
-	Texture backtextmain;
-	backtextmain.loadFromFile("pngs/new background2.jpg");
-	Sprite spriteback;
-	spriteback.setTexture(backtextmain);
-	FloatRect backrect = spriteback.getLocalBounds();
-	spriteback.setOrigin(backrect.left + backrect.width / 2.0f, backrect.top + backrect.height / 2.0f);
-	spriteback.setPosition(960, 540);
+	spritePAC_MAN.setScale(.05f, 0.5f);
+	spritePAC_MAN.setPosition(0, -400.0f);
 
 	Text text;
-	text.setCharacterSize(75);
+	text.setCharacterSize(50);
 	text.setFont(font);
 	text.setFillColor(Color(255, 255, 0));
 	FloatRect textRect = text.getLocalBounds();
 	text.setOrigin(textRect.left, textRect.top + textRect.height / 2.0f);
-	text.setPosition(1000.0f, 550.0f);
-
-	Text text2;
-	text2.setCharacterSize(60);
-	text2.setFont(font);
-	text2.setFillColor(Color::Blue);
-	text2.setString("write your username");
-	text2.setPosition(300.0f, 150.0f);
-
-
-	Text text3;
-	text3.setCharacterSize(60);
-	text3.setFont(font);
-	text3.setFillColor(Color::Red);
-	text3.setString("press enter to start");
-	text3.setPosition(300.0f, 850.0f);
+	text.setPosition(960.0f, 450.0f);
 
 	while (window.isOpen())
 	{
@@ -4157,15 +4150,13 @@ void UsernameWindow(RenderWindow& window) {
 			if (event.type == Event::Closed || event.key.code == Keyboard::Key::Escape) {
 				// suppose to make ******************AreYouSure()***************
 				soundclick.play();
-				num = 0;
 				soundclick.play();
 				window.close();
 			}
 
 			// save username
-			if (event.type == Event::KeyReleased && event.key.code == Keyboard::Enter) {
+			if (Keyboard::isKeyPressed(Keyboard::Enter)) {
 				soundclick.play();
-				num = 0;
 				mainmenu(window);
 			}
 
@@ -4182,17 +4173,16 @@ void UsernameWindow(RenderWindow& window) {
 					text.setString(username);
 					FloatRect textRect = text.getLocalBounds();
 					text.setOrigin(textRect.left + textRect.width / 2.0f, textRect.top + textRect.height / 2.0f);
-					text.setPosition(1000.0f, 550.0f);
+					text.setPosition(960.0f, 580.0f);
 				}
 			}
 		}
 
 		window.clear(sf::Color::White);
 
-		window.draw(spriteback);
+		window.draw(usernameSprite);
 		window.draw(text);
-		window.draw(text2);
-		window.draw(text3);
+		window.draw(spritePAC_MAN);
 
 		window.display();
 	}
@@ -4468,7 +4458,6 @@ void move_random(Ghosts ghost[])
 
 }
 
-
 void restart_pacman(PACMAN& pacman) {
 
 	timer_min = 0, timer_sec = 0;
@@ -4488,19 +4477,21 @@ void restart_pacman(PACMAN& pacman) {
 	pacman.cherrySound = false;
 	pacman.ateGhostSound = false;
 	pacman.powerBallBool = false;
+	pacman.cut = 0;
+	pacman.cherry_taken = false;
+	pacman.lives = 3;
 }
 void restart_ghost(Ghosts& ghosts) {
 
-	ghosts.sprite.setPosition(ghosts.initial_x, ghosts.initial_y);
 	ghosts.moving_direction = -1;
 	ghosts.animation = 0;
+	ghosts.isBFS = false;
+	ghosts.shortest_path_index = 0;
 	ghosts.isDead = false;
 	ghosts.step_counts_BFS = 0;
 	ghosts.frames = 0;
 	ghosts.num_tiles_past_BFS = ghosts.algo_window_BFS;
-	ghosts.gotHome = false;
 	ghosts.outOfhome = false;
-
 }
 
 
@@ -4738,3 +4729,88 @@ void LoadingWindow(RenderWindow& window)
 	}
 }
 
+//void Victory(RenderWindow& window) {
+//
+//	//prepare the sound
+//	//select sound
+//	SoundBuffer select;
+//	select.loadFromFile("sounds/select sound.wav");
+//	Sound soundselect;
+//	soundselect.setBuffer(select);
+//
+//	//click sound
+//	SoundBuffer click;
+//	click.loadFromFile("sounds/enter sound.wav");
+//	Sound soundclick;
+//	soundclick.setBuffer(click);
+//
+//	Font font;
+//	font.loadFromFile("fonts/Pixeboy-z8XGD.ttf");
+//
+//	Text text;
+//	text.setCharacterSize(75);
+//	text.setFont(font);
+//	text.setString("VICTORY!!");
+//	text.setFillColor(Color::Green);
+//	FloatRect textRect = text.getLocalBounds();
+//	text.setOrigin(textRect.left, textRect.top + textRect.height / 2.0f);
+//	text.setPosition(960.0f, 460.0f);
+//
+//	Text text2;
+//	text2.setCharacterSize(75);
+//	text2.setFont(font);
+//	text2.setString("Exit:(");
+//	text.setFillColor(Color::Green);
+//	FloatRect textRect = text.getLocalBounds();
+//	text2.setOrigin(textRect.left, textRect.top + textRect.height / 2.0f);
+//	text2.setPosition(960.0f, 500.0f);
+//
+//	bool sound = false;
+//
+//	while (window.isOpen()) {
+//		Event event;
+//		while (window.pollEvent(event)) {
+//			if (event.type == Event::Closed) {
+//				window.close();
+//				break;
+//			}
+//			if (event.type == Event::KeyReleased) {
+//				if (event.key.code == Keyboard::Escape) {
+//					num = 0;
+//					return;
+//				}
+//			}
+//			if (event.type == Event::MouseMoved) {
+//				// Check if the mouse is over the button
+//				Vector2f mousePos = window.mapPixelToCoords(Mouse::getPosition(window));
+//				if (text2.getGlobalBounds().contains(mousePos)) {
+//					if (!sound) {
+//						// Play the sound if the mouse just entered the button
+//						soundselect.play();
+//					}
+//					sound = true;
+//				}
+//				else {
+//					sound = false;
+//				}
+//			}
+//		}
+//		if (event.type == Event::MouseButtonPressed) {
+//			Vector2f mousePos = window.mapPixelToCoords(Mouse::getPosition(window));
+//
+//			if (text2.getGlobalBounds().contains(mousePos)) {
+//				soundclick.play();
+//				//open mainmenu
+//				play(window);
+//
+//			}
+//		}
+//
+//		window.clear();
+//		window.draw(text);
+//		window.draw(text2);
+//
+//		window.display();
+//	}
+//
+//}
