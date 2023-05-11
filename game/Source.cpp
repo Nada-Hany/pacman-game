@@ -137,7 +137,7 @@ void victory(RenderWindow& window);
 
 // our small data base
 string username;
-map<string, int> Users;
+multimap<int, string> Users;
 void SaveHighScores();
 void SaveNewScore(int score);
 void LoadHighScores();
@@ -149,6 +149,11 @@ void LoadmediumMap(int(&map)[ROW2][COL2]);
 template <size_t ROW3, size_t COL3>
 void LoadhardMap(int(&map)[ROW3][COL3]);
 void LoadingWindow(RenderWindow& window);
+
+void PrintScores(multimap<int, string>& Scores);
+void ScoreSheetWindow();
+
+void settingsWindow();
 
 void pause(RenderWindow& window, bool& pressed_pause, bool& firstGame);
 
@@ -363,8 +368,9 @@ int current_map = -1;
 //small ghosts of mainmenu
 Texture redghost[3];
 
+	RenderWindow window(VideoMode(1920, 1080), "Main Menu", Style::Fullscreen);
 int main() {
-
+	LoadHighScores();
 	RectangleShape blackRect(Vector2f(1920.0f, 1080.0f));
 	blackRect.setFillColor(Color{ 0,0,0,180 });
 
@@ -376,7 +382,6 @@ int main() {
 	face_ghost_texture.loadFromFile("pngs/eyes-26.png");
 	endtime_ghost_texture.loadFromFile("pngs/blue and grey ghosts.png");
 
-	RenderWindow window(VideoMode(1920, 1080), "Main Menu", Style::Fullscreen);
 	window.setFramerateLimit(30);
 
 	Image icon;
@@ -395,6 +400,7 @@ int main() {
 		}
 
 	}
+	SaveHighScores();
 	return 0;
 }
 
@@ -442,37 +448,20 @@ void mainmenu(RenderWindow& window) {
 	font.loadFromFile("fonts/CrackMan.ttf");
 
 	//creating an array to put (play,settings,exit)
-	Text mainmenu[3];
-
-	mainmenu[0].setFont(font);
-	mainmenu[1].setFont(font);
-	mainmenu[2].setFont(font);
-
-	mainmenu[0].setFillColor(Color::White);
-	mainmenu[1].setFillColor(Color::White);
-	mainmenu[2].setFillColor(Color::White);
-
+	Text mainmenu[4];
 	mainmenu[0].setString("play");
 	mainmenu[1].setString("high score");
-	mainmenu[2].setString("exit");
+	mainmenu[2].setString("Settings");
+	mainmenu[3].setString("exit");
 
-	mainmenu[0].setCharacterSize(70);
-	mainmenu[1].setCharacterSize(70);
-	mainmenu[2].setCharacterSize(70);
-
-
-	FloatRect textrect = mainmenu[0].getLocalBounds();
-	FloatRect textrect1 = mainmenu[1].getLocalBounds();
-	FloatRect textrect2 = mainmenu[2].getLocalBounds();
-
-	mainmenu[0].setOrigin(textrect.left + textrect.width / 2.0f, textrect.top + textrect.height / 2.0f);
-	mainmenu[1].setOrigin(textrect1.left + textrect1.width / 2.0f, textrect1.top + textrect1.height / 2.0f);
-	mainmenu[2].setOrigin(textrect2.left + textrect2.width / 2.0f, textrect2.top + textrect2.height / 2.0f);
-
-	mainmenu[0].setPosition(Vector2f(960, 550));
-	mainmenu[1].setPosition(Vector2f(960, 700));
-	mainmenu[2].setPosition(Vector2f(960, 850));
-
+	for (int i = 0; i < 4; i++) {
+		mainmenu[i].setFont(font);
+		mainmenu[i].setFillColor(Color::White);
+		mainmenu[i].setCharacterSize(70);
+		FloatRect textrect = mainmenu[i].getLocalBounds();
+		mainmenu[i].setOrigin(textrect.left + textrect.width / 2.0f, textrect.top + textrect.height / 2.0f);
+		mainmenu[i].setPosition(Vector2f(960, 450 + (i * 150)));
+	}
 
 	RectangleShape blackRect(Vector2f(1920.0f, 1080.0f));
 	blackRect.setFillColor(Color{ 0,0,0,180 });
@@ -524,6 +513,7 @@ void mainmenu(RenderWindow& window) {
 						if (!sound4) {
 							// Play the sound if the mouse just entered the button
 							soundselect.play();
+
 						}
 						sound4 = true;
 					}
@@ -553,7 +543,7 @@ void mainmenu(RenderWindow& window) {
 				}
 			}
 			// 0 -> play ,, 1 -> highscore ,, 2 -> exit
-			if (event.type == Event::MouseButtonPressed) {
+			if (Mouse::isButtonPressed(Mouse::Left)) {
 				Vector2f mousePos = window.mapPixelToCoords(Mouse::getPosition(window));
 				if(!pressed_exit)
 				{
@@ -566,10 +556,25 @@ void mainmenu(RenderWindow& window) {
 					if (mainmenu[1].getGlobalBounds().contains(mousePos)) {
 						soundclick.play();
 						//open high score menu
+<<<<<<< HEAD
+						ScoreSheetWindow();
+					}
+					if (mainmenu[2].getLocalBounds().contains(mousePos)) {
+						soundclick.play();
+						settingsWindow();
+					}
+					if (mainmenu[3].getGlobalBounds().contains(mousePos)) {
+						soundclick.play();
+=======
 						play(window);
+>>>>>>> 1aaffd3a9e8798a33d21a43d0d416afcd32c7355
 
+						//pressed_exit = true;
+						num = 4;
 
 					}
+<<<<<<< HEAD
+=======
 					if (mainmenu[2].getGlobalBounds().contains(mousePos)) {
 						soundclick.play();
 
@@ -577,6 +582,7 @@ void mainmenu(RenderWindow& window) {
 						num = 4;
 
 					}
+>>>>>>> 1aaffd3a9e8798a33d21a43d0d416afcd32c7355
 				}
 			}
 		}
@@ -605,7 +611,7 @@ void mainmenu(RenderWindow& window) {
 		window.draw(spritePAC_MAN);
 		window.draw(spritepacman);
 
-		for (int i = 0; i < 3; i++) {
+		for (int i = 0; i < 4; i++) {
 			window.draw(mainmenu[i]);
 		}
 		selected2(mainmenu, window, pressed_exit);
@@ -616,14 +622,14 @@ void mainmenu(RenderWindow& window) {
 		bool sound = 0;
 		if (!pressed_exit)
 		{
-			if (mainmenu[2].getGlobalBounds().contains(mouse.getPosition(window).x, mouse.getPosition(window).y)) {
+			if (mainmenu[3].getGlobalBounds().contains(mouse.getPosition(window).x, mouse.getPosition(window).y)) {
 				sound = 1;
 				smallghost = 1;
-				mainmenu[2].setFillColor(Color::Red);
+				mainmenu[3].setFillColor(Color::Red);
 				window.draw(spriteredghost1);
 
 				if (Mouse::isButtonPressed(Mouse::Left)) {
-					mainmenu[2].setFillColor(Color::White);
+					mainmenu[3].setFillColor(Color::White);
 					pressed_exit = true;
 
 					sound = 0;
@@ -632,7 +638,7 @@ void mainmenu(RenderWindow& window) {
 				}
 			}
 			else {
-				mainmenu[2].setFillColor(Color::White);
+				mainmenu[3].setFillColor(Color::White);
 			}
 		}
 		if (pressed_exit) {
@@ -885,7 +891,7 @@ void mainmenu2(RenderWindow& window) {
 }
 
 //change color of button when selected
-int selected(Text arr[3], RenderWindow& window, bool pressedExit) {
+int selected(Text arr[4], RenderWindow& window, bool pressedExit) {
 	Mouse mouse;
 	for (int i = 0; i < 3; i++) {
 		if (!pressedExit)
@@ -3996,7 +4002,20 @@ void gameover(RenderWindow& window) {
 	textgameover.loadFromFile("pngs/game over.png");
 	Sprite spritegameover;
 	spritegameover.setTexture(textgameover);
+<<<<<<< HEAD
 
+	/*FloatRect rectgameover = spritegameover.getLocalBounds();
+	spritegameover.setOrigin(rectgameover.left + rectgameover.width / 2.0f, rectgameover.top + rectgameover.height / 2.0f);
+	spritegameover.setPosition(Vector2f(960, 540));*/
+
+=======
+	spritegameover.setPosition(0, 0);
+
+	//FloatRect rectgameover = spritegameover.getLocalBounds();
+	//spritegameover.setOrigin(rectgameover.left + rectgameover.width / 2.0f, rectgameover.top + rectgameover.height / 2.0f);
+	//spritegameover.setPosition(Vector2f(960, 540));
+
+>>>>>>> 1aaffd3a9e8798a33d21a43d0d416afcd32c7355
 	Text exit;
 	exit.setFont(font);
 	exit.setFillColor(Color::White);
@@ -4005,7 +4024,11 @@ void gameover(RenderWindow& window) {
 	FloatRect textrect = exit.getLocalBounds();
 
 	exit.setOrigin(textrect.left + textrect.width / 2.0f, textrect.top + textrect.height / 2.0f);
-	exit.setPosition(Vector2f(960, 700));
+<<<<<<< HEAD
+	exit.setPosition(Vector2f(960, 540));
+=======
+	exit.setPosition(Vector2f(960, 800));
+>>>>>>> 1aaffd3a9e8798a33d21a43d0d416afcd32c7355
 	bool sound = 0, sound2 = 0;
 
 	while (window.isOpen()) {
@@ -4210,6 +4233,10 @@ void UsernameWindow(RenderWindow& window) {
 			// save username
 			if (Keyboard::isKeyPressed(Keyboard::Enter)) {
 				soundclick.play();
+<<<<<<< HEAD
+				Users.insert({ 0, username });
+=======
+>>>>>>> 1aaffd3a9e8798a33d21a43d0d416afcd32c7355
 				mainmenu(window);
 			}
 
@@ -4241,10 +4268,11 @@ void UsernameWindow(RenderWindow& window) {
 	}
 }
 
+
 // Shut The Freak Up and don't play here it's not the game
 void SaveNewScore(int score) {
 	// Saving the new high score if you got it
-	Users[username] = max(Users[username], score);
+	Users.insert({ score, username });
 }
 
 // Also here 
@@ -4257,7 +4285,7 @@ void LoadHighScores() {
 
 	while (takeInput >> user) {
 		if (takeScore >> HighScore) {
-			Users.insert({ user, HighScore });
+			Users.insert({ HighScore, user });
 		}
 	}
 
@@ -4271,13 +4299,103 @@ void SaveHighScores() {
 	ofstream saveUsernames("data/Your_Save_File.txt");
 	ofstream saveScores("data/Your_Save_File2.txt");
 
+	map<string, bool> checked;
 	for (auto& pair : Users) {
-		saveUsernames << pair.first;
-		saveScores << pair.second;
+		if (!checked[pair.second]) {
+			checked[pair.second] = true;
+			saveUsernames << pair.second;
+			saveScores << pair.first;
+		}
 	}
 
 	saveUsernames.close();
 	saveScores.close();
+}
+
+void PrintScores(multimap<int, string>& Scores) {
+	Font font;
+	font.loadFromFile("fonts/emulogic.ttf");
+
+	Text Temp;
+	Temp.setFont(font);
+	Temp.setFillColor(Color(222, 222, 225));/*
+	FloatRect origin = Temp.getLocalBounds();
+	Temp.setOrigin(origin.left + origin.width / 2.f, origin.top + origin.height / 2.f);*/
+	Temp.setCharacterSize(30);
+
+	map<string, bool> checked;
+	int i = 0;
+	for (auto Score : Scores) {
+		if (i == 19) break;
+		if (checked[Score.second]) continue;
+
+		checked[Score.second] = true;
+		Text CurrScore[2] = { Temp, Temp };
+		{
+			CurrScore[0].setString(Score.second);
+			CurrScore[1].setString(to_string(-Score.first));
+
+			FloatRect origin = CurrScore[0].getLocalBounds();
+			CurrScore[0].setOrigin(origin.left + origin.width, origin.top + origin.height / 2.f);
+			CurrScore[0].setPosition(960.f - 100.f, 190.f + (45.f * i));
+
+			origin = CurrScore[1].getLocalBounds();
+			CurrScore[1].setOrigin(origin.left, origin.top + origin.height / 2.f);
+			CurrScore[1].setPosition(960.f + 100.f, 190.f + (45.f * i));
+			Color color;
+
+			switch (i % 5) {
+			case 0:
+				color = Color(255, 0, 0);
+				break;
+			case 1:
+				color = Color(255, 182, 255);
+				break;
+			case 2:
+				color = Color(0, 255, 255);
+				break;
+			case 3:
+				color = Color(255, 184, 81);
+				break;
+			case 4:
+				color = Color(255, 255, 0);
+				break;
+			}
+			CurrScore[0].setFillColor(color);
+			CurrScore[1].setFillColor(color);
+		}
+		i++;
+		window.draw(CurrScore[0]);
+		window.draw(CurrScore[1]);
+	}
+}
+
+void ScoreSheetWindow() {
+	Font font;
+	font.loadFromFile("fonts/emulogic.ttf");
+
+	Text HighScores;
+	HighScores.setString("High Scores");
+	HighScores.setFont(font);
+	HighScores.setFillColor(Color(222, 222, 225));
+	FloatRect origin = HighScores.getLocalBounds();
+	HighScores.setOrigin(origin.left + origin.width / 2.f, origin.top + origin.height / 2.f);
+	HighScores.setPosition(1920 / 2.f, 130.f);
+	HighScores.setCharacterSize(30);
+	// the def is 45 between every 2 text
+
+	while (window.isOpen()) {
+		Event event;
+		while (window.pollEvent(event)) {
+			if (Keyboard::isKeyPressed(Keyboard::Escape)) {
+				return;
+			}
+		}
+		window.clear();
+		window.draw(HighScores);
+		PrintScores(Users);
+		window.display();
+	}
 }
 
 // Loading easy map
@@ -4784,99 +4902,143 @@ void LoadingWindow(RenderWindow& window)
 	}
 }
 
-void victory(RenderWindow& window) {
-	SoundBuffer select;
-	select.loadFromFile("sounds/select sound.wav");
-	Sound soundselect;
-	soundselect.setBuffer(select);
+<<<<<<< HEAD
+SoundBuffer buffer;
+Sound sound;
+RectangleShape volumeBar;
+float volume = 100.0f;
 
-	//click sound
-	SoundBuffer click;
-	click.loadFromFile("sounds/enter sound.wav");
-	Sound soundclick;
-	soundclick.setBuffer(click);
+void setSound(string path) {
+	buffer.loadFromFile(path);
+	sound.setBuffer(buffer);
+	sound.setVolume(volume);
+}
+
+void updateVolumeStatus() {
+	float width = (volume / 100.0f) * 200.0f;
+	volumeBar.setSize(Vector2f(width, 20));
+	sound.setVolume(volume);
+}
+
+void settingsWindow() {
+
+	bool isChecked[2]{ 1, 0 };
+	bool makeit = 1;
 
 	Font font;
-	font.loadFromFile("fonts/Pixeboy-z8XGD.ttf");
+	font.loadFromFile("fonts/emulogic.ttf");
 
-	//game over
-	Texture victory_texture;
-	victory_texture.loadFromFile("pngs/victory.jpg");
-	Sprite victory_sprite;
-	victory_sprite.setTexture(victory_texture);
+	Text Settings[4];
 
-	Text exit;
-	exit.setFont(font);
-	exit.setFillColor(Color::White);
-	exit.setString("exit");
-	exit.setCharacterSize(100);
-	FloatRect textrect = exit.getLocalBounds();
+	int Setting = 0;
+	int FullScreen = 1;
+	int V_Sync = 2;
+	int Volume = 3;
 
-	exit.setOrigin(textrect.left + textrect.width / 2.0f, textrect.top + textrect.height / 2.0f);
-	exit.setPosition(Vector2f(960, 700));
-	bool sound = 0, sound2 = 0;
+	Settings[Setting].setString("Settings");
+	Settings[FullScreen].setString("Full Screen");
+	Settings[V_Sync].setString("V-Sync");
+	Settings[Volume].setString("Volume");
+
+	for (int i = 0; i < 4; i++) {
+		Settings[i].setFont(font);
+		FloatRect origin = Settings[i].getLocalBounds();
+		Settings[i].setOrigin(origin.left + origin.width / 2.f, origin.top + origin.height / 2.f);
+		Settings[i].setCharacterSize(30);
+		Settings[i].setFillColor(Color(222, 222, 225));
+	}
+
+	Settings[Setting].setPosition(1920 / 2.f, 130.f);
+	for (int i = 1; i < 4; i++) {
+		FloatRect origin = Settings[i].getLocalBounds();
+		Settings[i].setOrigin(origin.left + origin.width, origin.top + origin.height / 2.f);
+		Settings[i].setPosition(960.f - 100.f, 190.f + (45.f * i));
+	}
+
+	RectangleShape box[2];
+	for (int i = 0; i < 2; i++) {
+		FloatRect origin = box[i].getLocalBounds();
+		box[i].setOrigin(origin.left, origin.top + origin.height / 2.f);
+		box[i].setPosition(960.f + 100.f, 190.f + 45.0f * (i + .75));
+		box[i].setSize(Vector2f(20.0f, 20.0f));
+		box[i].setOutlineThickness(2.0f);
+		box[i].setOutlineColor(Color(222, 222, 225));
+	}
+
+	volumeBar.setSize(Vector2f(200, 20));
+	volumeBar.setFillColor(Color::White);
+	FloatRect origin = volumeBar.getLocalBounds();
+	volumeBar.setOrigin(origin.left, origin.top + origin.height / 2.f);
+	volumeBar.setPosition(960.f + 100.f, 190.f + 45.0f * (3));
 
 	while (window.isOpen()) {
 		Event event;
 		while (window.pollEvent(event)) {
-
-			if (event.type == Event::KeyReleased) {
-				if (event.key.code == Keyboard::Escape) {
-					soundselect.play();
-					mainmenu(window);
-				}
+			if (Keyboard::isKeyPressed(Keyboard::Escape)) {
+				return;
 			}
 
+			auto mousePosition = Mouse::getPosition(window);
 			if (event.type == Event::MouseButtonPressed) {
-				Vector2f mousePos = window.mapPixelToCoords(Mouse::getPosition(window));
-				if (exit.getGlobalBounds().contains(mousePos))
-					soundclick.play();
-			}
-			if (event.type == Event::MouseMoved) {
-				// Check if the mouse is over the button
-				Vector2f mousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
-				if (exit.getGlobalBounds().contains(mousePos)) {
-					if (!sound) {
-						// Play the sound if the mouse just entered the button
-						soundselect.play();
+				if (event.mouseButton.button == Mouse::Left) {
+
+					if (event.type == Event::MouseButtonPressed) {
+						if (event.mouseButton.button == Mouse::Left) {
+							for (int i = 0; i < 2; i++) {
+								FloatRect checkboxBounds = box[i].getGlobalBounds();
+								if (checkboxBounds.contains(static_cast<Vector2f>(mousePosition)))
+									isChecked[i] = !isChecked[i];
+							}
+						}
 					}
-					sound = true;
-				}
-				else {
-					sound = false;
 				}
 
+				if (mousePosition.x >= volumeBar.getPosition().x
+					&& mousePosition.x <= volumeBar.getPosition().x + 200.0f
+					&& mousePosition.y >= volumeBar.getPosition().y
+					&& mousePosition.y <= volumeBar.getPosition().y + volumeBar.getSize().y) {
+
+					float newVolume = ((float)mousePosition.x - volumeBar.getPosition().x) / 200.0f * 100.0f;
+					volume = newVolume;
+					updateVolumeStatus();
+				}
 			}
 		}
+		for (int i = 0; i < 2; i++)
+			box[i].setFillColor(isChecked[i] ? Color::Green : Color::White);
 
-		Mouse mouse;
-		// 0 >> yes 
-		if (exit.getGlobalBounds().contains(mouse.getPosition(window).x, mouse.getPosition(window).y)) {
-
-			exit.setFillColor(Color::Red);
-
-			if (Mouse::isButtonPressed(Mouse::Left)) {
-				exit.setFillColor(Color::White);
-				mainmenu(window);
-
-			}
+		if (!isChecked[0] && makeit) {
+			makeit = 0;
+			VideoMode vm(960, 540);
+			window.create(vm, "Pac-Man");
+			View view(FloatRect(0, 0, 1920, 1080));
+			window.setView(view);
 		}
-		else {
-			exit.setFillColor(Color::White);
+		else if (isChecked[0] && !makeit) {
+			makeit = 1;
+			window.create(VideoMode(1920, 1080), "Pac-Man", Style::Fullscreen);
 		}
+
 
 		window.clear();
-		window.draw(victory_sprite);
-		window.draw(exit);
+
+		for (int i = 0; i < 4; i++) {
+			window.draw(Settings[i]);
+		}
+		for (int i = 0; i < 2; i++) {
+			window.draw(box[i]);
+		}
+		window.draw(volumeBar);
+
 		window.display();
 	}
 }
 
-//diff definition
 
-//void move_random(Ghosts ghost[])
-//{
-//	srand((int)time(0));
+
+=======
+>>>>>>> 1aaffd3a9e8798a33d21a43d0d416afcd32c7355
+//void Victory(RenderWindow& window) {
 //
 //	for (int i = 0; i < 4; i++)
 //	{
