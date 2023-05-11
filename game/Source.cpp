@@ -576,6 +576,7 @@ void mainmenu(RenderWindow& window) {
 					if (mainmenu[1].getGlobalBounds().contains(mousePos)) {
 						soundclick.play();
 						//open high score menu
+<<<<<<< HEAD
 						ScoreSheetWindow();
 					}
 					if (mainmenu[2].getLocalBounds().contains(mousePos)) {
@@ -584,11 +585,24 @@ void mainmenu(RenderWindow& window) {
 					}
 					if (mainmenu[3].getGlobalBounds().contains(mousePos)) {
 						soundclick.play();
+=======
+						play(window);
+>>>>>>> 1aaffd3a9e8798a33d21a43d0d416afcd32c7355
 
 						//pressed_exit = true;
 						num = 4;
 
 					}
+<<<<<<< HEAD
+=======
+					if (mainmenu[2].getGlobalBounds().contains(mousePos)) {
+						soundclick.play();
+
+						//pressed_exit = true;
+						num = 4;
+
+					}
+>>>>>>> 1aaffd3a9e8798a33d21a43d0d416afcd32c7355
 				}
 			}
 		}
@@ -1990,6 +2004,7 @@ void originalmediumwindow(RenderWindow& window) {
 		ghosts[3].initial_x = offset_x + 10 * TILESIZE + HALF_TILESIZE;
 		ghosts[3].initial_y = offset_y + 10 * TILESIZE + HALF_TILESIZE;
 		ghosts[3].sprite.setPosition(ghosts[3].initial_x, ghosts[3].initial_y);
+		restart_pacman(pacman);
 	}
 	//GHOSTS	
 	// 0 red , 1 pink , 2 orange , 3 blue 
@@ -2893,6 +2908,7 @@ void originalhardwindow(RenderWindow& window) {
 		ghosts[3].initial_y = offset_y + 10 * TILESIZE + HALF_TILESIZE;
 		ghosts[3].sprite.setPosition(ghosts[3].initial_x, ghosts[3].initial_y);
 
+		restart_pacman(pacman);
 	}
 	for (int i = 0; i < ghosts_number; i++) {
 		//setting home sprite 
@@ -3926,11 +3942,20 @@ void gameover(RenderWindow& window) {
 	textgameover.loadFromFile("pngs/game over.png");
 	Sprite spritegameover;
 	spritegameover.setTexture(textgameover);
+<<<<<<< HEAD
 
 	/*FloatRect rectgameover = spritegameover.getLocalBounds();
 	spritegameover.setOrigin(rectgameover.left + rectgameover.width / 2.0f, rectgameover.top + rectgameover.height / 2.0f);
 	spritegameover.setPosition(Vector2f(960, 540));*/
 
+=======
+	spritegameover.setPosition(0, 0);
+
+	//FloatRect rectgameover = spritegameover.getLocalBounds();
+	//spritegameover.setOrigin(rectgameover.left + rectgameover.width / 2.0f, rectgameover.top + rectgameover.height / 2.0f);
+	//spritegameover.setPosition(Vector2f(960, 540));
+
+>>>>>>> 1aaffd3a9e8798a33d21a43d0d416afcd32c7355
 	Text exit;
 	exit.setFont(font);
 	exit.setFillColor(Color::White);
@@ -3939,7 +3964,11 @@ void gameover(RenderWindow& window) {
 	FloatRect textrect = exit.getLocalBounds();
 
 	exit.setOrigin(textrect.left + textrect.width / 2.0f, textrect.top + textrect.height / 2.0f);
+<<<<<<< HEAD
 	exit.setPosition(Vector2f(960, 540));
+=======
+	exit.setPosition(Vector2f(960, 800));
+>>>>>>> 1aaffd3a9e8798a33d21a43d0d416afcd32c7355
 	bool sound = 0, sound2 = 0;
 
 	while (window.isOpen()) {
@@ -4146,7 +4175,10 @@ void UsernameWindow(RenderWindow& window) {
 			// save username
 			if (Keyboard::isKeyPressed(Keyboard::Enter)) {
 				soundclick.play();
+<<<<<<< HEAD
 				Users.insert({ 0, username });
+=======
+>>>>>>> 1aaffd3a9e8798a33d21a43d0d416afcd32c7355
 				mainmenu(window);
 			}
 
@@ -4810,6 +4842,7 @@ void LoadingWindow(RenderWindow& window)
 	}
 }
 
+<<<<<<< HEAD
 SoundBuffer buffer;
 Sound sound;
 RectangleShape volumeBar;
@@ -4943,6 +4976,8 @@ void settingsWindow() {
 
 
 
+=======
+>>>>>>> 1aaffd3a9e8798a33d21a43d0d416afcd32c7355
 //void Victory(RenderWindow& window) {
 //
 //	//prepare the sound
