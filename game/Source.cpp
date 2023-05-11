@@ -441,7 +441,7 @@ void mainmenu(RenderWindow& window) {
 	spriteredghost1.setTexture(redghost[1]);
 	FloatRect redghostrect1 = spriteredghost1.getLocalBounds();
 	spriteredghost1.setOrigin(redghostrect1.left + redghostrect1.width / 2.0f, redghostrect1.top + redghostrect1.height / 2.0f);
-	spriteredghost1.setPosition(Vector2f(760, 850));
+	spriteredghost1.setPosition(Vector2f(780, 890));
 
 
 	Font font;
@@ -558,7 +558,7 @@ void mainmenu(RenderWindow& window) {
 						//open high score menu
 						ScoreSheetWindow();
 					}
-					if (mainmenu[2].getLocalBounds().contains(mousePos)) {
+					if (mainmenu[2].getGlobalBounds().contains(mousePos)) {
 						soundclick.play();
 						settingsWindow();
 					}
@@ -1739,7 +1739,7 @@ void originaleasywindow(RenderWindow& window) {
 			window.draw(blackRect);
 			pause(window, pressed_pause, firstGame);
 		}
-		window.draw(spritelives);
+		//window.draw(spritelives);
 		window.draw(cherrySprite2);
 		window.display();
 	}
@@ -2660,7 +2660,7 @@ void originalmediumwindow(RenderWindow& window) {
 		window.draw(rect_right2);
 		window.draw(rect_left2);
 
-		window.draw(spritelives);
+		//window.draw(spritelives);
 		window.draw(ready);
 		if (clock.getElapsedTime().asSeconds() > 4.0f)
 		{
@@ -2926,7 +2926,7 @@ void originalhardwindow(RenderWindow& window) {
 		ghosts[0].sprite.setPosition(ghosts[0].initial_x, ghosts[0].initial_y);
 
 		ghosts[1].initial_x = ghosts[0].initial_x;
-		ghosts[1].initial_y = offset_y + 14 * TILESIZE + HALF_TILESIZE;
+		ghosts[1].initial_y = offset_y + 10 * TILESIZE + HALF_TILESIZE;
 		ghosts[1].sprite.setPosition(ghosts[1].initial_x, ghosts[1].initial_y);
 
 		ghosts[2].initial_x = offset_x + 13 * TILESIZE + HALF_TILESIZE;
@@ -3613,7 +3613,7 @@ void originalhardwindow(RenderWindow& window) {
 			pause(window, pressed_pause, firstGame);
 		}
 
-		window.draw(spritelives);
+		//window.draw(spritelives);
 		window.draw(cherrySprite2);
 		if (clock.getElapsedTime().asSeconds() > 4.0f)
 		{
@@ -3788,14 +3788,14 @@ void selected2(Text arr2[3], RenderWindow& window, bool pressed_Exit) {
 	spriteredghost.setTexture(redghost[0]);
 	FloatRect redghostrect = spriteredghost.getLocalBounds();
 	spriteredghost.setOrigin(redghostrect.left + redghostrect.width / 2.0f, redghostrect.top + redghostrect.height / 2.0f);
-	spriteredghost.setPosition(Vector2f(760, 550));
+	spriteredghost.setPosition(Vector2f(760, 450));
 
 	redghost[2].loadFromFile("pngs/yellow ghost.png");
 	Sprite spriteredghost2;
 	spriteredghost2.setTexture(redghost[2]);
 	FloatRect redghostrect2 = spriteredghost2.getLocalBounds();
 	spriteredghost2.setOrigin(redghostrect2.left + redghostrect2.width / 2.0f, redghostrect2.top + redghostrect2.height / 2.0f);
-	spriteredghost2.setPosition(Vector2f(620, 700));
+	spriteredghost2.setPosition(Vector2f(620, 600));
 
 	Mouse mouse;
 	bool smallghost = 0;
@@ -4180,8 +4180,8 @@ void UsernameWindow(RenderWindow& window) {
 	Font font;
 	font.loadFromFile("fonts/CrackMan.ttf");
 
-	spritePAC_MAN.setScale(.05f, 0.5f);
-	spritePAC_MAN.setPosition(0, -400.0f);
+	/*spritePAC_MAN.setScale(.05f, 0.5f);
+	spritePAC_MAN.setPosition(0, -400.0f);*/
 
 	Text text;
 	text.setCharacterSize(50);
